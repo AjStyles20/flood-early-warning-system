@@ -1,0 +1,282 @@
+# Chapter Three Draft - System Methodology and Implementation
+
+This draft describes the current verified implementation of the Intelligent Flood Early Warning and Decision Support System. It should be adapted into the final Chapter Three format required by the department.
+
+Implementation addendum (2026-09-08): the user has authorized an operational extension with role-based writes, CSV ingestion, durable alert review, evaluation charts and PDF exports, configurable news feeds and deployment definitions. The [operational guide](operational_platform_guide.md) records its tested scope and limitations. Report snapshots remain synthetic holdout evidence; they are not per-scenario ground-truth validation. Align any revised objectives with the supervisor before incorporating these additions as academically approved core requirements.
+
+## 3.1 Introduction
+
+This chapter presents the methodology, system design, implementation tools, data flow, model design, dashboard design, and testing approach used in the flood early warning and decision support prototype. The system is designed as a portable architecture that can be adapted to different locations by changing station metadata, danger thresholds, and deployment configuration. Nigeria is used as the case-study environment because of its recurring flood-risk context, but the design is not limited to Nigeria.
+
+The implementation focuses on the approved core pipeline:
+
+1. Telemetry ingestion from simulator or hardware-ready sensor nodes.
+2. Persistent database storage.
+3. Transparent flood-risk classification.
+4. Future-horizon machine-learning prediction.
+5. Accessible GIS dashboard display.
+6. Simulated web, email, and SMS alert logging.
+
+The system does not issue autonomous emergency orders. It provides decision support and instructs users to follow official guidance.
+
+## 3.2 Development Approach
+
+The project was implemented using an iterative prototyping approach. Each major part of the system was built, tested, corrected, and documented before being integrated with the next part. This approach was selected because flood early warning systems involve several connected layers: sensor input, validation, storage, risk analysis, model prediction, geospatial display, and user communication.
+
+During implementation, emphasis was placed on:
+
+- explainability, so that the system can be defended and understood line by line;
+- portability, so that new stations and thresholds can be added without rewriting the core code;
+- safety, so that the system remains advisory and does not replace official emergency responders;
+- accessibility, so that users who cannot depend on map visuals alone can still access station status through text;
+- test evidence, so that claims about the system are proven instead of assumed.
+
+## 3.3 System Architecture
+
+The system follows a layered architecture.
+
+```mermaid
+flowchart TD
+    Sensor[Simulator or hardware node] --> API[FastAPI telemetry API]
+    API --> Validation[Pydantic validation]
+    Validation --> DB[(SQLite flood_data.db)]
+    DB --> Risk[Four-tier risk engine]
+    DB --> ML[Future-horizon ML model]
+    Risk --> Status[Risk-status endpoint]
+    ML --> Status
+    Status --> Dashboard[Leaflet/OpenStreetMap dashboard]
+    Status --> TextList[Accessible text station list]
+    Risk --> Alerts[Simulated web/email/SMS alert log]
+```
+
+The simulator or hardware node sends telemetry to the backend through `POST /api/telemetry`. The backend validates the reading using Pydantic, stores it using SQLAlchemy, calculates flood risk using the rule-based risk engine, optionally adds machine-learning probability, and exposes the result through `GET /api/risk-status`. The dashboard polls this endpoint and updates both the map and the accessible station list.
+
+## 3.4 Technology Stack
+
+The implementation uses the approved project stack:
+
+| Layer | Technology | Reason for use |
+|---|---|---|
+| Backend API | Python and FastAPI | Fast development, clear routing, automatic validation support |
+| Data validation | Pydantic | Ensures incoming telemetry has valid types and ranges |
+| Database ORM | SQLAlchemy | Provides structured database models and future database portability |
+| Database | SQLite file database | Simple local persistence through `sqlite:///flood_data.db` |
+| Machine learning | scikit-learn | Supports Logistic Regression, Random Forest, and baseline comparison |
+| Simulator messaging | REST with optional paho-mqtt | Allows simulator fallback and hardware-ready communication |
+| Dashboard | Jinja2, HTML, CSS, JavaScript | Fits the Python backend and avoids unnecessary frontend build complexity |
+| GIS display | Leaflet.js and OpenStreetMap | Lightweight browser-based mapping with open map tiles |
+
+SQLite is deliberately file-based. The normal database URL is:
+
+```text
+sqlite:///flood_data.db
+```
+
+The in-memory form, `sqlite://`, is not used for the active application or the current regression tests because it does not preserve records after process restart. Tests use a temporary file-based SQLite database so the persistence guardrail is exercised consistently.
+
+## 3.5 Telemetry Input Design
+
+Each station reading contains station identity, location, timestamp, water level, danger threshold, rainfall, flow rate, battery percentage, signal state, and source type.
+
+Example telemetry shape:
+
+```json
+{
+  "station_id": "STN-01",
+  "station_name": "Lokoja (Niger-Benue confluence)",
+  "data_source": "simulated",
+  "lat": 7.7999,
+  "lon": 6.7333,
+  "timestamp": "2026-08-31T12:00:00+00:00",
+  "water_level_m": 2.174,
+  "danger_level_m": 5.5,
+  "rainfall_mm_hr": 5.03,
+  "flow_rate_m3s": 25.07,
+  "battery_pct": 100.0,
+  "signal": "online"
+}
+```
+
+The `data_source` field supports:
+
+- `simulated`, for generated demonstration telemetry;
+- `hardware`, for real sensor-node readings sent to the same API.
+
+This makes the system switchable between simulator, hardware, and hybrid demonstrations without changing the database design or dashboard code. In Hybrid mode, the backend compares the newest simulated and hardware-source readings available for a station/source pair and returns the more serious current risk for dashboard attention.
+
+## 3.6 Database Design
+
+The database layer is implemented in `files/api/database.py` and `files/api/models.py`.
+
+The main telemetry table stores one row per sensor reading. Important fields include:
+
+- `station_id`, used to group readings by monitoring station;
+- `station_name`, used for dashboard display;
+- `data_source`, used to separate simulated and hardware readings;
+- `lat` and `lon`, used for GIS marker placement;
+- `timestamp`, used for ordering and freshness checks;
+- `water_level_m` and `danger_level_m`, used to calculate risk ratio;
+- `rainfall_mm_hr`, `flow_rate_m3s`, `battery_pct`, and `signal`, used for context and dashboard interpretation.
+
+SQLAlchemy is used so that the code is not tied only to raw SQL statements. A future deployment can switch to a different SQL database by using the `FLOOD_EWS_DATABASE_URL` environment variable, but the prototype remains file-based SQLite by default.
+
+## 3.7 Risk Classification Method
+
+The risk engine is implemented in `files/api/risk_engine.py`.
+
+The main physical measure is:
+
+```text
+risk ratio = current water level / station danger level
+```
+
+The system uses four risk levels:
+
+| Risk level | Meaning |
+|---|---|
+| Low | No immediate flood-risk signal from the current reading |
+| Moderate | Water or rainfall conditions require preparation and monitoring |
+| High | Flood-risk conditions are high and users should avoid risky areas while following official guidance |
+| Severe | Critical flood-risk conditions are detected and responders should verify conditions |
+
+The risk engine may also use the machine-learning probability when available. The higher of the physical ratio and ML probability is used as the risk score, so that a validated future-risk model can raise attention earlier while the transparent physical threshold remains available.
+
+All risk wording is advisory. The system does not say "evacuate now" or issue autonomous instructions. The English guidance ends with "follow official guidance."
+
+## 3.8 Machine-Learning Design
+
+The machine-learning pipeline is implemented in `files/api/train_model.py`.
+
+The model is trained on simulator-generated telemetry only. Therefore, its results are evidence for the prototype and not proof of production flood-prediction performance on real field data.
+
+An important correction was made during development. The model was not trained to predict whether the current reading is already above the danger level, because that would create a circular label. Instead, the corrected target is:
+
+```text
+While the station is below danger level now, will it reach danger level within the next 6 simulator ticks?
+```
+
+The current-tick features are:
+
+- water-level ratio;
+- rainfall intensity;
+- flow rate;
+- rate of rise.
+
+The compared methods are:
+
+- threshold baseline;
+- Logistic Regression;
+- Random Forest.
+
+The saved model is the Random Forest classifier, stored as `files/api/model.pkl`. The metrics are stored in `files/api/model_metrics.json`.
+
+Current corrected simulator-generated results:
+
+| Method | Accuracy | Precision | Recall | F1 |
+|---|---:|---:|---:|---:|
+| Threshold baseline | 0.9731 | 1.0000 | 0.5000 | 0.6667 |
+| Logistic Regression | 0.9557 | 0.5487 | 1.0000 | 0.7086 |
+| Random Forest | 0.9974 | 0.9836 | 0.9677 | 0.9756 |
+
+The previous perfect baseline result is not used because it came from current-threshold label leakage.
+
+## 3.9 Notification Design
+
+The notification layer is implemented in `files/api/notifications.py`.
+
+For the prototype, notifications are simulated and written to a local JSONL log. The active demonstration channels are:
+
+- web dashboard;
+- simulated email;
+- simulated SMS.
+
+This supports the project requirement that warning access should not assume smartphone ownership. No real SMS or email is sent unless a real provider gateway is configured and tested.
+
+## 3.10 GIS Dashboard and Accessibility Design
+
+The active dashboard is implemented with Jinja2 templates and browser JavaScript:
+
+- `files/api/templates/pages/dashboard.html`
+- `files/api/static/css/site.css`
+- `files/api/static/js/dashboard.js`
+
+The dashboard includes:
+
+- Leaflet.js map;
+- OpenStreetMap and satellite base layers;
+- simulated, hardware, and hybrid source switching;
+- map markers for stations;
+- risk-ring planning overlays;
+- station labels;
+- station search;
+- risk-level filtering;
+- selected-station details;
+- telemetry freshness and staleness indicators;
+- tile-health warning if map tiles are slow;
+- schematic river-context overlay;
+- accessible station list beside the map.
+
+The station list is important because map markers alone are not accessible to all users. A screen-reader user or keyboard-only user can still read station names, risk levels, water levels, alert channels, and safe guidance. Colour is used as a supporting cue, but the risk level is always written in text.
+
+The river-context overlay is schematic. It helps interpretation in the Nigeria case-study dashboard, but it is not presented as an official flood-boundary dataset and does not change risk classification.
+
+## 3.11 API Endpoints
+
+The main implemented endpoints are:
+
+| Endpoint | Method | Purpose |
+|---|---|---|
+| `/api/telemetry` | POST | Accepts and stores simulator or hardware telemetry |
+| `/api/telemetry` | GET | Returns stored telemetry records |
+| `/api/risk-status` | GET | Returns newest risk status per station |
+| `/dashboard` | GET | Serves the GIS decision-support dashboard |
+| `/data` | GET | Serves the flood-data page |
+| `/favicon.ico` | GET | Serves the project browser-tab icon |
+
+Optional account routes exist as a prototype shell, but advanced account-dependent product features are not part of the approved core scope.
+
+## 3.12 Testing and Verification
+
+Testing is performed through executable scripts rather than only manual observation.
+
+The main tests are:
+
+- `files/api/test_model_training.py`, which verifies that the ML target uses a future horizon and avoids current-threshold leakage;
+- `files/api/test_api.py`, which verifies telemetry ingestion, bad-input rejection, risk status, source switching, dashboard rendering, parked extras, XSS guards, and SQLite configuration.
+
+Bad-input tests include:
+
+- invalid telemetry source;
+- invalid latitude;
+- zero danger level;
+- battery percentage above 100;
+- missing station ID;
+- invalid risk-status source query;
+- invalid language query.
+
+The latest verified outputs include:
+
+```text
+[PASS] Future-horizon ML target verified; circular current-threshold label leakage removed.
+[PASS] Core dashboard/data access, break tests, optional auth shell, parked extras, source switching, XSS guards, and SQLite configuration verified.
+```
+
+## 3.13 Hardware Readiness
+
+The project supports hardware integration by allowing a real sensor node to send the same JSON format as the simulator. A hardware node should send telemetry to:
+
+```text
+POST http://127.0.0.1:8000/api/telemetry
+```
+
+The reading should include:
+
+```json
+"data_source": "hardware"
+```
+
+This lets the dashboard show whether a reading came from a simulated source or a physical sensor source. If no hardware is available, the simulator remains a valid fallback for demonstrating the complete pipeline.
+
+## 3.14 Chapter Summary
+
+This chapter described the methodology and implementation of the flood early warning and decision support prototype. The system integrates telemetry ingestion, persistent storage, transparent risk classification, future-horizon ML prediction, accessible GIS visualization, and simulated multi-channel alert logging. It is designed to be portable, explainable, accessible, and safe for undergraduate project demonstration while leaving production integrations as future work.

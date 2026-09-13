@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.git/
+.env
+.env.*
+.github/
+.venv/
+venv/
+env/
+*.db
+*.jsonl
+files/docs/docx_backups/
+files/archive/
+~$*.docx

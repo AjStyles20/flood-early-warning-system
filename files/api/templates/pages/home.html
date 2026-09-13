@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Home | FloodWatch Nigeria{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="container hero-grid">
+    <div>
+      <p class="eyebrow">Early warning and decision support</p>
+      <h1>Flood intelligence that helps people feel prepared, not abandoned.</h1>
+      <p class="hero-copy">
+        FloodWatch Nigeria combines source-aware IoT telemetry, GIS mapping, explainable AI,
+        accessible station status, and non-smartphone alert paths for communities and institutions.
+      </p>
+      {% if account_deleted %}
+        <div class="notice-box" role="status" style="margin: 18px 0;">
+          Your account has been deleted. We are sorry you had to go. A simulated confirmation notice was logged for your configured contact channels.
+        </div>
+      {% endif %}
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="/dashboard">Open dashboard</a>
+        <a class="btn btn-secondary" href="/data">View flood data</a>
+        {% if current_user %}
+          <a class="btn btn-ghost" href="/settings">Account settings</a>
+        {% else %}
+          <a class="btn btn-ghost" href="/register">Create account</a>
+          <a class="btn btn-ghost" href="/guest">Continue as guest</a>
+        {% endif %}
+      </div>
+    </div>
+    <aside class="media-card" aria-label="Replaceable project image placeholder">
+      <small>Replaceable project media</small>
+      <strong>River gauge, rainfall node, satellite layer, and accessible status list.</strong>
+      <p>Use this block for your own field image, sensor prototype image, or approved partner photograph.</p>
+    </aside>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h2>Built around the approved core flood-warning pipeline</h2>
+    <p class="section-copy">
+      Visitors can open the live demonstration dashboard, switch source modes, review telemetry, and inspect
+      decision-support evidence without needing an account.
+    </p>
+    <div class="card-grid">
+      <article class="card">
+        <h3>Public updates</h3>
+        <p>News, preparedness notes, partner updates, and safety disclaimers remain open to visitors.</p>
+      </article>
+      <article class="card">
+        <h3>Core dashboard</h3>
+        <p>Live IoT map, sensor-source switch, satellite layer, and alert-ready station list.</p>
+      </article>
+      <article class="card">
+        <h3>Inclusive access</h3>
+        <p>Text alternatives, keyboard paths, readable contrast, and web/email/SMS alert simulation.</p>
+      </article>
+      <article class="card">
+        <h3>Portable architecture</h3>
+        <p>Nigeria is the case study, while station configuration and thresholds can be adapted for other contexts.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h2>Partners and Sponsors</h2>
+    <p class="section-copy">Dummy partner blocks are included so you can replace them with approved real partners later.</p>
+    <div class="card-grid">
+      <div class="card"><h3>Baze University</h3><p>Academic supervision and project review placeholder.</p></div>
+      <div class="card"><h3>Emergency Agency</h3><p>Placeholder for NEMA, SEMA, or local response collaborators.</p></div>
+      <div class="card"><h3>IoT Partner</h3><p>Placeholder for sensor hardware or connectivity support.</p></div>
+      <div class="card"><h3>Community Sponsor</h3><p>Placeholder for civic, NGO, or field deployment support.</p></div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}FloodWatch Nigeria{% endblock %}</title>
+  <meta name="description" content="FloodWatch Nigeria provides accessible flood early warning, GIS decision support, and source-aware telemetry monitoring.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" href="{{ url_for('static', path='favicon.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', path='css/site.css') }}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body data-contact-email="{{ contact_email }}">
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  <header class="site-header command-top-bar">
+    <div class="nav-shell">
+      <div class="command-brand-wrap">
+        <a class="brand" href="/dashboard" aria-label="FloodWatch Command home">
+          <span class="brand-mark command-wave-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"></path>
+              <path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"></path>
+              <path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"></path>
+            </svg>
+          </span>
+          <span class="brand-text-block">
+            <span class="brand-title">FloodWatch <span class="brand-highlight">Command</span></span>
+            <span class="brand-subtitle">INTELLIGENT EARLY WARNING SYSTEM</span>
+          </span>
+        </a>
+      </div>
+
+      <nav class="nav-links" aria-label="Main navigation">
+        <button class="mobile-nav-close" id="mobile-nav-close" type="button" aria-label="Close navigation">&times;</button>
+        <a href="/" {% if active_page == "home" %}aria-current="page"{% endif %}>Home</a>
+        <a href="/dashboard" {% if active_page == "dashboard" %}aria-current="page"{% endif %}>Situation Room</a>
+        <a href="/about" {% if active_page == "about" %}aria-current="page"{% endif %}>About</a>
+        <a href="/projects" {% if active_page == "projects" %}aria-current="page"{% endif %}>Projects</a>
+        <a href="/data" {% if active_page == "data" %}aria-current="page"{% endif %}>Flood Data</a>
+        <a href="/evaluation" {% if active_page == "evaluation" %}aria-current="page"{% endif %}>Evaluation</a>
+        <a href="/news" {% if active_page == "news" %}aria-current="page"{% endif %}>News</a>
+        <a href="/contact" {% if active_page == "contact" %}aria-current="page"{% endif %}>Contact</a>
+      </nav>
+
+      <div class="nav-actions command-nav-actions">
+        <button class="icon-action-btn menu-toggle-btn" id="menu-toggle-btn" aria-label="Toggle menu" type="button">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+
+        <div class="notification-wrap">
+          <button class="icon-action-btn notification-btn" id="top-notification-bell" type="button" aria-label="Open recent notifications" aria-expanded="false" aria-haspopup="dialog" aria-controls="notification-dropdown">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <span class="notification-badge" id="top-alert-badge" hidden>0</span>
+          </button>
+          <div class="notification-dropdown" id="notification-dropdown" role="dialog" aria-labelledby="notification-title" aria-describedby="notification-summary" hidden>
+            <div class="notification-dropdown-header">
+              <span id="notification-title">Recent notifications</span>
+              <small id="notification-summary">Simulated web, SMS, and email alert logs.</small>
+            </div>
+            <ul class="notification-list" id="notification-list" aria-live="polite">
+              <li class="notification-empty">Loading recent alerts...</li>
+            </ul>
+            <a class="notification-centre-link" href="/dashboard#alert-centre">Open alert centre</a>
+          </div>
+        </div>
+
+        <div class="user-profile-menu">
+          <button class="user-pill-btn" id="user-menu-btn" type="button" aria-expanded="false" aria-haspopup="true">
+            <span class="user-avatar">{{ user_initials }}</span>
+            <span class="user-name">{{ user_display_name }}</span>
+            <svg class="chevron-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div class="user-dropdown-pane" id="user-dropdown-pane" hidden>
+            <div class="dropdown-header">
+              <strong>{{ user_display_name }}</strong>
+              <small>{% if current_user %}{{ current_user.email }} · {{ user_role|title }}{% else %}Guest{% endif %}</small>
+            </div>
+            <div class="dropdown-divider"></div>
+            {% if current_user %}
+              <a href="/settings">Settings & Account</a>
+              <form action="/logout" method="post"><button class="link-button" type="submit">Sign out</button></form>
+            {% else %}
+              <a href="/login">Sign in</a>
+              <a href="/register">Create account</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="main-content" class="page">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <section>
+          <h2>FloodWatch Nigeria</h2>
+          <p>Portable, accessible flood early warning and decision support for communities, responders, and partners.</p>
+        </section>
+        <section>
+          <h3>Pages</h3>
+          <ul class="footer-list">
+            <li><a href="/">Home</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/projects">Projects</a></li>
+            <li><a href="/evaluation">Evaluation</a></li>
+            <li><a href="/news">News</a></li>
+          </ul>
+        </section>
+        <section>
+          <h3>{% if current_user %}Your Account{% else %}Account{% endif %}</h3>
+          <ul class="footer-list">
+            {% if current_user %}
+              <li><a href="/dashboard">Map Viewer</a></li>
+              <li><a href="/data">Flood Data</a></li>
+              <li><a href="/settings">Settings</a></li>
+              <li><form action="/logout" method="post"><button class="link-button" type="submit">Log out</button></form></li>
+            {% else %}
+              <li><a href="/dashboard">Map Viewer</a></li>
+              <li><a href="/data">Flood Data</a></li>
+              <li><a href="/login">Log in</a></li>
+              <li><a href="/register">Create account</a></li>
+            {% endif %}
+          </ul>
+        </section>
+        <section>
+          <h3>Connect</h3>
+          <ul class="footer-list">
+            {% if contact_email_configured %}
+              <li><a href="mailto:{{ contact_email }}">{{ contact_email }}</a></li>
+            {% else %}
+              <li><a href="/contact#contact-configuration">Contact email not configured</a></li>
+            {% endif %}
+            <li><a href="/contact#newsletter">Newsletter</a></li>
+            <li><a href="/contact#privacy">Privacy Policy</a></li>
+            <li><a href="/contact#terms">Terms</a></li>
+          </ul>
+        </section>
+      </div>
+      <div class="footer-bottom">
+        <span>Copyright &copy; 2026 FloodWatch Nigeria. All rights reserved.</span>
+        <span>Decision support only. Always follow official guidance.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', path='js/site.js') }}"></script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

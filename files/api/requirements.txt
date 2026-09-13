@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+scikit-learn
+joblib
+paho-mqtt
+passlib
+PyMySQL
+jinja2
+python-multipart
+httpx

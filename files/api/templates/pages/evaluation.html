@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Evaluation - FloodWatch Nigeria{% endblock %}
+
+{% block content %}
+<section class="container section-shell" aria-labelledby="evaluation-title">
+  <div class="section-heading">
+    <span class="eyebrow">Model evidence</span>
+    <h1 id="evaluation-title" class="page-title">Evaluation and performance dashboard</h1>
+    <p class="section-copy">
+      This page visualizes the saved simulator-generated model metrics. It supports explainability during defense,
+      but it does not claim field-validated flood prediction performance.
+    </p>
+  </div>
+
+  <div class="notice-box" role="note">
+    Metrics come from <code>files/api/model_metrics.json</code>. The target is future threshold crossing, not current-threshold repetition.
+  </div>
+
+  <section class="panel evaluation-panel" aria-labelledby="metric-summary-title">
+    <div class="panel-title-row">
+      <div>
+        <span class="eyebrow">Comparison</span>
+        <h2 id="metric-summary-title">Accuracy, false positives, and false negatives</h2>
+      </div>
+      <a class="btn btn-secondary" href="/api/model-evaluation/report.pdf">Download model PDF</a>
+    </div>
+
+    <div id="model-evaluation-status" class="section-copy" role="status" aria-live="polite">Loading model metrics...</div>
+    <div id="model-metric-cards" class="metric-card-grid" aria-live="polite"></div>
+    <div id="model-chart-list" class="chart-list" aria-label="Model performance bar charts"></div>
+  </section>
+
+  <section class="panel evaluation-panel" aria-labelledby="scenario-run-title">
+    <div class="panel-title-row">
+      <div>
+        <span class="eyebrow">Scenario evidence</span>
+        <h2 id="scenario-run-title">Scenario run reports</h2>
+      </div>
+    </div>
+    {% if can_operate %}
+      <p class="section-copy">
+        Each PDF records the scenario change and the saved synthetic evaluation at that time. One injected reading cannot measure predictive accuracy.
+      </p>
+      <div id="scenario-run-list" class="station-card-list" aria-live="polite">Loading scenario runs...</div>
+    {% else %}
+      <div class="notice-box" role="note">
+        Scenario reports require an operator or admin session because they include operator actions and audit evidence.
+      </div>
+    {% endif %}
+  </section>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+  <script src="{{ url_for('static', path='js/evaluation.js') }}"></script>
+{% endblock %}

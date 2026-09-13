@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}News | FloodWatch Nigeria{% endblock %}
+
+{% block content %}
+<section class="container page-heading">
+  <a class="back-line" href="/">&larr; Back home</a>
+  <h1 class="page-title">News, warnings, and external updates</h1>
+  <p class="hero-copy">Flood-related public updates, provider-fed news, and prototype notes for the early-warning project.</p>
+</section>
+
+<section class="container section" aria-labelledby="external-feed-title">
+  <div class="panel news-feed-panel">
+    <div class="panel-title-row">
+      <div>
+        <span class="eyebrow">External intelligence</span>
+        <h2 id="external-feed-title">Live flood-related feed</h2>
+      </div>
+      <button class="btn btn-secondary" id="news-refresh" type="button">Refresh feed</button>
+    </div>
+    <p class="section-copy" id="news-feed-status" role="status" aria-live="polite">
+      Checking configured news provider...
+    </p>
+    <div id="news-feed-list" class="news-feed-list" aria-live="polite"></div>
+  </div>
+</section>
+
+<section class="container section">
+  <div class="card-grid">
+    <article class="card"><h2>Dual Source Monitoring</h2><p>The prototype separates simulated readings from hardware-ready telemetry and includes hybrid source mode.</p></article>
+    <article class="card"><h2>Accessible Dashboard</h2><p>The map is paired with text status, so screen-reader users are not excluded from station information.</p></article>
+    <article class="card"><h2>Model Evaluation</h2><p>The model pipeline compares Logistic Regression, Random Forest, and a threshold baseline on simulator-generated data.</p></article>
+    <article class="card"><h2>Alert Simulation</h2><p>Web, email, and SMS channels are logged for demonstration until real providers are configured.</p></article>
+  </div>
+</section>
+
+<section class="container section" id="newsletter">
+  <div class="panel" style="padding: 28px;">
+    <h2>Subscribe to updates</h2>
+    <p class="section-copy">This form uses EmailJS when configured, otherwise it opens a prefilled email to the project contact.</p>
+    <form class="form-grid" data-newsletter-form>
+      <div class="field">
+        <label for="news-email">Email address</label>
+        <input id="news-email" type="email" name="email" placeholder="your@email.com" required>
+      </div>
+      <button class="btn btn-primary" type="submit">Subscribe</button>
+    </form>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', path='js/contact.js') }}"></script>
+<script src="{{ url_for('static', path='js/news.js') }}"></script>
+{% endblock %}

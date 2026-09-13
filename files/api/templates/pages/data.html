@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Flood Data | FloodWatch Nigeria{% endblock %}
+
+{% block content %}
+<section class="command-layout">
+  <aside class="command-sidebar" aria-label="Data access navigation">
+    <h2>System</h2>
+    <nav class="side-nav">
+      <a href="/dashboard">Overview <span>01</span></a>
+      <a class="active" href="/data">Flood data <span>02</span></a>
+      <a href="/projects">Projects <span>Public</span></a>
+      <a href="/contact">Support <span>Help</span></a>
+      <a href="/settings">Settings <span>Account</span></a>
+    </nav>
+    <div class="model-card">
+      <strong>Access level</strong>
+      <p>{% if can_operate %}Operator telemetry tools enabled{% else %}Public telemetry evidence view{% endif %}</p>
+      <div class="progress"><span style="width: 100%;"></span></div>
+    </div>
+  </aside>
+
+  <section class="command-main">
+    <div class="command-header">
+      <div>
+        <p class="eyebrow">Flood data access</p>
+        <h1>Telemetry evidence</h1>
+        <p>This core page reads stored simulated and hardware-ready telemetry from the API.</p>
+      </div>
+      <a class="btn btn-secondary" href="/dashboard">Back to map</a>
+    </div>
+
+    <article class="panel" style="padding: 22px;">
+      <div class="notice-box" style="margin-bottom: 16px;">
+        Data shown here is for project demonstration unless connected to verified field hardware and calibrated local thresholds.
+      </div>
+      <div class="data-toolbar" aria-label="Telemetry evidence controls">
+        <label for="telemetry-source-filter">Source</label>
+        <select id="telemetry-source-filter" class="clean-select">
+          <option value="all">All sources</option>
+          <option value="simulated">Simulated only</option>
+          <option value="hardware">Hardware only</option>
+        </select>
+        <button class="btn btn-secondary" id="telemetry-refresh" type="button">Refresh now</button>
+        <span id="telemetry-status" role="status" aria-live="polite">Loading telemetry...</span>
+      </div>
+      <section class="csv-upload-panel" aria-labelledby="csv-upload-title">
+        <h2 id="csv-upload-title">CSV telemetry upload</h2>
+        {% if can_operate %}
+          <p class="section-copy">Upload a UTF-8 CSV with the same fields used by the REST telemetry API. Each row is validated before storage.</p>
+          <form class="form-grid" id="telemetry-csv-form">
+            <div class="field">
+              <label for="telemetry-csv-file">Telemetry CSV file</label>
+              <input id="telemetry-csv-file" name="file" type="file" accept=".csv,text/csv" required>
+            </div>
+            <button class="btn btn-primary" type="submit">Upload CSV</button>
+          </form>
+        {% else %}
+          <p class="section-copy">CSV uploads require an operator/admin account. Public visitors can still inspect stored telemetry below.</p>
+        {% endif %}
+        <div id="csv-upload-status" role="status" aria-live="polite"></div>
+      </section>
+      <div class="table-wrap">
+        <table aria-label="Latest telemetry readings">
+          <thead>
+            <tr>
+              <th>Station</th>
+              <th>Source</th>
+              <th>Water</th>
+              <th>Danger</th>
+              <th>Signal</th>
+              <th>Timestamp</th>
+            </tr>
+          </thead>
+          <tbody id="telemetry-rows">
+            <tr><td colspan="6">Loading telemetry...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+  </section>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', path='js/data.js') }}"></script>
+{% endblock %}

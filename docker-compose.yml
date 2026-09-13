@@ -1,0 +1,32 @@
+services:
+  floodwatch-api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      FLOOD_EWS_DATABASE_URL: sqlite:////app/runtime/flood_data.db
+      FLOOD_EWS_RUNTIME_DIR: /app/runtime
+      FLOOD_EWS_INGEST_TOKEN: ${FLOOD_EWS_INGEST_TOKEN:-}
+      FLOOD_EWS_NEWS_PROVIDER: ${FLOOD_EWS_NEWS_PROVIDER:-auto}
+      FLOOD_EWS_NEWSAPI_KEY: ${FLOOD_EWS_NEWSAPI_KEY:-}
+      FLOOD_EWS_GNEWS_API_KEY: ${FLOOD_EWS_GNEWS_API_KEY:-}
+      FLOOD_EWS_RSS_FEEDS: ${FLOOD_EWS_RSS_FEEDS:-}
+      FLOODWATCH_CONTACT_EMAIL: ${FLOODWATCH_CONTACT_EMAIL:-}
+      FLOOD_EWS_EMAILJS_PUBLIC_KEY: ${FLOOD_EWS_EMAILJS_PUBLIC_KEY:-}
+      FLOOD_EWS_EMAILJS_SERVICE_ID: ${FLOOD_EWS_EMAILJS_SERVICE_ID:-}
+      FLOOD_EWS_EMAILJS_CONTACT_TEMPLATE_ID: ${FLOOD_EWS_EMAILJS_CONTACT_TEMPLATE_ID:-}
+      FLOOD_EWS_NEWS_QUERY: ${FLOOD_EWS_NEWS_QUERY:-flood OR rainfall Nigeria}
+      FLOOD_EWS_NEWS_LANGUAGE: ${FLOOD_EWS_NEWS_LANGUAGE:-en}
+      FLOOD_EWS_NEWS_COUNTRY: ${FLOOD_EWS_NEWS_COUNTRY:-}
+      FLOOD_EWS_SECURE_COOKIES: ${FLOOD_EWS_SECURE_COOKIES:-0}
+    volumes:
+      - floodwatch_data:/app/runtime
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5).read()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  floodwatch_data:

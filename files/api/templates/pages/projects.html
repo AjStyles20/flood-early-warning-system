@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Projects | FloodWatch Nigeria{% endblock %}
+
+{% block content %}
+<section class="container page-heading">
+  <a class="back-line" href="/">&larr; Back home</a>
+  <h1 class="page-title">Projects</h1>
+  <p class="hero-copy">Deployment ideas for communities, universities, agencies, estates, and sponsors.</p>
+</section>
+
+<section class="container section">
+  <div class="card-grid">
+    <article class="card">
+      <h2>Community River Gauge</h2>
+      <p>Water-level node, rainfall input, battery status, and REST/MQTT telemetry for flood-prone communities.</p>
+      <p><a class="btn btn-primary" href="/dashboard">Open dashboard</a></p>
+    </article>
+    <article class="card">
+      <h2>Campus Drainage Watch</h2>
+      <p>Monitored drainage points for universities or estates, connected to the same source-aware dashboard.</p>
+      <p><a class="btn btn-secondary" href="/contact">Discuss partnership</a></p>
+    </article>
+    <article class="card">
+      <h2>Data Collaboration</h2>
+      <p>Use verified telemetry and local calibration to improve the model beyond synthetic demonstration data.</p>
+      <p><a class="btn btn-secondary" href="/data">View flood data</a></p>
+    </article>
+    <article class="card">
+      <h2>Preparedness Outreach</h2>
+      <p>Community education, safety-language review, and accessibility testing for real user groups.</p>
+      <p><a class="btn btn-secondary" href="/news">Read updates</a></p>
+    </article>
+  </div>
+</section>
+{% endblock %}

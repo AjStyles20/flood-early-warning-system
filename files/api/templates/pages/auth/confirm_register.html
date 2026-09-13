@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Confirm Account | FloodWatch Nigeria{% endblock %}
+
+{% block content %}
+<section class="form-card panel" aria-labelledby="confirm-title">
+  <a class="back-line" href="/register">&larr; Back to registration</a>
+  <h1 id="confirm-title" class="page-title">Confirm your account details</h1>
+  <p class="section-copy">
+    Please review these details before the account is created. The account is not saved until you confirm below.
+  </p>
+
+  <div class="notice-box" aria-label="Registration details to confirm">
+    <p><strong>First name:</strong> {{ first_name }}</p>
+    <p><strong>Last name:</strong> {{ last_name }}</p>
+    <p><strong>Email:</strong> {{ email }}</p>
+    <p><strong>Phone number:</strong> {{ phone_number }}</p>
+    <p><strong>Password:</strong> {{ masked_password }} <span aria-label="Password hidden">(hidden)</span></p>
+  </div>
+
+  <form class="form-grid" method="post" action="/register" style="margin-top: 18px;">
+    <input type="hidden" name="pending_token" value="{{ pending_token }}">
+    <input type="hidden" name="next_path" value="{{ next_path }}">
+    <input type="hidden" name="confirm" value="yes">
+    <button class="btn btn-primary" type="submit">Create account now</button>
+    <button class="btn btn-secondary" type="button" onclick="history.back()">Edit details</button>
+  </form>
+
+  <p class="section-copy" style="margin-top: 16px;">
+    Security note: this confirmation expires after {{ expiry_minutes }} minutes. The password itself is not displayed or placed in a hidden form field.
+  </p>
+</section>
+{% endblock %}

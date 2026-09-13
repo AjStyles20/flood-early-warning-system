@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Create Account | FloodWatch Nigeria{% endblock %}
+
+{% block content %}
+<section class="form-card panel" aria-labelledby="register-title">
+  <a class="back-line" href="/">&larr; Back home</a>
+  <h1 id="register-title" class="page-title">Create Account</h1>
+  <p class="section-copy">
+    Create access for live IoT monitoring, source switching, flood data review, and alert-centre pages.
+    You will review your details before the account is officially created.
+  </p>
+
+  {% if form_error %}
+    <div class="error-box" role="alert">{{ form_error }}</div>
+  {% endif %}
+
+  <form class="form-grid" method="post" action="/register">
+    <input type="hidden" name="next_path" value="{{ next_path }}">
+    <div class="form-row">
+      <div class="field">
+        <label for="first-name">First name</label>
+        <input id="first-name" type="text" name="first_name" placeholder="Ada" value="{{ submitted_first_name or '' }}" autocomplete="given-name" required>
+      </div>
+      <div class="field">
+        <label for="last-name">Last name</label>
+        <input id="last-name" type="text" name="last_name" placeholder="Okafor" value="{{ submitted_last_name or '' }}" autocomplete="family-name" required>
+      </div>
+    </div>
+    <div class="field">
+      <label for="email">Email address</label>
+      <input id="email" type="email" name="email" placeholder="ada@example.com" value="{{ submitted_email or '' }}" autocomplete="email" required>
+    </div>
+    <div class="field">
+      <label for="phone-number">Phone number for SMS-capable contact</label>
+      <input id="phone-number" type="tel" name="phone_number" placeholder="+2348012345678" value="{{ submitted_phone_number or '' }}" autocomplete="tel" required>
+      <small>Email and SMS are simulated in this prototype until real providers are configured. WhatsApp is saved as a future preference, not active delivery.</small>
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" type="password" name="password" placeholder="At least 8 characters" autocomplete="new-password" minlength="8" required>
+    </div>
+    <label style="display: flex; gap: 10px; align-items: flex-start;">
+      <input type="checkbox" name="terms_accepted" value="yes" required>
+      <span>I agree to the <a href="/contact#terms">Terms</a> and <a href="/contact#privacy">Privacy Policy</a>.</span>
+    </label>
+    <button class="btn btn-primary" type="submit">Review details</button>
+  </form>
+
+  <p class="section-copy" style="margin-top: 16px;">Google sign-in is disabled until real OAuth credentials are configured.</p>
+  <p class="section-copy" style="margin-top: 18px;">Already have an account? <a href="/login?next={{ next_path }}">Log in</a>.</p>
+</section>
+{% endblock %}

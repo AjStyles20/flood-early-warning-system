@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Contact | FloodWatch Nigeria{% endblock %}
+
+{% block content %}
+<section class="container page-heading">
+  <a class="back-line" href="/">&larr; Back home</a>
+  <h1 class="page-title">Contact Us</h1>
+  <p class="hero-copy">Get in touch with questions, observations about the website, or partnership enquiries.</p>
+</section>
+
+<section class="container section">
+  <div class="content-grid">
+    <article class="panel" style="padding: 28px;">
+      <h2>Send a message</h2>
+      <p id="contact-delivery-info">
+        {% if emailjs_configured %}
+          When you submit, your name, email address, subject and message are sent through EmailJS to the project team.
+        {% elif contact_email_configured %}
+          Submitting opens a draft in your email application. Review and send it there.
+        {% else %}
+          The contact service is not connected yet. Please check again later.
+        {% endif %}
+      </p>
+      <form id="contact-form" class="form-grid" method="post" action="/contact" aria-describedby="contact-delivery-info">
+        <div class="form-row">
+          <div class="field">
+            <label for="name">Full name</label>
+            <input id="name" name="name" type="text" placeholder="Your name" autocomplete="name" maxlength="160" required>
+          </div>
+          <div class="field">
+            <label for="email">Email address</label>
+            <input id="email" name="email" type="email" placeholder="your@email.com" autocomplete="email" maxlength="254" required>
+          </div>
+        </div>
+        <div class="field">
+          <label for="subject">Subject</label>
+          <input id="subject" name="subject" type="text" placeholder="What is this about?" maxlength="200" required>
+        </div>
+        <div class="field">
+          <label for="message">Message</label>
+          <textarea id="message" name="message" rows="6" placeholder="Write your message here" maxlength="5000" required></textarea>
+        </div>
+        <button id="contact-submit" class="btn btn-primary" type="submit" {% if not emailjs_configured and not contact_email_configured %}disabled{% endif %}>{% if emailjs_configured %}Send message{% else %}Open email draft{% endif %}</button>
+        <p id="contact-status" role="status" aria-live="polite" aria-atomic="true"></p>
+        <noscript>This form needs JavaScript. If a contact email is listed, you can use that email link instead.</noscript>
+      </form>
+    </article>
+
+    <aside style="display: grid; gap: 16px;">
+      <section class="card">
+        <h2>Office</h2>
+        <p>FloodWatch Nigeria<br>Abuja, Nigeria</p>
+      </section>
+      <section class="card">
+        <h2>Email</h2>
+        {% if contact_email_configured %}
+          <p><a href="mailto:{{ contact_email }}">{{ contact_email }}</a></p>
+        {% else %}
+          <p id="contact-configuration">A direct contact email has not been listed yet.</p>
+        {% endif %}
+      </section>
+      <section class="card">
+        <h2>Connect with us</h2>
+        {% if contact_email_configured %}
+          <p><a href="mailto:{{ contact_email }}">Email</a></p>
+        {% else %}
+          <p>External contact links are not configured in this local prototype.</p>
+        {% endif %}
+      </section>
+      <section class="card" id="newsletter">
+        <h2>Newsletter</h2>
+        <form class="form-grid" data-newsletter-form>
+          <div class="field">
+            <label for="contact-newsletter-email">Email address</label>
+            <input id="contact-newsletter-email" type="email" name="email" placeholder="your@email.com" required>
+          </div>
+          <button class="btn btn-secondary" type="submit">Subscribe</button>
+        </form>
+      </section>
+    </aside>
+  </div>
+</section>
+
+<section class="container section">
+  <div class="card-grid">
+    <article class="card" id="privacy"><h2>Privacy Policy</h2><p>Placeholder policy. Replace with your final privacy notice before real deployment.</p></article>
+    <article class="card" id="terms"><h2>Terms</h2><p>Placeholder terms. Replace with your final terms before accepting real customers.</p></article>
+    <article class="card" id="disclaimer"><h2>Safety Disclaimer</h2><p>FloodWatch provides decision support only. Always follow official guidance.</p></article>
+    <article class="card"><h2>Contact service</h2><p>{% if emailjs_configured %}EmailJS contact sending is configured. Submission status appears beside the form; provider acceptance does not confirm arrival in the inbox.{% elif contact_email_configured %}Email drafts are available through your email application.{% else %}Contact sending is not connected yet.{% endif %}</p></article>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script id="emailjs-config" type="application/json">{{ emailjs_config|tojson }}</script>
+<script src="{{ url_for('static', path='js/contact.js') }}"></script>
+{% endblock %}
