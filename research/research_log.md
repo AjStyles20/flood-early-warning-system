@@ -38,3 +38,6 @@ RQ1–RQ4, baseline philosophy, evaluation, evidence separation, falsification a
 
 ## RL-013 — Formal research baseline
 16 September 2026: Research Baseline v1.0 established. Documentation/provenance workflow initiated. Next scientific gate: DQR-001 after first observational dataset arrives.
+
+## RL-014 — Hard kill search on graceful degradation and complexity–utility
+16 September 2026: Candidate C and Candidate E attacked against flood and adjacent-domain prior art. Generic graceful degradation/fault tolerance is established; C narrowed to a quantified warning-capability degradation experiment. Generic Pareto/cost-performance/minimum-viable-data optimisation is also established; E narrowed to a flood-specific empirical question about the smallest physically deployable sensing-and-prediction configuration that preserves predefined warning utility. No novelty claim frozen. Detailed record: `research/adversarial_tournament_c_e.md`.
