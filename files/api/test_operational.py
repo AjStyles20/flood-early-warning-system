@@ -162,8 +162,7 @@ class OperationsTest(unittest.TestCase):
         writer.writerow({**data, "danger_level_m": 0})
         writer.writerow({**data, "water_level_m": "inf"})
         # Overfull rows used to raise AttributeError on DictReader's list value.
-        contents = output.getvalue() + ",".join(str(v) for v in data.values()) + ",unexpected
-"
+        contents = output.getvalue() + ",".join(str(v) for v in data.values()) + ",unexpected\\n"
         url = "/api/telemetry/upload-csv"
         files = {"file": ("evidence.csv", contents.encode(), "text/csv")}
         self.assertEqual(self.guest.post(url, files=files).status_code, 401)
@@ -177,11 +176,9 @@ class OperationsTest(unittest.TestCase):
 1,2", 422), ("a.csv", b"\xff", 422), ("a.csv", b"x" * 2_000_001, 413)):
             self.assertEqual(self.operator.post(url, files={"file": (name, content)}).status_code, expected)
         self.assertEqual(self.guest.get("/api/telemetry?limit=-1").status_code, 422)
-        malformed = ','.join(data) + '
-"unclosed quote'
+        malformed = ','.join(data) + '\\n"unclosed quote'
         self.assertEqual(self.operator.post(url, files={"file": ("malformed.csv", malformed.encode())}).status_code, 422)
-        oversized_field = ','.join(data) + '
-' + 'x' * 140000
+        oversized_field = ','.join(data) + '\\n' + 'x' * 140000
         self.assertEqual(self.operator.post(url, files={"file": ("large-field.csv", oversized_field.encode())}).status_code, 422)
 
     def test_ingest_key_and_sensor_validation(self):
