@@ -919,7 +919,7 @@ function popupContent(station) {
   return `
     <strong>${escapeHtml(station.station_name)}</strong><br>
     <span>${escapeHtml(station.risk_level)} risk - ${escapeHtml(station.data_source)} source</span><br>
-    Water: ${escapeHtml(formatNumber(station.water_level_m, 2))} m / danger ${escapeHtml(formatNumber(station.danger_level_m, 2))} m<br>
+    Water: ${escapeHtml(formatNumber(station.water_level_m, 2))} m / configured threshold ${escapeHtml(formatNumber(station.danger_level_m, 2))} m<br>\n    Threshold type: ${escapeHtml(station.threshold_type || "unknown")}<br>
     Rainfall: ${escapeHtml(formatNumber(station.rainfall_mm_hr, 2))} mm/hr<br>
     Flow: ${escapeHtml(formatNumber(station.flow_rate_m3s, 2))} m3/s<br>
     Model probability: ${escapeHtml(formatProbability(station.ml_probability))}<br>
@@ -1120,7 +1120,7 @@ function renderSelectedStationPanel(visibleStations, totalCount) {
         </div>
         <div class="station-detail-grid">
           <div><span>Water level</span><strong>${escapeHtml(formatNumber(station.water_level_m, 2))} m</strong></div>
-          <div><span>Danger level</span><strong>${escapeHtml(formatNumber(station.danger_level_m, 2))} m</strong></div>
+          <div><span>Configured threshold</span><strong>${escapeHtml(formatNumber(station.danger_level_m, 2))} m</strong></div>\n          <div><span>Threshold type</span><strong>${escapeHtml(station.threshold_type || "unknown")}</strong></div>
           <div><span>Rainfall</span><strong>${escapeHtml(formatNumber(station.rainfall_mm_hr, 2))} mm/hr</strong></div>
           <div><span>Flow rate</span><strong>${escapeHtml(formatNumber(station.flow_rate_m3s, 2))} m3/s</strong></div>
           <div><span>ML probability</span><strong>${escapeHtml(formatProbability(station.ml_probability))}</strong></div>
