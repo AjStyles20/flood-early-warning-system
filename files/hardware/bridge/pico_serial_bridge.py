@@ -13,7 +13,7 @@ API_URL = "http://127.0.0.1:8010/api/telemetry"
 def build_payload(station_id, water_level_m):
     return {
         "station_id": station_id,
-        "station_name": "Prototype Hardware Gauge",
+        "station_name": "[CONTROLLED PROTOTYPE] Hardware Gauge",
         "data_source": "hardware",
 
         "lat": 9.0579,
@@ -23,7 +23,7 @@ def build_payload(station_id, water_level_m):
         .isoformat()
         .replace("+00:00", "Z"),
 
-        "water_level_m": water_level_m,
+        "water_level_m": water_level_m,  # Stage-like controlled analogue value; not a Lokoja field observation.
         "danger_level_m": 2.0,
         "threshold_type": "prototype_demo",
 
