@@ -20,13 +20,13 @@ jobs:
           python -m compileall -q files/api files/flood_sensor_simulator.py
           for script in files/api/static/js/*.js; do node --check "$script"; done
           node files/api/test_frontend.cjs
-      - name: Train and test
+      - name: Regression and contract tests
         working-directory: files/api
         run: |
           python -u test_model_training.py
-          python -u train_model.py
           python -u test_api.py
           python -u test_operational.py
+          python -u test_http_smoke.py
       - name: Start service and check HTTP health
         working-directory: files/api
         run: |
