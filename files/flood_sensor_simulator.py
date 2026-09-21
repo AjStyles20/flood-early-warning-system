@@ -3,10 +3,9 @@
 Simulated Multi-Station IoT Flood Sensor Network
 ==================================================
 
-Stands in for a physical ESP32 + water-level/rainfall sensor deployment.
-Publishes telemetry over MQTT in the same JSON shape a real ESP32 node
-would send, so the prediction model / GIS dashboard / notification layer
-downstream do not need to know whether the data is simulated or real.
+Generates controlled synthetic telemetry for software integration, dashboard,
+alert-workflow and scenario testing. It is not a hydrological model and its
+outputs are not observational evidence of Lokoja or any named Nigerian gauge.
 
 If no MQTT broker is reachable, it automatically falls back to writing
 each reading to a local JSONL log (data/simulated_telemetry.jsonl) and
@@ -89,7 +88,7 @@ def generate_reading(station, tick, total_ticks, mode):
     if mode == "flood":
         # Ramp water level from baseline toward (and slightly past) the
         # danger threshold over the course of the run, with noise, so the
-        # downstream prediction model has a realistic rising-limb signal.
+        # controlled system receives a reproducible rising synthetic signal.
         progress = tick / max(total_ticks - 1, 1)
         ramp = (danger - baseline) * 1.15 * (progress ** 1.4)
         noise = random.uniform(-0.05, 0.05)
@@ -104,7 +103,7 @@ def generate_reading(station, tick, total_ticks, mode):
 
     return {
         "station_id": station["station_id"],
-        "station_name": station["name"],
+        "station_name": "[SIMULATED] " + station["name"],
         # Makes simulator evidence visibly different from physical hardware.
         "data_source": "simulated",
         "lat": station["lat"],
@@ -112,6 +111,7 @@ def generate_reading(station, tick, total_ticks, mode):
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "water_level_m": water_level,
         "danger_level_m": danger,
+        "threshold_type": "prototype_demo",
         "rainfall_mm_hr": rainfall,
         "flow_rate_m3s": flow_rate,
         "battery_pct": round(max(5, 100 - tick * random.uniform(0.05, 0.15)), 1),
