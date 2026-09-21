@@ -162,7 +162,8 @@ class OperationsTest(unittest.TestCase):
         writer.writerow({**data, "danger_level_m": 0})
         writer.writerow({**data, "water_level_m": "inf"})
         # Overfull rows used to raise AttributeError on DictReader's list value.
-        contents = output.getvalue() + ",".join(str(v) for v in data.values()) + ",unexpected\n"
+        contents = output.getvalue() + ",".join(str(v) for v in data.values()) + ",unexpected
+"
         url = "/api/telemetry/upload-csv"
         files = {"file": ("evidence.csv", contents.encode(), "text/csv")}
         self.assertEqual(self.guest.post(url, files=files).status_code, 401)
@@ -172,12 +173,15 @@ class OperationsTest(unittest.TestCase):
         self.assertEqual((response.json()["accepted"], response.json()["rejected"]), (1, 3))
         rows = self.guest.get("/api/telemetry?data_source=hardware").json()
         self.assertTrue(any(row["station_id"] == "CSV-01" for row in rows))
-        for name, content, expected in (("a.txt", b"abc", 422), ("a.csv", b"x,y\n1,2", 422), ("a.csv", b"\xff", 422), ("a.csv", b"x" * 2_000_001, 413)):
+        for name, content, expected in (("a.txt", b"abc", 422), ("a.csv", b"x,y
+1,2", 422), ("a.csv", b"\xff", 422), ("a.csv", b"x" * 2_000_001, 413)):
             self.assertEqual(self.operator.post(url, files={"file": (name, content)}).status_code, expected)
         self.assertEqual(self.guest.get("/api/telemetry?limit=-1").status_code, 422)
-        malformed = ','.join(data) + '\n"unclosed quote'
+        malformed = ','.join(data) + '
+"unclosed quote'
         self.assertEqual(self.operator.post(url, files={"file": ("malformed.csv", malformed.encode())}).status_code, 422)
-        oversized_field = ','.join(data) + '\n' + 'x' * 140000
+        oversized_field = ','.join(data) + '
+' + 'x' * 140000
         self.assertEqual(self.operator.post(url, files={"file": ("large-field.csv", oversized_field.encode())}).status_code, 422)
 
     def test_ingest_key_and_sensor_validation(self):
@@ -204,14 +208,18 @@ class OperationsTest(unittest.TestCase):
         self.assertIn("Saved holdout evaluation snapshot", extracted)
         self.assertIn("FP=", extracted)
         self.assertIn("FN=", extracted)
-        self.assertEqual(self.guest.get("/api/model-evaluation/report.pdf").status_code, 401)\n        model_pdf = self.operator.get("/api/model-evaluation/report.pdf")\n        self.assertEqual(model_pdf.status_code, 200)\n        text = " ".join(page.extract_text() for page in PdfReader(io.BytesIO(model_pdf.content)).pages)
+        self.assertEqual(self.guest.get("/api/model-evaluation/report.pdf").status_code, 401)
+        model_pdf = self.operator.get("/api/model-evaluation/report.pdf")
+        self.assertEqual(model_pdf.status_code, 200)
+        text = " ".join(page.extract_text() for page in PdfReader(io.BytesIO(model_pdf.content)).pages)
         self.assertIn("FP=", text)
         self.assertIn("FN=", text)
         long_pdf = main.simple_pdf("Pagination test", ["Complete line " + str(i) for i in range(120)])
         reader = PdfReader(io.BytesIO(long_pdf))
         self.assertGreater(len(reader.pages), 1)
         self.assertIn("Complete line 119", reader.pages[-1].extract_text())
-        self.assertEqual(self.guest.get("/api/model-evaluation").status_code, 401)\n        metrics = self.operator.get("/api/model-evaluation").json()
+        self.assertEqual(self.guest.get("/api/model-evaluation").status_code, 401)
+        metrics = self.operator.get("/api/model-evaluation").json()
         for result in metrics["results"].values():
             total = sum(result[key] for key in ("true_positive", "true_negative", "false_positive", "false_negative"))
             self.assertEqual(total, metrics["test_samples"])
