@@ -157,6 +157,8 @@ class TelemetryRecord(Base):
     # Core sensor metrics (using Float because they will have decimals, e.g., 2.14 meters).
     water_level_m = Column(Float)
     danger_level_m = Column(Float)
+    # Every legacy threshold is explicitly typed; existing rows migrate as demo.
+    threshold_type = Column(String(32), nullable=False, server_default="prototype_demo")
     rainfall_mm_hr = Column(Float)
     flow_rate_m3s = Column(Float)
     battery_pct = Column(Float)
@@ -186,9 +188,11 @@ class TelemetryCreate(BaseModel):
     timestamp: datetime # Pydantic is smart enough to ensure they send a valid date/time format.
     water_level_m: float = Field(ge=0)
     danger_level_m: float = Field(gt=0)
-    rainfall_mm_hr: float = Field(ge=0)
-    flow_rate_m3s: float = Field(ge=0)
-    battery_pct: float = Field(ge=0, le=100)
+    threshold_type: Literal["official_operational", "research_statistical", "prototype_demo"] = "prototype_demo"
+    # Optional fields distinguish "not measured" from a genuine zero.
+    rainfall_mm_hr: float | None = Field(default=None, ge=0)
+    flow_rate_m3s: float | None = Field(default=None, ge=0)
+    battery_pct: float | None = Field(default=None, ge=0, le=100)
     signal: str = Field(min_length=1, max_length=32)
 
 # This class defines the data we SEND BACK out to our Dashboard (via a GET request).
@@ -218,10 +222,10 @@ class RiskStatus(BaseModel):
     timestamp: datetime
     water_level_m: float
     danger_level_m: float
-    rainfall_mm_hr: float
-    flow_rate_m3s: float
+    rainfall_mm_hr: float | None
+    flow_rate_m3s: float | None
     rate_of_rise_m: float = Field(description="Water-level change in metres since the previous reading for the same station.")
-    battery_pct: float
+    battery_pct: float | None
     signal: str
     risk_level: str
     risk_ratio: float
