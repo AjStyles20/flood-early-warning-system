@@ -10,15 +10,15 @@ The system is decision support only. It does not replace official emergency agen
 
 The user has authorized an operational-platform extension: operator/admin roles, CSV input, persistent alert review, model charts/PDF reports, configurable external news, and deployment/CI configuration. See the [operational guide](files/docs/operational_platform_guide.md) for current behavior and test commands, and [provider setup](files/docs/provider_setup.md) for the required keys and limitations. This product authorization is separate from supervisor approval of revised academic objectives.
 
-Core approved pipeline:
+Current engineering pipeline:
 
-1. Sensor or simulator sends telemetry.
-2. FastAPI validates the reading.
-3. SQLAlchemy stores it in file-based SQLite.
-4. The risk engine assigns Low, Moderate, High, or Severe status.
-5. The ML wrapper adds future-risk probability from the trained model.
-6. The Leaflet/OpenStreetMap dashboard displays map markers and an accessible text station list.
-7. Simulated web, email, and SMS alerts are logged for alert-worthy conditions.
+1. A local prototype node or controlled simulator sends telemetry.
+2. FastAPI validates and stores the reading.
+3. The current-state engine evaluates configured threshold bands.
+4. The dashboard displays source-aware status and the alert workflow.
+5. The saved synthetic ML model may be displayed only for simulated development records; it does not determine the current threshold state and is not applied to physical observations.
+
+Scientific research follows a separate path: source provenance -> raw-data audit -> accepted observations -> preprocessing -> target/split definition -> experiment -> evaluation. Experiment 001 remains blocked until its protocol is released.
 
 Parked until supervisor approval:
 
@@ -34,7 +34,7 @@ Project/
 |-- files/
 |   |-- api/        active FastAPI backend, Jinja2 pages, static assets, tests, model, and database
 |   |-- data/       simulator fallback telemetry log
-|   |-- docs/       engineering log and structure audit
+|   |-- docs/       engineering log, structure audit, and alignment specification\n|   |-- research/   historical research boundary and provenance manifests
 |   |-- archive/    recoverable legacy prototype files
 |   `-- flood_sensor_simulator.py
 |-- implementation_plan.md
@@ -60,8 +60,9 @@ From PowerShell:
 ```powershell
 cd C:\Users\User\Documents\Word_Document\Project\files\api
 py -m pip install -r .\requirements.txt
-py -u .\train_model.py
-py -u .\test_model_training.py
+py -u .\test_observation_contract.py
+py -u .\test_telemetry_adapter.py
+py -u .\test_risk_separation.py
 py -u .\test_api.py
 py -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
 ```
