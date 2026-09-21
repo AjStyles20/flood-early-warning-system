@@ -2,7 +2,7 @@
 
 This guide explains how a physical sensor node can connect to the current FloodWatch backend without changing the approved core system.
 
-The important idea is simple: the simulator and hardware use the same telemetry shape. The dashboard can switch between `simulated`, `hardware`, and `hybrid` source modes because each reading carries a `data_source` value.
+The simulator and hardware still share a migration-compatible telemetry envelope, but their evidence is not scientifically interchangeable. Each reading carries `data_source`, and unavailable physical measurements are represented as `null`, not fabricated numeric zeroes.
 
 2026-09-08 operational update: operators can also upload evidence through `POST /api/telemetry/upload-csv` or the Flood Data page. A source label is supplied provenance, not hardware authentication. A deployment may set `FLOOD_EWS_INGEST_TOKEN`, in which case direct sensor POSTs must include an `X-Ingest-Token` header. The existing simulator does not yet attach that optional header automatically; leave the key unset for its local demo or update the client before enabling it. Keep public deployments protected. See [operational_platform_guide.md](operational_platform_guide.md) for limits and role setup. Physical sensor accuracy/calibration has not been tested by these software checks.
 
@@ -10,15 +10,15 @@ The important idea is simple: the simulator and hardware use the same telemetry 
 
 ```mermaid
 flowchart TD
-    Sensors[Water/rain/flow sensing components] --> Node[Microcontroller node]
+    Sensor[Locally justified physical input] --> Node[Microcontroller node]
     Node --> JSON[Telemetry JSON payload]
     JSON --> API[POST /api/telemetry]
     API --> DB[(SQLite flood_data.db)]
-    DB --> Risk[Risk engine + ML wrapper]
+    DB --> Risk[Current-state threshold assessment]
     Risk --> Dashboard[GIS dashboard]
 ```
 
-The backend does not need to know whether a reading came from the simulator or a real device. It only needs a valid JSON payload.
+The backend must preserve whether a reading is simulated or physical. The saved synthetic ML model is not applied to hardware observations.
 
 ## 2. Suggested component categories
 
@@ -26,13 +26,12 @@ These are categories, not a compulsory shopping list:
 
 - microcontroller with Wi-Fi support, such as an ESP32-class board;
 - water-level sensor, such as ultrasonic, pressure, or float-based sensing;
-- rainfall input, such as a tipping-bucket rain gauge or simulated rainfall reading during early prototype testing;
-- optional flow-rate sensor or estimated flow-rate calculation;
+- optional local rainfall sensor only if the physical-validation plan justifies it;\n- no direct flow sensor is required by the current evidence gate;
 - stable power source, battery backup, and voltage regulation;
 - waterproof enclosure;
 - optional status indicators for power/network/sensor state.
 
-For the undergraduate prototype, a real node can begin with only a microcontroller and one water-level sensor, while rainfall and flow values are estimated or manually calibrated during testing. The payload must still include all required fields because the API validates the full schema.
+For the current controlled prototype, the Pico analogue input represents stage-like change for integration testing. Rainfall, discharge/flow and battery state must be omitted or sent as `null` when they are not physically measured. They must not be estimated merely to satisfy the API.
 
 ## 3. Required API endpoint
 
@@ -53,16 +52,17 @@ application/json
 ```json
 {
   "station_id": "HW-01",
-  "station_name": "Prototype Hardware Gauge",
+  "station_name": "[CONTROLLED PROTOTYPE] Hardware Gauge",
   "data_source": "hardware",
   "lat": 9.0579,
   "lon": 7.4951,
   "timestamp": "2026-09-03T12:00:00Z",
   "water_level_m": 1.42,
   "danger_level_m": 2.0,
-  "rainfall_mm_hr": 8.5,
-  "flow_rate_m3s": 12.1,
-  "battery_pct": 91.0,
+  "threshold_type": "prototype_demo",
+  "rainfall_mm_hr": null,
+  "flow_rate_m3s": null,
+  "battery_pct": null,
   "signal": "online"
 }
 ```
@@ -80,16 +80,17 @@ Use this command to simulate a hardware node from PowerShell while the API serve
 ```powershell
 $HardwareReading = @{
   station_id = "HW-01"
-  station_name = "Prototype Hardware Gauge"
+  station_name = "[CONTROLLED PROTOTYPE] Hardware Gauge"
   data_source = "hardware"
   lat = 9.0579
   lon = 7.4951
   timestamp = "2026-09-03T12:00:00Z"
   water_level_m = 1.42
   danger_level_m = 2.0
-  rainfall_mm_hr = 8.5
-  flow_rate_m3s = 12.1
-  battery_pct = 91.0
+  threshold_type = "prototype_demo"
+  rainfall_mm_hr = $null
+  flow_rate_m3s = $null
+  battery_pct = $null
   signal = "online"
 } | ConvertTo-Json
 
@@ -148,7 +149,7 @@ This gives the project two demonstration options:
 
 Use this wording when explaining hardware readiness:
 
-> The system is hardware-ready because a physical node can send the same JSON telemetry shape as the simulator. The tested backend accepts `data_source: "hardware"`, stores the reading, and displays it on the same accessible GIS dashboard.
+> The physical integration path is working: the Pico can send a controlled stage-like analogue value through the serial bridge to FastAPI, storage, and the dashboard. This demonstrates sensing-to-software integration. It is not a Lokoja field observation, and unmeasured rainfall, discharge, and battery values are kept unavailable rather than fabricated.
 
 Avoid saying:
 
