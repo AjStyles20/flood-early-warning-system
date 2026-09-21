@@ -1,4 +1,9 @@
-"""Explainable current-state threshold assessment for FloodWatch.\n\nForecast probability is retained as separate information only. It is never\ncombined numerically with a threshold ratio because the two quantities have\ndifferent meanings and scales.\n"""
+"""Explainable current-state threshold assessment for FloodWatch.
+
+Forecast probability is retained as separate information only. It is never
+combined numerically with a threshold ratio because the two quantities have
+different meanings and scales.
+"""
 
 from dataclasses import dataclass
 from typing import Optional
@@ -65,7 +70,12 @@ def classify(
     ml_probability: Optional[float] = None,
     language: str = "en",
 ) -> RiskAssessment:
-    """Assess current threshold state; keep any ML probability informational.\n\n    ml_probability is accepted for backward-compatible display only. It does\n    not raise or lower the current-state tier. A future validated forecast\n    policy must define its own decision semantics explicitly.\n    """
+    """Assess current threshold state; keep any ML probability informational.
+
+    ml_probability is accepted for backward-compatible display only. It does
+    not raise or lower the current-state tier. A future validated forecast
+    policy must define its own decision semantics explicitly.
+    """
     if danger_level_m <= 0:
         raise ValueError("danger_level_m must be positive")
     if ml_probability is not None and not 0.0 <= ml_probability <= 1.0:
@@ -75,11 +85,8 @@ def classify(
     messages = _MESSAGES.get(selected_language, _MESSAGES["en"])
 
     ratio = round(water_level_m / danger_level_m, 4)
-    # The higher signal wins. This permits a validated model to flag a rising
-    # trend early, while retaining the directly explainable physical threshold.
-    score = max(ratio, ml_probability) if ml_probability is not None else ratio
     level = max(
-        (name for name, threshold in _THRESHOLDS.items() if score >= threshold),
+        (name for name, threshold in _THRESHOLDS.items() if ratio >= threshold),
         key=lambda name: _THRESHOLDS[name],
     )
     probability = round(ml_probability, 4) if ml_probability is not None else None
