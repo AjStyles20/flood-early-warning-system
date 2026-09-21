@@ -1,4 +1,4 @@
-"""Explainable, safety-first conversion of measurements into risk guidance."""
+"""Explainable current-state threshold assessment for FloodWatch.\n\nForecast probability is retained as separate information only. It is never\ncombined numerically with a threshold ratio because the two quantities have\ndifferent meanings and scales.\n"""
 
 from dataclasses import dataclass
 from typing import Optional
@@ -25,10 +25,10 @@ _THRESHOLDS = {"Low": 0.0, "Moderate": 0.5, "High": 0.75, "Severe": 1.0}
 # that residents should follow official guidance.
 _MESSAGES = {
     "en": {
-        "Low": "No immediate flood risk detected. Continue normal monitoring and follow official guidance.",
-        "Moderate": "Rising water or heavy rainfall has been detected. Prepare emergency items and follow official guidance.",
-        "High": "High flood-risk conditions detected. Avoid waterways, protect essential items, and follow official guidance.",
-        "Severe": "Critical flood-risk conditions detected. Emergency responders should verify conditions; residents should follow official guidance.",
+        "Low": "The current local level is below the configured threshold bands. Continue monitoring and follow official guidance.",
+        "Moderate": "The current local level has entered the moderate threshold band. Continue close monitoring and follow official guidance.",
+        "High": "The current local level has entered the high threshold band. Exercise caution around waterways and follow official guidance.",
+        "Severe": "The current local level has reached or exceeded the configured threshold. Verify conditions and follow official guidance.",
     },
     "ha": {
         "Low": "Babu hadarin ambaliya na nan take. Ci gaba da kulawa kuma bi jagorancin hukumomi.",
@@ -65,7 +65,7 @@ def classify(
     ml_probability: Optional[float] = None,
     language: str = "en",
 ) -> RiskAssessment:
-    """Classify a reading using transparent thresholds and an optional ML signal."""
+    """Assess current threshold state; keep any ML probability informational.\n\n    ml_probability is accepted for backward-compatible display only. It does\n    not raise or lower the current-state tier. A future validated forecast\n    policy must define its own decision semantics explicitly.\n    """
     if danger_level_m <= 0:
         raise ValueError("danger_level_m must be positive")
     if ml_probability is not None and not 0.0 <= ml_probability <= 1.0:
