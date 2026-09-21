@@ -1425,7 +1425,7 @@ def create_telemetry(reading: models.TelemetryCreate, db: Session = Depends(get_
     return db_record
 
 
-@app.get("/api/telemetry", response_model=list[models.TelemetryResponse], dependencies=[Depends(require_role("viewer"))])
+@app.get("/api/telemetry", response_model=list[models.TelemetryResponse])
 def read_telemetry(
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=100, ge=1, le=1000),
@@ -1542,7 +1542,7 @@ async def upload_telemetry_csv(
     return {"accepted": accepted, "rejected": len(errors), "errors": errors[:25]}
 
 
-@app.get("/api/risk-status", response_model=list[models.RiskStatus], dependencies=[Depends(require_role("viewer"))])
+@app.get("/api/risk-status", response_model=list[models.RiskStatus])
 def read_risk_status(
     data_source: Literal["simulated", "hardware", "hybrid"] | None = Query(default="hybrid"),
     language: Literal["en", "ha", "fr", "ig", "yo"] = Query(default="en"),
@@ -1591,7 +1591,7 @@ def read_risk_status(
 def get_recent_alerts(
     limit: int = 15,
     db: Session = Depends(get_db),
-    actor: models.User = Depends(require_role("viewer")),
+    actor: models.User | None = Depends(get_optional_user),
 ):
     """Return recent alert events for the situation room.
 
