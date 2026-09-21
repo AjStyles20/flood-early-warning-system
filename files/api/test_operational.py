@@ -172,8 +172,7 @@ class OperationsTest(unittest.TestCase):
         self.assertEqual((response.json()["accepted"], response.json()["rejected"]), (1, 3))
         rows = self.guest.get("/api/telemetry?data_source=hardware").json()
         self.assertTrue(any(row["station_id"] == "CSV-01" for row in rows))
-        for name, content, expected in (("a.txt", b"abc", 422), ("a.csv", b"x,y
-1,2", 422), ("a.csv", b"\xff", 422), ("a.csv", b"x" * 2_000_001, 413)):
+        for name, content, expected in (("a.txt", b"abc", 422), ("a.csv", b"x,y\\n1,2", 422), ("a.csv", b"\xff", 422), ("a.csv", b"x" * 2_000_001, 413)):
             self.assertEqual(self.operator.post(url, files={"file": (name, content)}).status_code, expected)
         self.assertEqual(self.guest.get("/api/telemetry?limit=-1").status_code, 422)
         malformed = ','.join(data) + '\\n"unclosed quote'
