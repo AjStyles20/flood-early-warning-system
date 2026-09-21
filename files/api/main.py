@@ -1591,7 +1591,7 @@ def read_risk_status(
 def get_recent_alerts(
     limit: int = 15,
     db: Session = Depends(get_db),
-    actor: models.User | None = Depends(get_optional_user),
+    actor: models.User | None = Depends(get_optional_page_user),
 ):
     """Return recent alert events for the situation room.
 
