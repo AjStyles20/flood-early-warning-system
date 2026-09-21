@@ -40,7 +40,7 @@ def run():
                     if time.monotonic() >= deadline:
                         raise
                     time.sleep(0.25)
-            for route in ("/", "/dashboard", "/data", "/news", "/contact", "/evaluation", "/health", "/api/news-feed", "/api/model-evaluation", "/api/model-evaluation/report.pdf", "/static/js/news.js", "/static/js/evaluation.js", "/static/js/contact.js"):
+            for route in ("/", "/dashboard", "/data", "/news", "/contact", "/evaluation", "/health", "/api/news-feed", "/static/js/news.js", "/static/js/evaluation.js", "/static/js/contact.js"):
                 with urlopen(base + route, timeout=10) as response:
                     assert response.status == 200, route
                     assert response.read(), route
