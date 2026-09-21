@@ -45,9 +45,15 @@ models.Base.metadata.create_all(bind=engine)
 def migrate_telemetry_schema() -> None:
     """Add newer columns to older SQLite/MySQL databases without losing data."""
     existing_columns = {column["name"] for column in inspect(engine).get_columns("telemetry")}
+    statements = []
     if "data_source" not in existing_columns:
+        statements.append("ALTER TABLE telemetry ADD COLUMN data_source VARCHAR(24) NOT NULL DEFAULT 'simulated'")
+    if "threshold_type" not in existing_columns:
+        statements.append("ALTER TABLE telemetry ADD COLUMN threshold_type VARCHAR(32) NOT NULL DEFAULT 'prototype_demo'")
+    if statements:
         with engine.begin() as connection:
-            connection.execute(text("ALTER TABLE telemetry ADD COLUMN data_source VARCHAR(24) NOT NULL DEFAULT 'simulated'"))
+            for statement in statements:
+                connection.execute(text(statement))
 
 
 def migrate_user_schema() -> None:
@@ -1128,13 +1134,22 @@ def assess_record(
 ):
     """Create one portable, explainable risk status from a stored reading."""
     measured_rate = compute_rate_of_rise_m(record, db) if rate_of_rise is None else rate_of_rise
-    probability = ml_model.predict(
-        water_level_m=record.water_level_m,
-        danger_level_m=record.danger_level_m,
-        rainfall_mm_hr=record.rainfall_mm_hr,
-        flow_rate_m3s=record.flow_rate_m3s,
-        rate_of_rise=measured_rate,
-    )
+    # The saved model is synthetic development evidence. Do not apply it to
+    # physical observations, and do not fabricate missing inputs merely to make
+    # the model callable.
+    probability = None
+    if (
+        record.data_source == "simulated"
+        and record.rainfall_mm_hr is not None
+        and record.flow_rate_m3s is not None
+    ):
+        probability = ml_model.predict(
+            water_level_m=record.water_level_m,
+            danger_level_m=record.danger_level_m,
+            rainfall_mm_hr=record.rainfall_mm_hr,
+            flow_rate_m3s=record.flow_rate_m3s,
+            rate_of_rise=measured_rate,
+        )
     return classify(record.water_level_m, record.danger_level_m, probability, language=language)
 
 
@@ -1156,6 +1171,7 @@ def status_from_record(
         timestamp=record.timestamp,
         water_level_m=record.water_level_m,
         danger_level_m=record.danger_level_m,
+        threshold_type=record.threshold_type,
         rainfall_mm_hr=record.rainfall_mm_hr,
         flow_rate_m3s=record.flow_rate_m3s,
         rate_of_rise_m=round(rate_of_rise, 4),
@@ -1164,7 +1180,7 @@ def status_from_record(
         risk_level=assessment.risk_level,
         risk_ratio=assessment.ratio,
         ml_probability=assessment.ml_probability,
-        model_available=ml_model.model_available(),
+        model_available=(record.data_source == "simulated" and ml_model.model_available()),
         message=assessment.message,
         color=assessment.color,
         language=language,
