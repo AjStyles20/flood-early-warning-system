@@ -2,7 +2,7 @@
 
 Intelligent Flood Early Warning and Decision Support System.
 
-This project is a portable flood-monitoring prototype using Nigeria as the case-study deployment. It combines simulated or hardware-ready sensor telemetry, persistent database storage, a corrected future-horizon ML model, four-tier flood-risk decision support, an accessible GIS dashboard, and simulated multi-channel alert logging.
+FloodWatch is an engineering prototype and research testbed for flood early-warning decision support, with Lokoja on the River Niger as the current scientific case study. The working platform combines controlled simulation, a physical Pico-to-API integration path, persistent storage, threshold-state decision support, an accessible GIS dashboard, and alert workflow infrastructure. Historical observational research is deliberately separated from the live application.
 
 The system is decision support only. It does not replace official emergency agencies and must not issue autonomous commands. Risk messages are written to help users and responders interpret conditions and follow official guidance.
 
@@ -95,9 +95,9 @@ py .\files\api\query_api.py --view risk --source hybrid
 
 Important PowerShell note: paste only the command text, not the `PS C:\...>` prompt or quote marks from chat formatting.
 
-## Correct ML evidence
+## Synthetic development ML evidence
 
-The saved model uses simulator-generated telemetry only. It predicts whether a below-danger reading will cross the danger level within the next 6 simulator ticks.
+The saved model is retained as development evidence from simulator-generated telemetry only. It predicts whether a below-danger simulated reading will cross the simulator danger level within the next 6 simulator ticks. It is frozen: it is not the thesis model, is not applied to physical observations, and must not be presented as real Lokoja predictive performance.
 
 The earlier perfect threshold-baseline result is superseded and must not be used as predictive evidence because it came from a circular current-threshold label.
 
@@ -108,6 +108,17 @@ Latest verified F1 scores from simulator-generated telemetry:
 - threshold baseline: `0.6666666666666666`
 - Logistic Regression: `0.7085714285714285`
 - Random Forest: `0.975609756097561`
+
+## Scientific implementation alignment
+
+The current refactor is governed by [files/docs/implementation_alignment_spec_v1.md](files/docs/implementation_alignment_spec_v1.md). Key rules include:
+
+- unavailable is not zero;
+- prototype/demo thresholds are not official Lokoja thresholds;
+- simulated, observed, gridded, reanalysis, modelled, and derived evidence remain distinguishable;
+- current threshold state and forecast probability are separate concepts;
+- the Pico potentiometer is a controlled analogue input, not a Lokoja field water-level measurement;
+- no B3/B4 experiment or new model training is authorized by the engineering refactor.
 
 ## Accessibility and safety guardrails
 
