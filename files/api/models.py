@@ -222,6 +222,7 @@ class RiskStatus(BaseModel):
     timestamp: datetime
     water_level_m: float
     danger_level_m: float
+    threshold_type: Literal["official_operational", "research_statistical", "prototype_demo"]
     rainfall_mm_hr: float | None
     flow_rate_m3s: float | None
     rate_of_rise_m: float = Field(description="Water-level change in metres since the previous reading for the same station.")
