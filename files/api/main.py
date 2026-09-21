@@ -988,10 +988,7 @@ def dashboard_page(
     request: Request,
     current_user: models.User | None = Depends(get_optional_page_user),
 ):
-    denied = require_page_user(request, current_user, "/dashboard")
-    if denied is not None:
-        return denied
-    return templates.TemplateResponse(request, "pages/dashboard.html", template_context(request, current_user, active_page="dashboard"))
+    return render_public(request, "pages/dashboard.html", current_user, active_page="dashboard")
 
 
 @app.get("/data", include_in_schema=False)
@@ -999,10 +996,7 @@ def data_page(
     request: Request,
     current_user: models.User | None = Depends(get_optional_page_user),
 ):
-    denied = require_page_user(request, current_user, "/data")
-    if denied is not None:
-        return denied
-    return templates.TemplateResponse(request, "pages/data.html", template_context(request, current_user, active_page="data"))
+    return render_public(request, "pages/data.html", current_user, active_page="data")
 
 
 @app.get("/evaluation", include_in_schema=False)
