@@ -110,6 +110,9 @@ function safeColor(value) {
 }
 
 function asNumber(value, fallback = 0) {
+  if (value === null || value === undefined || value === "") {
+    return fallback;
+  }
   const number = Number(value);
   return Number.isFinite(number) ? number : fallback;
 }
@@ -499,9 +502,12 @@ function summarize(allStations, visibleStations) {
   updateSourceModePanel(visibleCount, elevatedTotal);
 
   setText("quick-stations-count", visibleCount);
-  const avgRain = visibleCount
-    ? `${(visibleStations.reduce((acc, s) => acc + asNumber(s.rainfall_mm_hr), 0) / visibleCount).toFixed(1)} mm`
-    : "—";
+  const measuredRain = visibleStations
+    .map((station) => asNumber(station.rainfall_mm_hr, null))
+    .filter((value) => value !== null);
+  const avgRain = measuredRain.length
+    ? `${(measuredRain.reduce((acc, value) => acc + value, 0) / measuredRain.length).toFixed(1)} mm`
+    : "unavailable";
   setText("quick-avg-rain", avgRain);
   const risingCount = visibleStations.filter((s) => asNumber(s.rate_of_rise_m, 0) > 0.05).length;
   setText("quick-rising-count", risingCount);
@@ -1088,7 +1094,14 @@ function renderSelectedStationPanel(visibleStations, totalCount) {
     trendEl.classList.toggle("trend-rising", rateOfRise > 0.01);
   }
   setText("selected-rainfall-rate", `${formatNumber(station.rainfall_mm_hr, 1)} mm`);
-  const intensity = asNumber(station.rainfall_mm_hr) > 25 ? "High intensity" : asNumber(station.rainfall_mm_hr) > 10 ? "Moderate intensity" : "Low intensity";
+  const measuredRainfall = asNumber(station.rainfall_mm_hr, null);
+  const intensity = measuredRainfall === null
+    ? "Not measured"
+    : measuredRainfall > 25
+      ? "High intensity"
+      : measuredRainfall > 10
+        ? "Moderate intensity"
+        : "Low intensity";
   setText("selected-rainfall-intensity", intensity);
 
   const leadEstimate = estimateLeadTimeLabel(station);
