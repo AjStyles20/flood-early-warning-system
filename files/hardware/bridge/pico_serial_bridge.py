@@ -25,15 +25,15 @@ def build_payload(station_id, water_level_m):
 
         "water_level_m": water_level_m,
         "danger_level_m": 2.0,
+        "threshold_type": "prototype_demo",
 
         # Prototype placeholders.
         # These are not physically measured yet.
-        "rainfall_mm_hr": 0.0,
-        "flow_rate_m3s": 0.0,
+        "rainfall_mm_hr": None,
+        "flow_rate_m3s": None,
 
-        # Prototype fixed value.
-        # Not yet measured from hardware.
-        "battery_pct": 100.0,
+        # Battery state is not measured by the current Pico prototype.
+        "battery_pct": None,
 
         "signal": "online"
     }
