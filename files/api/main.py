@@ -1604,7 +1604,7 @@ def get_recent_alerts(
     # Station bulletins are shared with registered users. Internal operator
     # notes and staff account identifiers are not personal notifications and
     # must not be disclosed outside the operational role.
-    if not has_role(actor, "operator"):
+    if actor is None or not has_role(actor, "operator"):
         for alert in alerts:
             alert["operator_notes"] = None
             for field in ("acknowledged_by", "escalated_by", "resolved_by"):
