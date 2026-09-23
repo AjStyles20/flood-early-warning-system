@@ -140,6 +140,13 @@ The deployment separates MySQL Server from MySQL Workbench: FastAPI connects dir
 
 ## 3.7 Risk Classification Method
 
+**Figure 3.x — Current-state assessment service boundary**
+
+![FloodWatch current-state service boundary](diagrams/floodwatch_current_state_service.svg)
+
+The current implementation separates HTTP transport from interpretation. `current_state_service.py` calculates the measured change from the previous compatible station/source reading, coordinates current-state classification, and constructs the public risk-status contract. `risk_engine.py` remains the explainable threshold classifier. The saved synthetic ML model is called only for sufficiently complete simulated records and its probability remains separate from the threshold ratio; hardware observations do not receive synthetic-model predictions.
+
+
 The risk engine is implemented in `files/api/risk_engine.py`.
 
 The main physical measure is:
