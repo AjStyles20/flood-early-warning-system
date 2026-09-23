@@ -1,11 +1,15 @@
 # database.py
 
-# This file handles everything related to connecting to our database.
-# We are using SQLite, which is a simple file-based database. It requires no installation.
-# We also use SQLAlchemy, which is an Object-Relational Mapper (ORM).
-# An ORM is a tool that allows us to interact with the database using Python objects and code,
-# instead of having to write raw SQL queries (like "SELECT * FROM telemetry").
-# This makes the code much cleaner and easier to defend.
+# This file owns the SQLAlchemy database connection boundary.
+#
+# FloodWatch targets MySQL Server for the full development/operational database,
+# normally inspected/administered with MySQL Workbench. SQLite remains the safe
+# default for isolated local/CI tests so a test runner does not need a permanent
+# external database service. The active DBMS is selected with
+# FLOOD_EWS_DATABASE_URL; application code should not hard-code either DBMS.
+#
+# SQLAlchemy is the ORM/data-access abstraction. It lets repositories work with
+# Python models while the engine handles the configured relational DBMS.
 
 import os
 
@@ -13,17 +17,15 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 # 1. Define the Database URL.
-# This deliberately names a SQLite *file*, rather than using ``sqlite://``.
-# ``sqlite://`` creates a temporary, in-memory database that loses every
-# telemetry record when the server stops.  ``sqlite:///flood_data.db`` stores
-# the database beside the process working directory, allowing readings to
-# remain available after a normal FastAPI restart.
+# SQLite is retained as a compatibility/test default until the controlled MySQL
+# migration gate is completed. Full development should set
+# FLOOD_EWS_DATABASE_URL to the dedicated MySQL schema.
 DEFAULT_DATABASE_URL = "sqlite:///flood_data.db"
-# Production deployments can switch to MySQL or MariaDB by setting the
+# MySQL development/operational configuration is selected with the
 # FLOOD_EWS_DATABASE_URL environment variable, e.g.:
 # mysql+pymysql://app_user:StrongPassword@localhost:3306/floodwatch
 # Automated tests can inject an isolated database before importing this module.
-# Normal server use always takes the persistent file-based default above.
+# Credentials must remain outside source control.
 SQLALCHEMY_DATABASE_URL = os.getenv("FLOOD_EWS_DATABASE_URL", DEFAULT_DATABASE_URL)
 
 # 2. Create the Database Engine.
@@ -51,9 +53,8 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # 4. Create a Base class.
 # We will use this 'Base' class later in our 'models.py' file.
-# Think of it as a master blueprint. When we define what a "Sensor Reading" looks like in Python,
-# we will inherit from this 'Base' class. SQLAlchemy will then automatically know to turn that Python class
-# into a real table inside our SQLite database.
+# Think of it as a master blueprint. SQLAlchemy maps classes inheriting from
+# Base to tables in whichever configured relational DBMS is active.
 Base = declarative_base()
 
 # 5. Define a database connection Dependency (Helper Function).
