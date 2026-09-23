@@ -94,13 +94,28 @@ The figure is a FloodWatch design synthesis, not a diagram reproduced from any r
 | Communication infrastructure can fail | keep channel capability explicit; do not claim untested delivery | alert/notification design |
 | Human response matters | system remains decision support and defers official authority | NFR-10 |
 
-## 2.9 Research gap used by FloodWatch
+## 2.9 Gap-to-contribution structure
+
+FloodWatch does not claim that every weakness of a complete FEWS is solved by this FYP. The literature findings are classified by what the project can actually investigate or implement.
+
+| Gap/problem class | FloodWatch response | Evidence/claim level |
+|---|---|---|
+| Model reliability and limited comparative evaluation | Compare an interpretable trend baseline with lightweight ML at equivalent warning horizons | **Primary scientific research contribution** |
+| Fragmented/heterogeneous monitoring evidence | Provenance-aware Station/Variable/DataSource/Dataset/Observation architecture | **Data/software engineering contribution** |
+| Low-cost monitoring constraints | Pico-to-API physical prototype and modular source adapters | **Prototype engineering contribution** |
+| Technical/last-mile warning presentation | Plain-language textual state, accessible dashboard and localization capability | **Decision-support design contribution** |
+| Community trust, comprehension and behavioural response | Not evaluated without a human/community study | **Not claimed as solved** |
+| Evacuation logistics, shelters and institutional coordination | Outside the software prototype's authority/scope | **Out of scope** |
+
+This classification prevents a system feature from being misrepresented as a scientifically evaluated research result.
+
+## 2.10 Research gap used by FloodWatch
 
 The literature reviewed so far does not justify claiming a globally new FEWS architecture or a new AI algorithm. The working gap is narrower: rigorous, context-bounded evidence is needed on whether additional predictive complexity produces a practically meaningful early-warning advantage over simpler interpretable warning logic under the evaluated observational conditions, while the engineering prototype demonstrates how provenance-aware observations can be carried through monitoring and decision support.
 
 This statement remains subject to direct verification against the original publications and the broader prior-art search.
 
-## 2.10 Source-verification gate
+## 2.11 Source-verification gate
 
 The current notes summarize three sources:
 
