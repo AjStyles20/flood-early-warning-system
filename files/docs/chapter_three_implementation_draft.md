@@ -118,6 +118,10 @@ The first prototype used a wide `telemetry` table containing station identity, l
 
 ![Target normalized FloodWatch ERD](diagrams/floodwatch_normalized_erd.svg)
 
+![Normalized observation repository boundary](diagrams/floodwatch_observation_repository.svg)
+
+The normalized persistence layer now has a dedicated `observation_repository.py` and deterministic `observation_catalogue.py`. Catalogue seeding makes provenance vocabulary reproducible, while one atomic Observation stores only the variable actually represented; absent rainfall, flow or other variables are not fabricated.
+
 The target data model separates:
 
 - **Station**: monitoring/gauge location and identity;
@@ -125,7 +129,7 @@ The target data model separates:
 - **DataSource**: evidence/provenance classification and provider;
 - **Dataset**: historical/external dataset metadata and redistribution status;
 - **Observation**: one variable value at one station, source and time;
-- **Threshold**: a separately sourced and time-valid decision threshold;
+- **Threshold**: a separately sourced and time-valid decision threshold whose measurement unit is inherited from its associated Variable;
 - existing operational entities including users, sessions, alerts, alert audits, scenarios and community reports.
 
 This structure applies normalization through 1NF, 2NF and 3NF. In particular, station/source/unit descriptions are not unnecessarily repeated in every observation, and heterogeneous evidence does not require fabricated values for variables a source did not measure.
