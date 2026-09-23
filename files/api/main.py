@@ -1029,80 +1029,13 @@ compute_rate_of_rise_m = current_state_service.compute_rate_of_rise_m
 
 
 def latest_records_per_station(db: Session, data_source: str | None = None) -> list[models.TelemetryRecord]:
-    """Return the newest stored reading for each station without scanning all history in Python.
-
-    Earlier dashboard code loaded every telemetry row, sorted it in memory, and
-    then kept the first row for each station. That is acceptable for tiny demos
-    but becomes slow once the simulator has produced many readings. This helper
-    asks the database for each station's maximum timestamp, then fetches only
-    matching rows. If two readings share the same timestamp, the highest database
-    id wins because it was inserted later.
-    """
-    telemetry = models.TelemetryRecord
-    latest_timestamp_query = db.query(
-        telemetry.station_id.label("station_id"),
-        func.max(telemetry.timestamp).label("max_timestamp"),
-    )
-    if data_source is not None:
-        latest_timestamp_query = latest_timestamp_query.filter(telemetry.data_source == data_source)
-    latest_timestamp_query = latest_timestamp_query.group_by(telemetry.station_id).subquery()
-
-    rows = (
-        db.query(telemetry)
-        .join(
-            latest_timestamp_query,
-            and_(
-                telemetry.station_id == latest_timestamp_query.c.station_id,
-                telemetry.timestamp == latest_timestamp_query.c.max_timestamp,
-            ),
-        )
-        .order_by(telemetry.station_id.asc(), telemetry.id.desc())
-        .all()
-    )
-
-    latest_by_station: dict[str, models.TelemetryRecord] = {}
-    for row in rows:
-        latest_by_station.setdefault(row.station_id, row)
-    return list(latest_by_station.values())
+    """Compatibility alias; query ownership lives in telemetry_repository."""
+    return telemetry_repository.latest_per_station(db, data_source=data_source)
 
 
 def latest_records_per_station_and_source(db: Session) -> list[models.TelemetryRecord]:
-    """Return the newest reading for each station/source pair.
-
-    Hybrid mode needs to compare the latest simulated reading with the latest
-    hardware reading for the same station and then display the more serious
-    current status. Grouping by both station and source keeps that comparison
-    honest without loading old readings that are no longer relevant.
-    """
-    telemetry = models.TelemetryRecord
-    latest_timestamp_query = (
-        db.query(
-            telemetry.station_id.label("station_id"),
-            telemetry.data_source.label("data_source"),
-            func.max(telemetry.timestamp).label("max_timestamp"),
-        )
-        .group_by(telemetry.station_id, telemetry.data_source)
-        .subquery()
-    )
-
-    rows = (
-        db.query(telemetry)
-        .join(
-            latest_timestamp_query,
-            and_(
-                telemetry.station_id == latest_timestamp_query.c.station_id,
-                telemetry.data_source == latest_timestamp_query.c.data_source,
-                telemetry.timestamp == latest_timestamp_query.c.max_timestamp,
-            ),
-        )
-        .order_by(telemetry.station_id.asc(), telemetry.data_source.asc(), telemetry.id.desc())
-        .all()
-    )
-
-    latest_by_station_source: dict[tuple[str, str], models.TelemetryRecord] = {}
-    for row in rows:
-        latest_by_station_source.setdefault((row.station_id, row.data_source), row)
-    return list(latest_by_station_source.values())
+    """Compatibility alias; query ownership lives in telemetry_repository."""
+    return telemetry_repository.latest_per_station_and_source(db)
 
 
 assess_record = current_state_service.assess_record
