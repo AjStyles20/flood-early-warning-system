@@ -326,3 +326,12 @@ DB-3 is now implemented for validated telemetry ingestion. `telemetry_normalizat
 Normalized evidence reconstruction now matches the legacy latest-per-station/source representation for the fields actually dual-written. Null optional measurements remain null. This is a parity result, not authorization to retire the legacy table. Threshold/configuration normalization is the next dependency because `danger_level_m` is not an Observation and the current-state service still requires a threshold.
 
 **DB-4 evidence parity: PASS under SQLite compatibility CI. DB-4 operational read promotion: PENDING.**
+
+
+## Threshold applicability hardening
+
+![FloodWatch typed threshold applicability](diagrams/floodwatch_threshold_applicability.svg)
+
+Threshold persistence now has an explicit repository and an index covering station, variable, type and validity. The lookup requires active configuration whose validity interval contains the observation time. The unit remains owned by Variable. Compatibility-derived threshold provenance explicitly states that it is not independently verified as official. This prevents repeated prototype use from laundering a demonstration threshold into an authoritative threshold.
+
+DB-4 normalized evidence reconstruction now includes threshold value/type. Full current-state parity remains the next gate.
