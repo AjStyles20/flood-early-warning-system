@@ -322,3 +322,14 @@ This chapter describes the iterative Agile SDLC, requirements-driven design and 
 ![FloodWatch alert workflow](diagrams/floodwatch_alert_workflow.svg)
 
 `alert_service.py` owns duplicate suppression, safe bulletin wording, transition rules and audit persistence. Authentication and HTTP error mapping remain at the route boundary.
+
+
+### 3.6.x DB-3 Controlled Dual-Write Compatibility
+
+**Figure 3.x — Controlled legacy-to-normalized telemetry dual-write**
+
+![FloodWatch controlled telemetry dual-write](diagrams/floodwatch_telemetry_dual_write.svg)
+
+The working REST, CSV and Pico telemetry contract is retained while `telemetry_repository.py` now stages a compatibility `TelemetryRecord` and normalized observations in one database transaction. `telemetry_normalization_adapter.py` maps hardware to `LOCAL_SENSOR` provenance and simulator input to `SIMULATED`. It mirrors only variables actually present in the validated payload: a hardware reading with no rainfall, flow or battery measurement creates no fabricated rows for those variables. The legacy danger threshold is deliberately not copied into `Observation`, because a threshold is a decision/configuration entity rather than a measured observation.
+
+The transaction is atomic: normalization failure rolls back the compatibility write as well, preventing silent divergence between the two persistence representations. Legacy reads remain authoritative during DB-3; normalized reads will not replace them until DB-4 parity tests and the physical Pico regression gate pass.
