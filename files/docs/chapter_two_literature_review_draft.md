@@ -78,6 +78,12 @@ FloodWatch may evaluate lightweight/local processing and low-cost prototype inte
 
 ## 2.8 Evidence-to-requirement synthesis
 
+**Figure 2.x — Evidence-to-decision-support architecture derived from the literature synthesis**
+
+![FloodWatch evidence-to-decision-support architecture](diagrams/floodwatch_evidence_to_decision_support.svg)
+
+The figure is a FloodWatch design synthesis, not a diagram reproduced from any reviewed publication. It shows how the literature findings are translated into project boundaries while preserving the separate research promotion gate.
+
 | Literature finding | FloodWatch implication | Requirement/design area |
 |---|---|---|
 | FEWS has monitoring, communication and response dimensions | Do not reduce architecture to sensor -> ML | layered architecture |
