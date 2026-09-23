@@ -65,14 +65,24 @@ class TelemetryDualWriteTests(unittest.TestCase):
         source_codes = {self.db.get(self.models.DataSource, row.source_id).code for row in rows}
         self.assertEqual(source_codes, {"SIMULATED"})
 
-    def test_threshold_is_not_misrepresented_as_observation(self):
+    def test_threshold_is_configuration_not_observation(self):
         self.repo.create_record(self.db, self.reading())
         codes = {
             self.db.get(self.models.Variable, row.variable_id).code
             for row in self.db.query(self.models.Observation).all()
         }
         self.assertNotIn("threshold", codes)
-        self.assertEqual(self.db.query(self.models.Threshold).count(), 0)
+        threshold = self.db.query(self.models.Threshold).one()
+        self.assertEqual(threshold.value, 2.5)
+        self.assertEqual(threshold.threshold_type, "prototype_demo")
+        self.assertIn("not independently verified", threshold.source_reference)
+
+    def test_repeated_identical_compatibility_threshold_is_reused(self):
+        self.repo.create_record(self.db, self.reading())
+        later = self.reading()
+        later.timestamp = datetime(2026, 9, 24, 0, 1, tzinfo=timezone.utc)
+        self.repo.create_record(self.db, later)
+        self.assertEqual(self.db.query(self.models.Threshold).count(), 1)
 
 
 if __name__ == "__main__":
