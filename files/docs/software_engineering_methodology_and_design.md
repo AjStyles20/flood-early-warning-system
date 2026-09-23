@@ -379,3 +379,10 @@ The engineering regression and physical-integration gates have passed. The next 
 ![FloodWatch controlled telemetry dual-write](diagrams/floodwatch_telemetry_dual_write.svg)
 
 The migration uses a compatibility adapter rather than a big-bang schema replacement. Both REST and CSV ingestion now pass through the same telemetry repository. The repository stages the legacy record plus normalized observation rows in one transaction, preserving backward compatibility while making normalized evidence available for parity testing. This is an Adapter/Repository migration boundary: it changes persistence representation without changing the external telemetry contract.
+
+
+## 10.x DB-4 read-parity boundary
+
+![FloodWatch DB-4 normalized read parity](diagrams/floodwatch_db4_read_parity.svg)
+
+DB-4 is intentionally split into **parity** and **promotion**. The normalized repository can now reconstruct the dual-written evidence fields and is regression-tested against the legacy repository, but routes continue using the compatibility read path. This strangler-style migration avoids changing persistence representation and operational behaviour simultaneously.
