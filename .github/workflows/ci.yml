@@ -29,6 +29,7 @@ jobs:
           python -u test_observation_repository.py
           python -u test_telemetry_dual_write.py
           python -u test_normalized_read_parity.py
+          python -u test_threshold_repository.py
           python -u test_current_state_service.py
           python -u test_alert_service.py
           python -u test_api.py
