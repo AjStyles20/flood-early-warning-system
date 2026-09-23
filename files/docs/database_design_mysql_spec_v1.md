@@ -317,3 +317,12 @@ This specification authorizes implementation of the normalized MySQL-capable sch
 DB-3 is now implemented for validated telemetry ingestion. `telemetry_normalization_adapter.py` maps the legacy payload into atomic normalized observations while retaining the legacy telemetry record. Hardware and simulated provenance remain distinct; null optional measurements create no normalized observations; danger thresholds are not misrepresented as sensor measurements. Catalogue seeding participates in the caller transaction so compatibility and normalized persistence commit or roll back together.
 
 **Gate:** DB-3 is PASS under SQLite compatibility CI. DB-4 normalized-read parity, physical Pico regression after read migration, and MySQL-specific DB-1 execution remain pending.
+
+
+## DB-4 status — evidence read parity
+
+![FloodWatch DB-4 normalized read parity](diagrams/floodwatch_db4_read_parity.svg)
+
+Normalized evidence reconstruction now matches the legacy latest-per-station/source representation for the fields actually dual-written. Null optional measurements remain null. This is a parity result, not authorization to retire the legacy table. Threshold/configuration normalization is the next dependency because `danger_level_m` is not an Observation and the current-state service still requires a threshold.
+
+**DB-4 evidence parity: PASS under SQLite compatibility CI. DB-4 operational read promotion: PENDING.**
