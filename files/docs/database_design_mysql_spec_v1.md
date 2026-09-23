@@ -81,6 +81,8 @@ The aim is not maximum table count. The aim is to remove update anomalies while 
 
 ## 5. Target logical ERD
 
+Rendered diagram asset: ![FloodWatch normalized MySQL ERD](diagrams/floodwatch_normalized_erd.svg)
+
 ~~~mermaid
 erDiagram
     STATION ||--o{ OBSERVATION : has
@@ -223,6 +225,8 @@ Target MySQL constraints include:
 
 ## 10. Legacy telemetry compatibility
 
+Migration activity diagram: ![FloodWatch database migration activity](diagrams/floodwatch_database_migration_activity.svg)
+
 The existing `telemetry` table is not deleted during the first MySQL migration.
 
 Migration strategy:
@@ -270,6 +274,8 @@ mysql+pymysql://floodwatch_app:<password>@127.0.0.1:3306/floodwatch
 Credentials must be stored in local environment/configuration, not committed to GitHub.
 
 ## 12. MySQL Workbench workflow
+
+Target deployment diagram: ![FloodWatch MySQL deployment](diagrams/floodwatch_mysql_deployment.svg)
 
 Workbench will be used to:
 
