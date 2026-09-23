@@ -1581,3 +1581,22 @@ GitHub Actions was updated to run the repository contract test. CI run 358550132
 **Backend Modularisation Increment A: PASS.**
 
 Next controlled extraction: current-state assessment/service boundary, followed by alert-service and API-router separation. Each extraction must remain behavior-preserving and pass the full regression suite before the next one.
+
+
+## 2026-09-23 - Database Architecture Decision: MySQL
+
+### Decision
+
+The target development/operational DBMS is now **MySQL Server**, with **MySQL Workbench** used for administration, inspection and EER modelling. SQLAlchemy/PyMySQL remains the application data-access layer. SQLite is retained for isolated compatibility/unit/CI tests where MySQL-specific behaviour is not under test.
+
+### Reasoning
+
+The decision is not based on the claim that MySQL is universally better than SQLite. FloodWatch now has multiple relational entities, authenticated operational workflows, provenance-sensitive observations, thresholds, alerts and time-series queries. A client/server RDBMS with explicit transactions, foreign keys, indexes and inspectable schema administration is appropriate for the full application. Workbench also allows the implemented physical schema to be inspected and defended.
+
+The database **architecture** decision is kept separate from the DBMS decision. The legacy wide telemetry row was suitable for the first prototype but assumes a fixed set of variables. The target normalized model separates Station, Variable, DataSource, Dataset, Observation and Threshold so stage-only hardware, discharge-only observational data and later external variables can coexist without fabricated zeros.
+
+### Migration safety
+
+No destructive migration was performed. The legacy telemetry table remains a protected compatibility path. Planned phases are MySQL connectivity -> normalized schema -> compatibility/dual-write -> normalized reads -> legacy retirement only after parity, CI and Pico regression pass.
+
+Created `database_design_mysql_spec_v1.md` and synchronized the software-engineering design and Chapter 3 database section.
