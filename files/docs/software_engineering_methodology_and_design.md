@@ -102,6 +102,10 @@ flowchart LR
 
 ## 7. Logical architecture
 
+![FloodWatch evidence-to-decision-support architecture](diagrams/floodwatch_evidence_to_decision_support.svg)
+
+This rendered figure is the cross-chapter architecture baseline: source provenance is preserved before monitoring/research processing, and the research plane cannot silently enter decision support without its promotion gate.
+
 ~~~mermaid
 flowchart TD
     subgraph Observation[Observation Plane]
@@ -213,7 +217,7 @@ sequenceDiagram
     participant Pico as Raspberry Pi Pico
     participant Bridge as Serial Bridge
     participant API as FastAPI
-    participant DB as SQLite
+    participant DB as Persistence
     participant Risk as Current-State Engine
     participant UI as Dashboard
     Input->>Pico: analogue/environmental measurement
@@ -349,9 +353,9 @@ flowchart LR
 | FR-01/02 | telemetry API + repository + persistence | main.py, telemetry_repository.py, models.py, database.py | repository/API/operational tests |
 | FR-03 | nullable optional evidence | telemetry schema + bridge | contract/API/hardware tests |
 | FR-04 | threshold provenance | threshold_type | contract/API/dashboard tests |
-| FR-05 | current-state engine | risk_engine.py | risk-separation test |
+| FR-05 | current-state service + engine | current_state_service.py, risk_engine.py | current-state service/risk-separation tests |
 | FR-06/07/08 | public accessible monitoring | templates + dashboard.js | frontend/HTTP smoke tests |
-| FR-09 | alert workflow | alert tables/routes | operational tests |
+| FR-09 | alert workflow service | alert_service.py + alert tables/routes | alert-service/operational tests |
 | FR-10 | RBAC | user/session/role routes | API/operational tests |
 | FR-11 | simulator boundary | simulator + source labels | frontend/API tests |
 | FR-12 | Pico bridge | hardware/bridge/pico_serial_bridge.py | physical COM4 integration |
