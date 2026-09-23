@@ -79,6 +79,12 @@ Non-key attributes depend on their entity key rather than on other non-key attri
 
 The aim is not maximum table count. The aim is to remove update anomalies while retaining a practical time-series model.
 
+## 4.1 Implemented observation repository boundary
+
+![Normalized observation repository boundary](diagrams/floodwatch_observation_repository.svg)
+
+The normalized model now has deterministic Variable/DataSource catalogues and an observation repository. The catalogue defines representation vocabulary, not experiment inclusion. `Threshold` no longer duplicates the unit held by `Variable`, avoiding disagreement between the threshold and the measured quantity. Composite observation indexes cover station-variable-time and source-time access. A hard duplicate-observation uniqueness constraint remains deferred until correction/revision semantics are explicitly defined.
+
 ## 5. Target logical ERD
 
 Rendered diagram asset: ![FloodWatch normalized MySQL ERD](diagrams/floodwatch_normalized_erd.svg)
