@@ -1701,3 +1701,14 @@ Added `test_normalized_read_parity.py`. The test dual-writes multiple hardware/s
 Created and embedded `diagrams/floodwatch_db4_read_parity.svg`.
 
 **DB-4 evidence-field parity sub-gate: PASS under SQLite compatibility CI. DB-4 operational read promotion remains PENDING.** Next dependency: normalize threshold/configuration semantics, because the current-state engine legitimately requires a threshold while DB-3 correctly refused to store `danger_level_m` as an Observation. Physical Pico regression and MySQL-specific DB-1 execution remain required before DB-5 legacy retirement. No research experiment/model training was run.
+
+
+## 2026-09-24 - Typed Threshold / DB-4 Configuration Increment
+
+Implemented `threshold_repository.py` with typed threshold staging and time-valid applicability lookup. Added a composite applicability index to `Threshold`. The telemetry normalization adapter now stores legacy `danger_level_m` as threshold configuration rather than an Observation and records explicit compatibility provenance stating that the value is not independently verified as an official hydrological threshold. Identical active compatibility thresholds are reused.
+
+Extended `normalized_read_repository.py` and DB-4 parity tests to include `danger_level_m` and `threshold_type`. Added `test_threshold_repository.py` to verify validity-window selection and the no-hidden-default rule. Updated dual-write tests to verify threshold configuration semantics. GitHub Actions run `35933181636` completed successfully.
+
+Created and embedded `diagrams/floodwatch_threshold_applicability.svg`.
+
+**Typed Threshold Configuration: PASS under SQLite compatibility CI. DB-4 evidence + threshold parity: PASS. Full current-state parity is NEXT.** MySQL-specific execution and physical Pico regression remain pending; DB-5 remains blocked. No research experiment/model training was run.
