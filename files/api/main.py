@@ -34,6 +34,7 @@ import ml_model
 import models
 import news_feeds
 import notifications
+import telemetry_repository
 from database import engine, get_db
 from risk_engine import classify
 from weather_forecast import get_forecast
@@ -1396,10 +1397,7 @@ def simple_pdf(title: str, lines: list[str]) -> bytes:
 @app.post("/api/telemetry", response_model=models.TelemetryResponse, dependencies=[Depends(authorize_ingestion)])
 def create_telemetry(reading: models.TelemetryCreate, db: Session = Depends(get_db)):
     """Receive one simulated or hardware telemetry reading and persist it."""
-    db_record = models.TelemetryRecord(**reading.model_dump())
-    db.add(db_record)
-    db.commit()
-    db.refresh(db_record)
+    db_record = telemetry_repository.create_record(db, reading)
 
     # Keep ingestion fast and robust for both simulator and hardware nodes.
     # The richer ML probability is added by /api/risk-status, but a sensor POST
@@ -1433,14 +1431,11 @@ def read_telemetry(
     Ordering newest-first keeps the data page aligned with what an operator
     expects to inspect first after a simulator or hardware node sends updates.
     """
-    query = db.query(models.TelemetryRecord)
-    if data_source is not None:
-        query = query.filter(models.TelemetryRecord.data_source == data_source)
-    return (
-        query.order_by(models.TelemetryRecord.timestamp.desc(), models.TelemetryRecord.id.desc())
-        .offset(skip)
-        .limit(limit)
-        .all()
+    return telemetry_repository.list_records(
+        db,
+        skip=skip,
+        limit=limit,
+        data_source=data_source,
     )
 
 
