@@ -1640,3 +1640,14 @@ Added `test_current_state_service.py` and CI coverage. The first CI run exposed 
 Created and embedded `diagrams/floodwatch_current_state_service.svg` beside the corresponding architecture/risk discussion.
 
 **Backend Modularisation Increment B: PASS after regression repair.**
+
+
+## 2026-09-23 - Backend Modularisation Increment C: Alert Service
+
+Extracted persistent alert lifecycle rules from `main.py` into `alert_service.py`. The service now owns alert-worthy filtering, active-task duplicate suppression, safe official-guidance wording, channel capability labels, operator transition rules, serialization and audit persistence. FastAPI routes retain authentication/authorization and translate service-domain errors into HTTP responses.
+
+Added `test_alert_service.py` to verify that Low state creates no alert, repeated active station/source events update rather than duplicate, valid transitions create ordered audit rows, resolved alerts reject invalid backward transitions, and unknown alerts raise a domain-level not-found error. GitHub Actions run `35917371861` completed successfully.
+
+Created `diagrams/floodwatch_alert_workflow.svg` and inserted it beside the corresponding alert/workflow discussion in Chapter 3 and the software-engineering design document.
+
+**Backend Modularisation Increment C: PASS.**
