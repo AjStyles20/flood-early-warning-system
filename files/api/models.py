@@ -2,10 +2,10 @@
 
 # This file defines the "shape" or structure of our data. 
 # It handles two entirely different but closely related tasks:
-# 1. SQLAlchemy Models: Defines how data is physically stored in our SQLite database (creates the tables).
+# 1. SQLAlchemy Models: Defines how data is physically stored in the configured relational DBMS.
 # 2. Pydantic Models: Defines how we validate data when it arrives from the internet, ensuring it is correct before saving it.
 
-from sqlalchemy import Boolean, Column, Integer, String, Float, DateTime, ForeignKey, Text
+from sqlalchemy import Boolean, CheckConstraint, Column, Integer, String, Float, DateTime, ForeignKey, Index, Text
 from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import Literal
@@ -157,6 +157,12 @@ class Variable(Base):
 
 class DataSource(Base):
     __tablename__ = "data_sources"
+    __table_args__ = (
+        CheckConstraint(
+            "evidence_type IN ('observed', 'derived', 'simulated', 'reanalysis', 'modelled')",
+            name="ck_data_sources_evidence_type",
+        ),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     code = Column(String(64), unique=True, index=True, nullable=False)
@@ -184,6 +190,10 @@ class Dataset(Base):
 
 class Observation(Base):
     __tablename__ = "observations"
+    __table_args__ = (
+        Index("ix_observation_station_variable_time", "station_id", "variable_id", "observed_at"),
+        Index("ix_observation_source_time", "source_id", "observed_at"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     station_id = Column(Integer, ForeignKey("stations.id"), nullable=False, index=True)
@@ -199,13 +209,21 @@ class Observation(Base):
 
 class Threshold(Base):
     __tablename__ = "thresholds"
+    __table_args__ = (
+        CheckConstraint(
+            "threshold_type IN ('official_operational', 'research_statistical', 'prototype_demo')",
+            name="ck_thresholds_type",
+        ),
+        Index("ix_threshold_station_variable_active", "station_id", "variable_id", "active"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     station_id = Column(Integer, ForeignKey("stations.id"), nullable=False, index=True)
     variable_id = Column(Integer, ForeignKey("variables.id"), nullable=False, index=True)
     threshold_type = Column(String(32), nullable=False, index=True)
     value = Column(Float, nullable=False)
-    unit = Column(String(32), nullable=False)
+    # Unit is defined by Variable. Repeating it here would allow the threshold
+    # and variable to disagree and would weaken the normalized design.
     source_reference = Column(Text, nullable=True)
     valid_from = Column(DateTime, nullable=True)
     valid_to = Column(DateTime, nullable=True)
