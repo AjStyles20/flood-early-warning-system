@@ -69,8 +69,8 @@ def assess_record(
 def status_from_record(
     record: models.TelemetryRecord,
     db: Session,
-    *,
     alert_channels: dict[str, str] | None = None,
+    *,
     language: str = "en",
 ) -> models.RiskStatus:
     """Translate one stored reading into the public/display status contract."""
