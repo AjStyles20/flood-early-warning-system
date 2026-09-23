@@ -1629,3 +1629,14 @@ GitHub Actions run `35913855248` completed successfully after the model, test an
 **Normalized Schema Increment: PASS under SQLite compatibility CI.**
 
 This does not yet prove MySQL-specific execution. DB-1 remains a local-environment integration step: MySQL Server/Workbench must be installed/configured on the student's computer, the `floodwatch` schema and least-privilege application account created, and the API connected using `FLOOD_EWS_DATABASE_URL` before the MySQL connectivity gate can pass.
+
+
+## 2026-09-23 - Backend Modularisation Increment B: Current-State Service
+
+Extracted trend calculation, current-state assessment orchestration and RiskStatus construction from the monolithic route module into `current_state_service.py`. The route layer now delegates interpretation instead of owning it. The scientific boundary remains explicit: hardware readings use threshold state only; the frozen synthetic ML model is simulator-only development evidence and its probability is not merged with the threshold ratio.
+
+Added `test_current_state_service.py` and CI coverage. The first CI run exposed a backward-compatibility error in the extracted function signature; this was treated as a real regression, fixed without weakening the test, and rerun. GitHub Actions run `35916568372` completed successfully.
+
+Created and embedded `diagrams/floodwatch_current_state_service.svg` beside the corresponding architecture/risk discussion.
+
+**Backend Modularisation Increment B: PASS after regression repair.**
