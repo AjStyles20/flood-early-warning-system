@@ -372,3 +372,10 @@ flowchart LR
 ## 15. Current development gate
 
 The engineering regression and physical-integration gates have passed. The next development increment is **architecture/data-model modularisation and documentation synchronization**. Experiment 001 remains separate and blocked until its scientific protocol is frozen.
+
+
+## 10.x DB-3 compatibility adapter
+
+![FloodWatch controlled telemetry dual-write](diagrams/floodwatch_telemetry_dual_write.svg)
+
+The migration uses a compatibility adapter rather than a big-bang schema replacement. Both REST and CSV ingestion now pass through the same telemetry repository. The repository stages the legacy record plus normalized observation rows in one transaction, preserving backward compatibility while making normalized evidence available for parity testing. This is an Adapter/Repository migration boundary: it changes persistence representation without changing the external telemetry contract.
