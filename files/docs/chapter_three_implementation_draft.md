@@ -344,3 +344,14 @@ The transaction is atomic: normalization failure rolls back the compatibility wr
 A separate `normalized_read_repository.py` now reconstructs the telemetry-shaped evidence needed for parity testing from Station, Observation, Variable and DataSource rows. It does not yet replace public/dashboard reads. Parity tests compare station/source identity, location, timestamp, water level, optional rainfall/discharge/battery measurements, signal state and null preservation against the legacy repository. Threshold configuration is excluded because DB-3 deliberately did not misrepresent `danger_level_m` as an observation; threshold normalization must be completed before the current-state engine can move completely to normalized reads.
 
 GitHub Actions run `35932249880` passed. Therefore the evidence-field read-parity sub-gate is PASS, while operational read promotion remains gated by threshold/configuration migration, current-state integration, physical Pico regression and MySQL execution.
+
+
+### 3.6.x Typed Threshold Configuration and Applicability
+
+**Figure 3.x — Typed threshold configuration and applicability**
+
+![FloodWatch typed threshold applicability](diagrams/floodwatch_threshold_applicability.svg)
+
+The normalized architecture now represents a decision threshold in the `Threshold` entity rather than as an Observation. `threshold_repository.py` resolves thresholds by station, variable, active state and validity interval. No default threshold is invented when none is applicable. During compatibility dual-write, the validated legacy `danger_level_m` is staged as typed threshold configuration with explicit provenance stating that it was derived from the legacy telemetry contract and is not independently verified as an official hydrological threshold. Identical active compatibility thresholds are reused rather than duplicated for every reading.
+
+Normalized DB-4 reads now reconstruct both observational evidence and the applicable threshold. This extends parity to `danger_level_m` and `threshold_type` while preserving the semantic separation between measurement and decision configuration.
