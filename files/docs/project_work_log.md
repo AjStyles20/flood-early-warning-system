@@ -1651,3 +1651,16 @@ Added `test_alert_service.py` to verify that Low state creates no alert, repeate
 Created `diagrams/floodwatch_alert_workflow.svg` and inserted it beside the corresponding alert/workflow discussion in Chapter 3 and the software-engineering design document.
 
 **Backend Modularisation Increment C: PASS.**
+
+
+## 2026-09-23 - Literature-to-Architecture Integration
+
+Integrated the new three-source FEWS reading notes into an evidence-controlled Chapter Two working draft. The draft deliberately separates source-supported findings from FloodWatch interpretation and records a source-verification gate so brainstorming statements labelled “Potential Contribution” or “Your Contribution” are not misrepresented as original-author claims.
+
+The synthesis reinforces four design decisions: FEWS is socio-technical rather than sensor/model-only; heterogeneous observations require provenance; AI+IoT is occupied prior art rather than sufficient novelty; and last-mile communication/accessibility is a legitimate system requirement without claiming measured community-response effectiveness.
+
+Created and embedded `diagrams/floodwatch_evidence_to_decision_support.svg` in Chapter Two, Chapter Three and the software-engineering design baseline. The figure links observation/provenance, monitoring, research, decision support and dissemination while preserving the research promotion gate.
+
+Also corrected stale Chapter Three/engineering documentation that still described SQLite as the operational database or labelled the physical telemetry sequence database specifically as SQLite. MySQL remains the target DBMS; SQLite is compatibility/CI.
+
+No research experiment or model training was started by this documentation increment.
