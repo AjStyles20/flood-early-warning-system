@@ -1664,3 +1664,16 @@ Created and embedded `diagrams/floodwatch_evidence_to_decision_support.svg` in C
 Also corrected stale Chapter Three/engineering documentation that still described SQLite as the operational database or labelled the physical telemetry sequence database specifically as SQLite. MySQL remains the target DBMS; SQLite is compatibility/CI.
 
 No research experiment or model training was started by this documentation increment.
+
+
+## 2026-09-23 - Normalized Observation Increment D
+
+Hardened the normalized observation/provenance schema and implemented the first repository layer for it. Added composite observation indexes for station-variable-time and source-time access, a station-variable-active threshold index, controlled evidence/threshold CHECK constraints, deterministic Variable/DataSource catalogues, and `observation_repository.py` for atomic observation persistence/retrieval.
+
+Removed duplicated `Threshold.unit`; unit ownership now belongs to `Variable`, preventing a threshold row from disagreeing with the variable it constrains. A hard duplicate-observation unique constraint remains deliberately deferred until correction/revision semantics are defined.
+
+Added `test_observation_repository.py`. The first CI run (`35920784610`) failed because the older normalized-schema tests still used the pre-hardening evidence vocabulary and duplicated threshold unit. Those tests were corrected to the new contract rather than weakening the schema. GitHub Actions run `35920913414` then completed successfully.
+
+Created and embedded `diagrams/floodwatch_observation_repository.svg`. Also expanded Chapter Two with an explicit gap-to-contribution matrix distinguishing primary scientific contribution, engineering/design contributions, unevaluated human-response questions and out-of-scope institutional/evacuation problems.
+
+**Normalized Observation Increment D: PASS under SQLite compatibility CI. MySQL-specific DB-1 execution remains pending local MySQL integration.**
