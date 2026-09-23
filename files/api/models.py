@@ -126,6 +126,93 @@ class ScenarioRun(Base):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
 
 # ==============================================================================
+# NORMALIZED OBSERVATION / PROVENANCE MODEL
+# These tables are introduced alongside the legacy telemetry table. They do not
+# delete or replace the proven Pico/simulator compatibility path yet.
+# ==============================================================================
+
+class Station(Base):
+    __tablename__ = "stations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    station_code = Column(String(64), unique=True, index=True, nullable=False)
+    name = Column(String(160), nullable=False)
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
+    station_type = Column(String(64), nullable=False, default="monitoring")
+    active = Column(Boolean, nullable=False, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+
+class Variable(Base):
+    __tablename__ = "variables"
+
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String(64), unique=True, index=True, nullable=False)
+    name = Column(String(160), nullable=False)
+    unit = Column(String(32), nullable=False)
+    category = Column(String(64), nullable=False)
+    active = Column(Boolean, nullable=False, default=True)
+
+
+class DataSource(Base):
+    __tablename__ = "data_sources"
+
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String(64), unique=True, index=True, nullable=False)
+    name = Column(String(160), nullable=False)
+    evidence_type = Column(String(64), nullable=False, index=True)
+    provider = Column(String(160), nullable=True)
+    is_observational = Column(Boolean, nullable=False, default=False)
+    notes = Column(Text, nullable=True)
+
+
+class Dataset(Base):
+    __tablename__ = "datasets"
+
+    id = Column(Integer, primary_key=True, index=True)
+    dataset_code = Column(String(96), unique=True, index=True, nullable=False)
+    title = Column(String(255), nullable=False)
+    provider = Column(String(160), nullable=False)
+    evidence_type = Column(String(64), nullable=False, index=True)
+    redistribution_status = Column(String(64), nullable=False)
+    coverage_start = Column(DateTime, nullable=True)
+    coverage_end = Column(DateTime, nullable=True)
+    source_reference = Column(Text, nullable=True)
+    notes = Column(Text, nullable=True)
+
+
+class Observation(Base):
+    __tablename__ = "observations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    station_id = Column(Integer, ForeignKey("stations.id"), nullable=False, index=True)
+    variable_id = Column(Integer, ForeignKey("variables.id"), nullable=False, index=True)
+    source_id = Column(Integer, ForeignKey("data_sources.id"), nullable=False, index=True)
+    dataset_id = Column(Integer, ForeignKey("datasets.id"), nullable=True, index=True)
+    observed_at = Column(DateTime, nullable=False, index=True)
+    value = Column(Float, nullable=False)
+    quality_flag = Column(String(64), nullable=True)
+    signal_status = Column(String(32), nullable=True)
+    ingested_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+
+
+class Threshold(Base):
+    __tablename__ = "thresholds"
+
+    id = Column(Integer, primary_key=True, index=True)
+    station_id = Column(Integer, ForeignKey("stations.id"), nullable=False, index=True)
+    variable_id = Column(Integer, ForeignKey("variables.id"), nullable=False, index=True)
+    threshold_type = Column(String(32), nullable=False, index=True)
+    value = Column(Float, nullable=False)
+    unit = Column(String(32), nullable=False)
+    source_reference = Column(Text, nullable=True)
+    valid_from = Column(DateTime, nullable=True)
+    valid_to = Column(DateTime, nullable=True)
+    active = Column(Boolean, nullable=False, default=True, index=True)
+
+
+# ==============================================================================
 # 1. DATABASE MODEL (SQLAlchemy)
 # Think of this as the architectural drawing for our database table.
 # ==============================================================================
