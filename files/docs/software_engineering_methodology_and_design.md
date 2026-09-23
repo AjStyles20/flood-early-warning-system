@@ -217,7 +217,15 @@ sequenceDiagram
     API-->>UI: source-aware status
 ~~~
 
-## 11. Current conceptual ERD
+## 11. Database design decision
+
+The target development/operational DBMS is **MySQL Server**, administered and inspected with **MySQL Workbench**, with SQLAlchemy/PyMySQL as the application connection layer. SQLite remains an isolated compatibility/test database where MySQL-specific behaviour is not under test.
+
+The existing wide `telemetry` table is a legacy prototype representation and will not be copied blindly into the final schema. The target normalized data model separates Station, Variable, DataSource, Dataset, Observation and Threshold so heterogeneous evidence can be represented without fabricating unavailable variables. The detailed normalization reasoning, logical ERD, constraints and phased non-destructive migration are maintained in `database_design_mysql_spec_v1.md`.
+
+The current ERD below remains an **as-implemented legacy/operational view** until the normalized models and migrations are actually coded. This distinction prevents design documentation from falsely claiming that a planned schema already exists.
+
+## 11.1 Current conceptual ERD
 
 ~~~mermaid
 erDiagram
@@ -291,17 +299,18 @@ flowchart LR
     subgraph Laptop[Development / demonstration computer]
       Bridge[Python Serial Bridge]
       API[FastAPI / Uvicorn]
-      DB[(SQLite)]
+      DB[(MySQL Server)]
       Browser[Web Browser]
       Pico -->|USB serial COM4| Bridge
       Bridge -->|HTTP| API
-      API --> DB
+      API -->|SQLAlchemy / PyMySQL| DB
       Browser -->|HTTP| API
     end
     subgraph External[External services/data]
       Tiles[Map tiles]
       Data[Hydrometeorological datasets]
     end
+    Workbench[MySQL Workbench] -->|administration / EER| DB
     Browser --> Tiles
     Data -. research ingestion .-> API
 ~~~
@@ -325,7 +334,7 @@ flowchart LR
 
 | Requirement | Design responsibility | Current implementation | Verification |
 |---|---|---|---|
-| FR-01/02 | telemetry API + persistence | main.py, models.py, database.py | API/operational tests |
+| FR-01/02 | telemetry API + repository + persistence | main.py, telemetry_repository.py, models.py, database.py | repository/API/operational tests |
 | FR-03 | nullable optional evidence | telemetry schema + bridge | contract/API/hardware tests |
 | FR-04 | threshold provenance | threshold_type | contract/API/dashboard tests |
 | FR-05 | current-state engine | risk_engine.py | risk-separation test |
