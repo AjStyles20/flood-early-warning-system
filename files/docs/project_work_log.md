@@ -1677,3 +1677,16 @@ Added `test_observation_repository.py`. The first CI run (`35920784610`) failed 
 Created and embedded `diagrams/floodwatch_observation_repository.svg`. Also expanded Chapter Two with an explicit gap-to-contribution matrix distinguishing primary scientific contribution, engineering/design contributions, unevaluated human-response questions and out-of-scope institutional/evacuation problems.
 
 **Normalized Observation Increment D: PASS under SQLite compatibility CI. MySQL-specific DB-1 execution remains pending local MySQL integration.**
+
+
+## 2026-09-24 - DB-3 Controlled Dual-Write Increment
+
+Implemented `telemetry_normalization_adapter.py` and connected it to `telemetry_repository.create_record`. Validated REST/Pico telemetry now writes the legacy compatibility record and normalized observations in one transaction. CSV ingestion was also moved through the same repository so REST and bulk ingestion cannot silently use different persistence rules.
+
+Mapping rules are explicit: hardware -> `LOCAL_SENSOR`; simulator -> `SIMULATED`; water level -> `river_stage`; rainfall/flow/battery are mirrored only when present. The legacy danger threshold is not inserted as an Observation. Catalogue seeding can now run inside the caller transaction. If normalization fails, the transaction rolls back rather than committing only the legacy side.
+
+Added `test_telemetry_dual_write.py` and CI coverage. Tests verify stage-only hardware produces exactly one normalized observation, simulator values are mirrored only when actually supplied, provenance remains distinct, and thresholds are not misrepresented as observations. GitHub Actions run `35931686163` completed successfully.
+
+Created and embedded `diagrams/floodwatch_telemetry_dual_write.svg` in Chapter Three, software-engineering design and the MySQL database specification.
+
+**DB-3 Controlled Dual-Write: PASS under SQLite compatibility CI.** Legacy reads remain authoritative. DB-4 normalized-read parity, post-migration physical Pico regression, and MySQL-specific DB-1 execution remain pending. No model training or research experiment was run.
