@@ -233,6 +233,12 @@ sequenceDiagram
     API-->>UI: source-aware status
 ~~~
 
+## 10.1 Normalized observation repository boundary
+
+![Normalized observation repository boundary](diagrams/floodwatch_observation_repository.svg)
+
+The repository boundary persists one atomic variable/value observation with explicit station and evidence source. Deterministic catalogues constrain the representation vocabulary without claiming every catalogue entry is currently measured. Composite indexes support station/variable/time and source/time access paths. The legacy telemetry path remains available until parity and physical-regression gates pass.
+
 ## 11. Database design decision
 
 The target development/operational DBMS is **MySQL Server**, administered and inspected with **MySQL Workbench**, with SQLAlchemy/PyMySQL as the application connection layer. SQLite remains an isolated compatibility/test database where MySQL-specific behaviour is not under test.
@@ -350,7 +356,7 @@ flowchart LR
 
 | Requirement | Design responsibility | Current implementation | Verification |
 |---|---|---|---|
-| FR-01/02 | telemetry API + repository + persistence | main.py, telemetry_repository.py, models.py, database.py | repository/API/operational tests |
+| FR-01/02 | telemetry/observation repositories + persistence | main.py, telemetry_repository.py, observation_repository.py, models.py, database.py | repository/API/operational tests |
 | FR-03 | nullable optional evidence | telemetry schema + bridge | contract/API/hardware tests |
 | FR-04 | threshold provenance | threshold_type | contract/API/dashboard tests |
 | FR-05 | current-state service + engine | current_state_service.py, risk_engine.py | current-state service/risk-separation tests |
