@@ -104,19 +104,25 @@ This makes the system switchable between simulator, hardware, and hybrid demonst
 
 ## 3.6 Database Design
 
-The database layer is implemented in `files/api/database.py` and `files/api/models.py`.
+FloodWatch uses a relational database architecture through SQLAlchemy. The target development/operational DBMS is **MySQL Server**, while **MySQL Workbench** is used as the administration, inspection and EER-design client. The application connects to MySQL through SQLAlchemy/PyMySQL using the `FLOOD_EWS_DATABASE_URL` configuration; Workbench is not part of the runtime request path.
 
-The main telemetry table stores one row per sensor reading. Important fields include:
+SQLite is retained as an isolated compatibility and automated-test database where MySQL-specific behaviour is not being tested. This keeps CI/unit tests fast while allowing the real application database to use a client/server DBMS.
 
-- `station_id`, used to group readings by monitoring station;
-- `station_name`, used for dashboard display;
-- `data_source`, used to separate simulated and hardware readings;
-- `lat` and `lon`, used for GIS marker placement;
-- `timestamp`, used for ordering and freshness checks;
-- `water_level_m` and `danger_level_m`, used to calculate risk ratio;
-- `rainfall_mm_hr`, `flow_rate_m3s`, `battery_pct`, and `signal`, used for context and dashboard interpretation.
+The first prototype used a wide `telemetry` table containing station identity, location, water level, threshold, rainfall, flow, battery and signal fields in each row. That representation remains temporarily for backward compatibility with the demonstrated Pico and simulator pipelines, but it is not the target normalized schema.
 
-SQLAlchemy is used so that the code is not tied only to raw SQL statements. A future deployment can switch to a different SQL database by using the `FLOOD_EWS_DATABASE_URL` environment variable, but the prototype remains file-based SQLite by default.
+The target data model separates:
+
+- **Station**: monitoring/gauge location and identity;
+- **Variable**: what is measured, including its unit/category;
+- **DataSource**: evidence/provenance classification and provider;
+- **Dataset**: historical/external dataset metadata and redistribution status;
+- **Observation**: one variable value at one station, source and time;
+- **Threshold**: a separately sourced and time-valid decision threshold;
+- existing operational entities including users, sessions, alerts, alert audits, scenarios and community reports.
+
+This structure applies normalization through 1NF, 2NF and 3NF. In particular, station/source/unit descriptions are not unnecessarily repeated in every observation, and heterogeneous evidence does not require fabricated values for variables a source did not measure.
+
+Migration is deliberately non-destructive. The project first establishes MySQL connectivity and the normalized schema, then introduces compatibility/dual-write adapters, moves reads only after equivalence tests pass, and retires the legacy telemetry persistence only after CI and physical Pico regression remain successful. The detailed logical ERD, constraints, indexes and migration phases are specified in `database_design_mysql_spec_v1.md`.
 
 ## 3.7 Risk Classification Method
 
