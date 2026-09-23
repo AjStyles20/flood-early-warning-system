@@ -1600,3 +1600,32 @@ The database **architecture** decision is kept separate from the DBMS decision. 
 No destructive migration was performed. The legacy telemetry table remains a protected compatibility path. Planned phases are MySQL connectivity -> normalized schema -> compatibility/dual-write -> normalized reads -> legacy retirement only after parity, CI and Pico regression pass.
 
 Created `database_design_mysql_spec_v1.md` and synchronized the software-engineering design and Chapter 3 database section.
+
+
+## 2026-09-23 - Normalized Schema Increment and Rendered Database Diagrams
+
+### Implementation
+
+Added non-destructive SQLAlchemy models for `Station`, `Variable`, `DataSource`, `Dataset`, `Observation` and `Threshold`. The legacy `TelemetryRecord` remains in place, so the proven Pico/simulator path is not removed.
+
+Added `test_normalized_schema.py` and included it in CI. The tests verify that normalized tables coexist with legacy telemetry, a stage-only observation does not require fabricated rainfall/flow values, and thresholds are stored separately from observations.
+
+### Diagram artefacts
+
+Created rendered SVG engineering diagrams under `files/docs/diagrams/`:
+
+- `floodwatch_normalized_erd.svg` — target normalized scientific observation/provenance ERD;
+- `floodwatch_mysql_deployment.svg` — target runtime/development deployment showing Pico, bridge, FastAPI, MySQL Server, Workbench and browser;
+- `floodwatch_database_migration_activity.svg` — DB-1 through DB-5 non-destructive migration/gating activity.
+
+The diagrams are embedded in both `database_design_mysql_spec_v1.md` and the Chapter 3 implementation draft where the corresponding database concepts are explained. Mermaid source diagrams remain useful as editable text, while the SVG assets provide stable rendered figures for documentation.
+
+### Verification
+
+GitHub Actions run `35913855248` completed successfully after the model, test and documentation changes.
+
+### Gate
+
+**Normalized Schema Increment: PASS under SQLite compatibility CI.**
+
+This does not yet prove MySQL-specific execution. DB-1 remains a local-environment integration step: MySQL Server/Workbench must be installed/configured on the student's computer, the `floodwatch` schema and least-privilege application account created, and the API connected using `FLOOD_EWS_DATABASE_URL` before the MySQL connectivity gate can pass.
