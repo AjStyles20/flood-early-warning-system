@@ -172,6 +172,12 @@ flowchart LR
     P5 --> UI[Dashboard / Data UI]
 ~~~
 
+## 8.3 Current-state service boundary
+
+![FloodWatch current-state service boundary](diagrams/floodwatch_current_state_service.svg)
+
+`current_state_service.py` is the application-service boundary between route transport and risk interpretation. It owns trend derivation/orchestration while `risk_engine.py` owns the explainable threshold rule. The frozen simulator ML model remains an informational development path and is not merged into the current-state ratio.
+
 ## 9. Activity diagram - telemetry processing
 
 ~~~mermaid
