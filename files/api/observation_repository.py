@@ -6,8 +6,8 @@ import models
 from observation_catalogue import SOURCE_CATALOGUE, VARIABLE_CATALOGUE
 
 
-def seed_catalogues(db: Session) -> None:
-    """Idempotently seed controlled representation/provenance vocabulary."""
+def seed_catalogues(db: Session, *, commit: bool = True) -> None:
+    """Idempotently seed controlled vocabulary, optionally in caller transaction."""
     for item in VARIABLE_CATALOGUE:
         row = db.query(models.Variable).filter(models.Variable.code == item["code"]).first()
         if row is None:
@@ -16,7 +16,10 @@ def seed_catalogues(db: Session) -> None:
         row = db.query(models.DataSource).filter(models.DataSource.code == item["code"]).first()
         if row is None:
             db.add(models.DataSource(**item))
-    db.commit()
+    if commit:
+        db.commit()
+    else:
+        db.flush()
 
 
 def get_variable(db: Session, code: str) -> models.Variable | None:
