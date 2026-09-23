@@ -386,3 +386,10 @@ The migration uses a compatibility adapter rather than a big-bang schema replace
 ![FloodWatch DB-4 normalized read parity](diagrams/floodwatch_db4_read_parity.svg)
 
 DB-4 is intentionally split into **parity** and **promotion**. The normalized repository can now reconstruct the dual-written evidence fields and is regression-tested against the legacy repository, but routes continue using the compatibility read path. This strangler-style migration avoids changing persistence representation and operational behaviour simultaneously.
+
+
+## 10.x Threshold configuration boundary
+
+![FloodWatch typed threshold applicability](diagrams/floodwatch_threshold_applicability.svg)
+
+The current-state contract requires both evidence and a decision threshold, but these are separate domain concepts. `threshold_repository.py` owns typed/time-valid threshold selection. Compatibility telemetry can seed a `prototype_demo` (or otherwise validated typed) threshold without converting it into an observation or claiming official provenance. Missing applicable configuration produces no normalized current-state candidate rather than a hidden default.
