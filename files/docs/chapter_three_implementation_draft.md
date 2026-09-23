@@ -31,13 +31,17 @@ Detailed requirements, use cases, DFDs, UML-style diagrams, ERD, deployment desi
 
 ## 3.3 System Architecture
 
+![FloodWatch evidence-to-decision-support architecture](diagrams/floodwatch_evidence_to_decision_support.svg)
+
+The architecture distinguishes physical/simulated/external evidence at ingestion, preserves provenance, separates current-state monitoring from predictive research, and converts accepted evidence into decision-support communication. Predictive research reaches the operational path only after an explicit evidence gate.
+
 The system follows a layered architecture.
 
 ```mermaid
 flowchart TD
     Sensor[Physical node / controlled simulator] --> API[FastAPI telemetry API]
     API --> Validation[Validation + provenance]
-    Validation --> DB[(SQLite flood_data.db)]
+    Validation --> DB[(Persistence: MySQL target / SQLite CI compatibility)]
     DB --> Risk[Current-state threshold assessment]
     Risk --> Status[Risk-status endpoint]
     Status --> Dashboard[Leaflet/OpenStreetMap dashboard]
@@ -58,19 +62,19 @@ The implementation uses the approved project stack:
 | Backend API | Python and FastAPI | Fast development, clear routing, automatic validation support |
 | Data validation | Pydantic | Ensures incoming telemetry has valid types and ranges |
 | Database ORM | SQLAlchemy | Provides structured database models and future database portability |
-| Database | SQLite file database | Simple local persistence through `sqlite:///flood_data.db` |
+| Database | MySQL Server target; SQLite compatibility/CI | Client/server operational target with fast isolated regression-test compatibility |
 | Machine learning | scikit-learn | Supports Logistic Regression, Random Forest, and baseline comparison |
 | Simulator messaging | REST with optional paho-mqtt | Allows simulator fallback and hardware-ready communication |
 | Dashboard | Jinja2, HTML, CSS, JavaScript | Fits the Python backend and avoids unnecessary frontend build complexity |
 | GIS display | Leaflet.js and OpenStreetMap | Lightweight browser-based mapping with open map tiles |
 
-SQLite is deliberately file-based. The normal database URL is:
+For compatibility and CI, SQLite is deliberately file-based. The compatibility database URL is:
 
 ```text
 sqlite:///flood_data.db
 ```
 
-The in-memory form, `sqlite://`, is not used for the active application or the current regression tests because it does not preserve records after process restart. Tests use a temporary file-based SQLite database so the persistence guardrail is exercised consistently.
+The target application DBMS is MySQL Server as specified in Section 3.6. SQLite remains the file-based compatibility/CI path; the in-memory form, `sqlite://`, is not used for persistence-oriented regression tests.
 
 ## 3.5 Telemetry Input Design
 
