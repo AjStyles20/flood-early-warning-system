@@ -305,3 +305,12 @@ The bridge sends `data_source: hardware`, identifies its threshold as `prototype
 ## 3.14 Chapter Summary
 
 This chapter describes the iterative Agile SDLC, requirements-driven design and verified implementation of FloodWatch. The engineering system integrates source-aware telemetry ingestion, persistence, provenance/threshold semantics, explainable current-state assessment, accessible GIS visualization, alert workflow, automated regression testing and a demonstrated Pico-to-dashboard physical integration path. Historical predictive research remains a separate evidence-controlled pipeline until its experiment protocol is frozen and evaluated.
+
+
+### Alert workflow service
+
+**Figure 3.x — Persistent alert workflow and state transitions**
+
+![FloodWatch alert workflow](diagrams/floodwatch_alert_workflow.svg)
+
+`alert_service.py` owns duplicate suppression, safe bulletin wording, transition rules and audit persistence. Authentication and HTTP error mapping remain at the route boundary.
