@@ -110,6 +110,10 @@ SQLite is retained as an isolated compatibility and automated-test database wher
 
 The first prototype used a wide `telemetry` table containing station identity, location, water level, threshold, rainfall, flow, battery and signal fields in each row. That representation remains temporarily for backward compatibility with the demonstrated Pico and simulator pipelines, but it is not the target normalized schema.
 
+**Figure 3.x — Target normalized FloodWatch ERD**
+
+![Target normalized FloodWatch ERD](diagrams/floodwatch_normalized_erd.svg)
+
 The target data model separates:
 
 - **Station**: monitoring/gauge location and identity;
@@ -122,7 +126,17 @@ The target data model separates:
 
 This structure applies normalization through 1NF, 2NF and 3NF. In particular, station/source/unit descriptions are not unnecessarily repeated in every observation, and heterogeneous evidence does not require fabricated values for variables a source did not measure.
 
+**Figure 3.x — Controlled database migration activity**
+
+![Controlled database migration activity](diagrams/floodwatch_database_migration_activity.svg)
+
 Migration is deliberately non-destructive. The project first establishes MySQL connectivity and the normalized schema, then introduces compatibility/dual-write adapters, moves reads only after equivalence tests pass, and retires the legacy telemetry persistence only after CI and physical Pico regression remain successful. The detailed logical ERD, constraints, indexes and migration phases are specified in `database_design_mysql_spec_v1.md`.
+
+### 3.6.1 Target database deployment
+
+![FloodWatch MySQL deployment](diagrams/floodwatch_mysql_deployment.svg)
+
+The deployment separates MySQL Server from MySQL Workbench: FastAPI connects directly to the server through SQLAlchemy/PyMySQL, while Workbench is an administration and EER-design client. SQLite remains outside the target runtime path and is retained for isolated compatibility/CI testing.
 
 ## 3.7 Risk Classification Method
 
