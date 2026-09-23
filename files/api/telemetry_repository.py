@@ -15,6 +15,7 @@ from typing import Literal
 from sqlalchemy.orm import Session
 
 import models
+import telemetry_normalization_adapter
 
 
 TelemetrySource = Literal["simulated", "hardware"]
@@ -24,7 +25,15 @@ def create_record(db: Session, reading: models.TelemetryCreate) -> models.Teleme
     """Persist one already-validated telemetry payload."""
     record = models.TelemetryRecord(**reading.model_dump())
     db.add(record)
-    db.commit()
+    try:
+        # DB-3 controlled dual-write: legacy compatibility record and normalized
+        # observations share one transaction. A normalization failure therefore
+        # cannot leave the two persistence representations silently divergent.
+        telemetry_normalization_adapter.stage_normalized_mirror(db, reading)
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(record)
     return record
 
