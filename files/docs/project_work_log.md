@@ -1690,3 +1690,14 @@ Added `test_telemetry_dual_write.py` and CI coverage. Tests verify stage-only ha
 Created and embedded `diagrams/floodwatch_telemetry_dual_write.svg` in Chapter Three, software-engineering design and the MySQL database specification.
 
 **DB-3 Controlled Dual-Write: PASS under SQLite compatibility CI.** Legacy reads remain authoritative. DB-4 normalized-read parity, post-migration physical Pico regression, and MySQL-specific DB-1 execution remain pending. No model training or research experiment was run.
+
+
+## 2026-09-24 - DB-4 Evidence Read-Parity Increment
+
+Moved latest-per-station and latest-per-station/source legacy query ownership from `main.py` into `telemetry_repository.py`, leaving compatibility aliases in `main.py`. Added `normalized_read_repository.py` to reconstruct the same evidence shape from normalized Station/Observation/Variable/DataSource rows without switching production/dashboard reads.
+
+Added `test_normalized_read_parity.py`. The test dual-writes multiple hardware/simulated stations, compares normalized reconstruction against the legacy latest-per-station/source result, and verifies absent optional measurements remain null. GitHub Actions run `35932249880` completed successfully.
+
+Created and embedded `diagrams/floodwatch_db4_read_parity.svg`.
+
+**DB-4 evidence-field parity sub-gate: PASS under SQLite compatibility CI. DB-4 operational read promotion remains PENDING.** Next dependency: normalize threshold/configuration semantics, because the current-state engine legitimately requires a threshold while DB-3 correctly refused to store `danger_level_m` as an Observation. Physical Pico regression and MySQL-specific DB-1 execution remain required before DB-5 legacy retirement. No research experiment/model training was run.
