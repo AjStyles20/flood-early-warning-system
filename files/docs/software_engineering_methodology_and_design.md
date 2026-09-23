@@ -178,6 +178,12 @@ flowchart LR
 
 `current_state_service.py` is the application-service boundary between route transport and risk interpretation. It owns trend derivation/orchestration while `risk_engine.py` owns the explainable threshold rule. The frozen simulator ML model remains an informational development path and is not merged into the current-state ratio.
 
+## 8.4 Alert workflow service boundary
+
+![FloodWatch alert workflow](diagrams/floodwatch_alert_workflow.svg)
+
+The alert service owns persistent alert lifecycle rules independently of FastAPI transport. Active duplicate suppression is keyed by station/source, valid transitions are explicit, and every operator transition is audited. Delivery capability labels remain honest: web is available while email/SMS are simulated.
+
 ## 9. Activity diagram - telemetry processing
 
 ~~~mermaid
