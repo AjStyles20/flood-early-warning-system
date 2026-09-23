@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 import models
 import observation_repository
+import threshold_repository
 
 
 _SOURCE_MAP = {"hardware": "LOCAL_SENSOR", "simulated": "SIMULATED"}
@@ -84,6 +85,19 @@ def stage_normalized_mirror(db: Session, reading: models.TelemetryCreate) -> lis
             reading=reading, value=value,
         ))
 
-    # Threshold is a decision/configuration value, not an observation. During
-    # compatibility mirroring it is intentionally not copied into Observation.
+    # Threshold is decision/configuration evidence, never an Observation.
+    # Legacy prototype thresholds have no independent external source, so their
+    # provenance is explicitly compatibility-derived rather than "official".
+    stage_variable = observation_repository.get_variable(db, "river_stage")
+    threshold_repository.stage_threshold(
+        db,
+        station=station,
+        variable=stage_variable,
+        threshold_type=reading.threshold_type,
+        value=reading.danger_level_m,
+        source_reference=(
+            "legacy_telemetry_compatibility: validated TelemetryCreate payload; "
+            "not independently verified as an official hydrological threshold"
+        ),
+    )
     return rows
