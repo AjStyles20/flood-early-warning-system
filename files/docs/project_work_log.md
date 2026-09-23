@@ -1507,3 +1507,43 @@ The new operational test verifies safe serialization of exactly three public Ema
 
 Completion boundary: the contact integration and automated local regression checks are complete. Real EmailJS service/template/public-key configuration and a deliberate received-inbox check remain outstanding. Real news subscriptions, SMS/WhatsApp/OTP delivery, container execution and hosted CI retain their previously recorded verification limits. None is made live by completing the contact form.
 
+
+
+## 2026-09-23 - Full Development / Software Engineering Baseline
+
+### Methodology decision
+
+FloodWatch is formally described as using an **iterative and incremental Agile SDLC with prototype-driven development and explicit research/evidence gates**. Pure Waterfall is rejected as an inaccurate description of the actual process because requirements and design have changed in response to supervisor feedback, literature/prior-art review, observational-data audit, automated regression testing and physical integration results. The project does not claim Scrum ceremonies that were not actually performed.
+
+### Design baseline added
+
+Created `software_engineering_methodology_and_design.md` containing:
+
+- SDLC cycle and iteration history;
+- stakeholders and actors;
+- functional requirements FR-01 to FR-16;
+- non-functional requirements NFR-01 to NFR-12;
+- use-case model;
+- logical architecture;
+- context and Level-1 DFDs;
+- telemetry activity diagram;
+- physical-telemetry sequence diagram;
+- conceptual ERD;
+- deployment diagram;
+- development epics/backlog;
+- initial requirements traceability matrix.
+
+### Verified engineering state carried into design
+
+- GitHub regression/CI gate: PASS after alignment refactor.
+- Physical integration gate: PASS.
+- Demonstrated path: controlled analogue input -> Raspberry Pi Pico -> COM4 -> Python serial bridge -> FastAPI on local port 8010 -> persistence/current-state processing -> Hardware telemetry dashboard.
+- Hardware values changed physically and API posts returned HTTP 200.
+- Potentiometer remains a controlled stage-like analogue input, not a Lokoja field-stage observation.
+- Unmeasured rainfall, flow/discharge and battery values are unavailable/null rather than fabricated zeroes.
+- Hardware threshold is prototype/demo, not an official Lokoja threshold.
+- Synthetic ML model remains frozen development evidence and does not override hardware current-state classification.
+
+### Development decision
+
+The project is now in the **full-development architecture/data-model modularisation increment**. Documentation and code must evolve together. Major implementation changes must map to requirements/design and receive regression tests. Experiment 001 remains blocked until its scientific protocol is frozen; full software development does not remove that research gate.
