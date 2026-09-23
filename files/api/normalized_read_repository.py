@@ -2,8 +2,7 @@
 
 This module reconstructs the telemetry-shaped evidence needed for parity
 checking. It does not switch public/dashboard reads away from the legacy table.
-Threshold configuration is intentionally excluded because DB-3 does not yet
-normalize legacy danger_level_m into Threshold.
+Threshold configuration is resolved from the typed Threshold entity and must be applicable at the observation timestamp.
 """
 
 from dataclasses import dataclass
@@ -11,6 +10,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 
 import models
+import threshold_repository
 
 
 _SOURCE_TO_LEGACY = {"LOCAL_SENSOR": "hardware", "SIMULATED": "simulated"}
@@ -29,6 +29,8 @@ class NormalizedTelemetryEvidence:
     flow_rate_m3s: float | None
     battery_pct: float | None
     signal: str | None
+    danger_level_m: float
+    threshold_type: str
 
 
 def _latest_stage_rows(db: Session):
@@ -79,6 +81,16 @@ def latest_evidence(db: Session) -> list[NormalizedTelemetryEvidence]:
     """Reconstruct newest normalized evidence per station/source for parity."""
     result = []
     for stage_obs, station, source in _latest_stage_rows(db):
+        threshold = threshold_repository.applicable_threshold(
+            db,
+            station_id=station.id,
+            variable_id=stage_obs.variable_id,
+            observed_at=stage_obs.observed_at,
+        )
+        if threshold is None:
+            # No silent fallback: current-state interpretation requires an
+            # explicit threshold with provenance/type.
+            continue
         result.append(NormalizedTelemetryEvidence(
             station_id=station.station_code,
             station_name=station.name,
@@ -91,5 +103,7 @@ def latest_evidence(db: Session) -> list[NormalizedTelemetryEvidence]:
             flow_rate_m3s=_value_at(db, station_id=station.id, source_id=source.id, code="river_discharge", observed_at=stage_obs.observed_at),
             battery_pct=_value_at(db, station_id=station.id, source_id=source.id, code="battery_pct", observed_at=stage_obs.observed_at),
             signal=stage_obs.signal_status,
+            danger_level_m=threshold.value,
+            threshold_type=threshold.threshold_type,
         ))
     return result
