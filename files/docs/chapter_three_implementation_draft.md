@@ -19,17 +19,15 @@ The implementation focuses on the approved core pipeline:
 
 The system does not issue autonomous emergency orders. It provides decision support and instructs users to follow official guidance.
 
-## 3.2 Development Approach
+## 3.2 Development Methodology and SDLC
 
-The project was implemented using an iterative prototyping approach. Each major part of the system was built, tested, corrected, and documented before being integrated with the next part. This approach was selected because flood early warning systems involve several connected layers: sensor input, validation, storage, risk analysis, model prediction, geospatial display, and user communication.
+FloodWatch is developed using an **iterative and incremental Agile Software Development Life Cycle (SDLC), supported by prototype-driven development and explicit research/evidence gates**. A pure Waterfall description would not accurately represent the project because requirements and design have been refined after literature review, supervisor feedback, observational-data audit, automated testing, and physical hardware integration.
 
-During implementation, emphasis was placed on:
+Each iteration follows planning/evidence review -> requirements -> analysis -> design -> implementation -> verification/testing -> evaluation/review -> documentation/baseline. The methodology does not claim formal Scrum ceremonies that were not performed. Agile is used in its iterative engineering sense: a living backlog, controlled increments, continuous regression testing, stakeholder feedback, and traceability between requirements, design, code and tests.
 
-- explainability, so that the system can be defended and understood line by line;
-- portability, so that new stations and thresholds can be added without rewriting the core code;
-- safety, so that the system remains advisory and does not replace official emergency responders;
-- accessibility, so that users who cannot depend on map visuals alone can still access station status through text;
-- test evidence, so that claims about the system are proven instead of assumed.
+Research experiments have an additional promotion gate. Experimental predictive logic is not inserted into the operational warning path simply because it can be implemented. Its target, horizon, data provenance, validation design, baseline comparison and limitations must first be defined and evaluated.
+
+Detailed requirements, use cases, DFDs, UML-style diagrams, ERD, deployment design and traceability are maintained in `software_engineering_methodology_and_design.md`.
 
 ## 3.3 System Architecture
 
@@ -37,19 +35,19 @@ The system follows a layered architecture.
 
 ```mermaid
 flowchart TD
-    Sensor[Simulator or hardware node] --> API[FastAPI telemetry API]
-    API --> Validation[Pydantic validation]
+    Sensor[Physical node / controlled simulator] --> API[FastAPI telemetry API]
+    API --> Validation[Validation + provenance]
     Validation --> DB[(SQLite flood_data.db)]
-    DB --> Risk[Four-tier risk engine]
-    DB --> ML[Future-horizon ML model]
+    DB --> Risk[Current-state threshold assessment]
     Risk --> Status[Risk-status endpoint]
-    ML --> Status
     Status --> Dashboard[Leaflet/OpenStreetMap dashboard]
     Status --> TextList[Accessible text station list]
-    Risk --> Alerts[Simulated web/email/SMS alert log]
+    Risk --> Alerts[Advisory alert workflow]
+    External[Historical/external data] --> Research[Separate research pipeline]
+    Research -. validated promotion gate only .-> Risk
 ```
 
-The simulator or hardware node sends telemetry to the backend through `POST /api/telemetry`. The backend validates the reading using Pydantic, stores it using SQLAlchemy, calculates flood risk using the rule-based risk engine, optionally adds machine-learning probability, and exposes the result through `GET /api/risk-status`. The dashboard polls this endpoint and updates both the map and the accessible station list.
+The simulator or physical node sends telemetry through `POST /api/telemetry`. Pydantic validates the payload, source and threshold metadata are preserved, SQLAlchemy persists the reading, and the current-state engine evaluates configured threshold bands. Experimental forecast probability is separate and does not override current threshold state. Historical hydrological research remains outside the live application path until its promotion gate is passed.
 
 ## 3.4 Technology Stack
 
@@ -139,7 +137,7 @@ The system uses four risk levels:
 | High | Flood-risk conditions are high and users should avoid risky areas while following official guidance |
 | Severe | Critical flood-risk conditions are detected and responders should verify conditions |
 
-The risk engine may also use the machine-learning probability when available. The higher of the physical ratio and ML probability is used as the risk score, so that a validated future-risk model can raise attention earlier while the transparent physical threshold remains available.
+Machine-learning probability is not numerically merged with the physical threshold ratio. Current-state classification is determined by configured threshold bands. Experimental forecast probability remains informational until a validated research experiment defines and passes an explicit promotion policy.
 
 All risk wording is advisory. The system does not say "evacuate now" or issue autonomous instructions. The English guidance ends with "follow official guidance."
 
@@ -147,7 +145,7 @@ All risk wording is advisory. The system does not say "evacuate now" or issue au
 
 The machine-learning pipeline is implemented in `files/api/train_model.py`.
 
-The model is trained on simulator-generated telemetry only. Therefore, its results are evidence for the prototype and not proof of production flood-prediction performance on real field data.
+The existing saved model was trained on simulator-generated telemetry only and is now **frozen as development evidence**. It is not the thesis research model, is not applied to physical hardware observations, and is not proof of Lokoja predictive performance.
 
 An important correction was made during development. The model was not trained to predict whether the current reading is already above the danger level, because that would create a circular label. Instead, the corrected target is:
 
@@ -261,12 +259,12 @@ The latest verified outputs include:
 [PASS] Core dashboard/data access, break tests, optional auth shell, parked extras, source switching, XSS guards, and SQLite configuration verified.
 ```
 
-## 3.13 Hardware Readiness
+## 3.13 Hardware Integration and Physical Prototype Validation
 
-The project supports hardware integration by allowing a real sensor node to send the same JSON format as the simulator. A hardware node should send telemetry to:
+The physical integration path has been demonstrated using Raspberry Pi Pico -> COM4 -> Python serial bridge -> FastAPI -> SQLite/current-state processing -> dashboard. The potentiometer is a controlled analogue input used to emulate changing stage-like conditions; it is not a Lokoja river-stage observation. The hardware node sends telemetry to:
 
 ```text
-POST http://127.0.0.1:8000/api/telemetry
+POST http://127.0.0.1:8010/api/telemetry
 ```
 
 The reading should include:
@@ -275,8 +273,8 @@ The reading should include:
 "data_source": "hardware"
 ```
 
-This lets the dashboard show whether a reading came from a simulated source or a physical sensor source. If no hardware is available, the simulator remains a valid fallback for demonstrating the complete pipeline.
+The bridge sends `data_source: hardware`, identifies its threshold as `prototype_demo`, and leaves unmeasured rainfall, flow/discharge and battery values unavailable rather than fabricating zeroes. Physical testing demonstrated changing analogue values reaching the API with successful HTTP responses and appearing in Hardware telemetry mode. This validates sensing-to-software integration, not hydrological measurement accuracy or flood-prediction skill.
 
 ## 3.14 Chapter Summary
 
-This chapter described the methodology and implementation of the flood early warning and decision support prototype. The system integrates telemetry ingestion, persistent storage, transparent risk classification, future-horizon ML prediction, accessible GIS visualization, and simulated multi-channel alert logging. It is designed to be portable, explainable, accessible, and safe for undergraduate project demonstration while leaving production integrations as future work.
+This chapter describes the iterative Agile SDLC, requirements-driven design and verified implementation of FloodWatch. The engineering system integrates source-aware telemetry ingestion, persistence, provenance/threshold semantics, explainable current-state assessment, accessible GIS visualization, alert workflow, automated regression testing and a demonstrated Pico-to-dashboard physical integration path. Historical predictive research remains a separate evidence-controlled pipeline until its experiment protocol is frozen and evaluated.
