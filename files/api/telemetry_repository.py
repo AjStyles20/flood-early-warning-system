@@ -68,3 +68,62 @@ def latest_for_station(
     if data_source is not None:
         query = query.filter(models.TelemetryRecord.data_source == data_source)
     return query.order_by(models.TelemetryRecord.timestamp.desc(), models.TelemetryRecord.id.desc()).first()
+
+
+def latest_per_station(
+    db: Session,
+    *,
+    data_source: TelemetrySource | None = None,
+) -> list[models.TelemetryRecord]:
+    """Newest legacy-compatible record per station; DB-4 parity reference read."""
+    from sqlalchemy import and_, func
+    telemetry = models.TelemetryRecord
+    latest_timestamp = db.query(
+        telemetry.station_id.label("station_id"),
+        func.max(telemetry.timestamp).label("max_timestamp"),
+    )
+    if data_source is not None:
+        latest_timestamp = latest_timestamp.filter(telemetry.data_source == data_source)
+    latest_timestamp = latest_timestamp.group_by(telemetry.station_id).subquery()
+    rows = (
+        db.query(telemetry)
+        .join(latest_timestamp, and_(
+            telemetry.station_id == latest_timestamp.c.station_id,
+            telemetry.timestamp == latest_timestamp.c.max_timestamp,
+        ))
+        .order_by(telemetry.station_id.asc(), telemetry.id.desc())
+        .all()
+    )
+    latest = {}
+    for row in rows:
+        latest.setdefault(row.station_id, row)
+    return list(latest.values())
+
+
+def latest_per_station_and_source(db: Session) -> list[models.TelemetryRecord]:
+    """Newest legacy-compatible record for each station/source pair."""
+    from sqlalchemy import and_, func
+    telemetry = models.TelemetryRecord
+    latest_timestamp = (
+        db.query(
+            telemetry.station_id.label("station_id"),
+            telemetry.data_source.label("data_source"),
+            func.max(telemetry.timestamp).label("max_timestamp"),
+        )
+        .group_by(telemetry.station_id, telemetry.data_source)
+        .subquery()
+    )
+    rows = (
+        db.query(telemetry)
+        .join(latest_timestamp, and_(
+            telemetry.station_id == latest_timestamp.c.station_id,
+            telemetry.data_source == latest_timestamp.c.data_source,
+            telemetry.timestamp == latest_timestamp.c.max_timestamp,
+        ))
+        .order_by(telemetry.station_id.asc(), telemetry.data_source.asc(), telemetry.id.desc())
+        .all()
+    )
+    latest = {}
+    for row in rows:
+        latest.setdefault((row.station_id, row.data_source), row)
+    return list(latest.values())
