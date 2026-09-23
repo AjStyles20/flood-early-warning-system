@@ -44,7 +44,7 @@ class NormalizedSchemaTests(unittest.TestCase):
         variable = m.Variable(code="river_stage", name="River/local stage",
                               unit="m", category="hydrological_response")
         source = m.DataSource(code="LOCAL_SENSOR", name="Local physical node",
-                              evidence_type="local_sensor", provider="FloodWatch",
+                              evidence_type="observed", provider="FloodWatch",
                               is_observational=True)
         self.db.add_all([station, variable, source])
         self.db.flush()
@@ -68,7 +68,7 @@ class NormalizedSchemaTests(unittest.TestCase):
         self.db.add_all([station, variable])
         self.db.flush()
         threshold = m.Threshold(station_id=station.id, variable_id=variable.id,
-                                threshold_type="prototype_demo", value=2.0, unit="m",
+                                threshold_type="prototype_demo", value=2.0,
                                 source_reference="controlled prototype configuration")
         self.db.add(threshold)
         self.db.commit()
