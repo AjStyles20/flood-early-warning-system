@@ -1547,3 +1547,37 @@ Created `software_engineering_methodology_and_design.md` containing:
 ### Development decision
 
 The project is now in the **full-development architecture/data-model modularisation increment**. Documentation and code must evolve together. Major implementation changes must map to requirements/design and receive regression tests. Experiment 001 remains blocked until its scientific protocol is frozen; full software development does not remove that research gate.
+
+
+## 2026-09-23 - Backend Modularisation Increment A
+
+### Change
+
+Introduced `files/api/telemetry_repository.py` as the first explicit persistence/repository boundary. HTTP route handlers no longer need to own the basic SQLAlchemy create/list mechanics for telemetry.
+
+Responsibilities are now separated as follows:
+
+- Pydantic/API contract: validates incoming telemetry.
+- Telemetry repository: persists and retrieves source-aware telemetry without assigning scientific meaning.
+- Current-state/risk service: interprets accepted readings.
+- Route handler: coordinates transport, persistence and downstream notification/alert behaviour.
+
+The existing `telemetry` table remains the compatibility store. This increment deliberately does **not** perform a destructive database migration or rename the table because the demonstrated Pico/COM4 pipeline is a protected regression requirement.
+
+### New verification
+
+Added `test_telemetry_repository.py` to verify:
+
+1. hardware provenance and `prototype_demo` threshold type survive persistence;
+2. unmeasured hardware rainfall/flow/battery remain null;
+3. source-filtered retrieval does not silently mix simulated and hardware evidence;
+4. newest-first ordering is preserved;
+5. latest-station lookup respects the requested source boundary.
+
+GitHub Actions was updated to run the repository contract test. CI run 35855013243 completed successfully on commit `e7e3787`.
+
+### Gate
+
+**Backend Modularisation Increment A: PASS.**
+
+Next controlled extraction: current-state assessment/service boundary, followed by alert-service and API-router separation. Each extraction must remain behavior-preserving and pass the full regression suite before the next one.
