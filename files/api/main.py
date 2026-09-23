@@ -1334,10 +1334,9 @@ async def upload_telemetry_csv(
             errors.append(f"line {line_number}: {exc.errors()[0]['msg']}")
             continue
 
-        db_record = models.TelemetryRecord(**reading.model_dump())
-        db.add(db_record)
-        db.commit()
-        db.refresh(db_record)
+        # CSV ingestion uses the same repository/dual-write boundary as REST
+        # telemetry so normalized and compatibility persistence cannot drift.
+        db_record = telemetry_repository.create_record(db, reading)
         accepted += 1
         assessment = classify(db_record.water_level_m, db_record.danger_level_m)
         notifications.notify(db_record.station_id, db_record.station_name, assessment, data_source=db_record.data_source)
