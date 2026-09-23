@@ -308,3 +308,12 @@ Fast isolated tests should not require every GitHub runner to maintain a persist
 ## 14. Gate
 
 This specification authorizes implementation of the normalized MySQL-capable schema and migration tooling. It does **not** authorize deleting the legacy telemetry table, importing restricted GRDC raw data into GitHub, selecting research thresholds, or running Experiment 001.
+
+
+## DB-3 implementation status — controlled dual-write
+
+![FloodWatch controlled telemetry dual-write](diagrams/floodwatch_telemetry_dual_write.svg)
+
+DB-3 is now implemented for validated telemetry ingestion. `telemetry_normalization_adapter.py` maps the legacy payload into atomic normalized observations while retaining the legacy telemetry record. Hardware and simulated provenance remain distinct; null optional measurements create no normalized observations; danger thresholds are not misrepresented as sensor measurements. Catalogue seeding participates in the caller transaction so compatibility and normalized persistence commit or roll back together.
+
+**Gate:** DB-3 is PASS under SQLite compatibility CI. DB-4 normalized-read parity, physical Pico regression after read migration, and MySQL-specific DB-1 execution remain pending.
