@@ -215,6 +215,7 @@ class Threshold(Base):
             name="ck_thresholds_type",
         ),
         Index("ix_threshold_station_variable_active", "station_id", "variable_id", "active"),
+        Index("ix_threshold_station_variable_type_validity", "station_id", "variable_id", "threshold_type", "valid_from", "valid_to"),
     )
 
     id = Column(Integer, primary_key=True, index=True)
