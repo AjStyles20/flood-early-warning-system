@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560"><style>text{font-family:Arial,sans-serif;fill:#17202a}.t{font-size:18px;font-weight:bold}.h{font-size:13px;font-weight:bold}.b{font-size:11px}.box{fill:#fff;stroke:#34495e;stroke-width:2}.line{stroke:#566573;stroke-width:2;fill:none}.dash{stroke-dasharray:7 5}.state{fill:#f8f9f9;stroke:#34495e;stroke-width:2}</style><text x="35" y="35" class="t">FloodWatch Alert Workflow — Service and State Transitions</text>
+<rect class="box" x="50" y="95" width="190" height="90" rx="8"/><text x="93" y="125" class="h">Current-State Service</text><text x="78" y="150" class="b">Moderate / High / Severe</text><text x="92" y="168" class="b">alert-worthy state</text>
+<rect class="box" x="315" y="95" width="210" height="90" rx="8"/><text x="365" y="125" class="h">Alert Service</text><text x="340" y="148" class="b">deduplicate active task</text><text x="340" y="166" class="b">safe wording + channels</text>
+<rect class="box" x="600" y="95" width="210" height="90" rx="8"/><text x="640" y="125" class="h">Database</text><text x="625" y="148" class="b">AlertEvent</text><text x="625" y="166" class="b">AlertAuditLog</text>
+<rect class="box" x="885" y="95" width="210" height="90" rx="8"/><text x="935" y="125" class="h">Operator API</text><text x="915" y="148" class="b">authenticate + authorize</text><text x="925" y="166" class="b">workflow action</text>
+<path class="line" d="M240 140 H315"/><path class="line" d="M525 140 H600"/><path class="line" d="M885 140 H810"/>
+<text x="55" y="235" class="h">Persistent alert state machine</text>
+<ellipse class="state" cx="145" cy="340" rx="80" ry="42"/><text x="128" y="345" class="h">NEW</text>
+<ellipse class="state" cx="400" cy="340" rx="90" ry="42"/><text x="357" y="345" class="h">ACKNOWLEDGED</text>
+<ellipse class="state" cx="675" cy="340" rx="85" ry="42"/><text x="640" y="345" class="h">ESCALATED</text>
+<ellipse class="state" cx="970" cy="340" rx="80" ry="42"/><text x="940" y="345" class="h">RESOLVED</text>
+<path class="line" d="M225 340 H310"/><text x="245" y="325" class="b">acknowledge</text><path class="line" d="M490 340 H590"/><text x="525" y="325" class="b">escalate</text><path class="line" d="M760 340 H890"/><text x="805" y="325" class="b">resolve</text>
+<path class="line dash" d="M145 382 V450 H970 V382"/><text x="450" y="472" class="b">new/acknowledged may resolve after operator review; new may also escalate directly</text>
+<text x="35" y="525" class="b">Every valid operator transition writes an audit row. Email/SMS remain simulated capabilities; the workflow does not claim autonomous emergency dispatch.</text></svg>
