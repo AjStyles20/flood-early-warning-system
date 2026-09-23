@@ -36,6 +36,7 @@ import news_feeds
 import notifications
 import telemetry_repository
 import current_state_service
+import alert_service
 from database import engine, get_db
 from risk_engine import classify
 from weather_forecast import get_forecast
@@ -1108,36 +1109,8 @@ assess_record = current_state_service.assess_record
 status_from_record = current_state_service.status_from_record
 
 
-def alert_channels() -> dict[str, str]:
-    """Return the active alert channels for the approved platform core."""
-    return {"web": "available", "email": "simulated", "sms": "simulated"}
-
-
-def alert_to_public(alert: models.AlertEvent) -> dict:
-    """Serialize one persistent alert event for dashboard/API clients."""
-    try:
-        channels = json.loads(alert.channels_json or "{}")
-    except json.JSONDecodeError:
-        channels = {}
-    return {
-        "id": alert.id,
-        "station_id": alert.station_id,
-        "station_name": alert.station_name,
-        "data_source": alert.data_source,
-        "risk_level": alert.risk_level,
-        "message": alert.message,
-        "channels": channels,
-        "status": alert.status,
-        "operator_notes": alert.operator_notes,
-        "created_at": alert.created_at,
-        "updated_at": alert.updated_at,
-        "acknowledged_by": alert.acknowledged_by,
-        "acknowledged_at": alert.acknowledged_at,
-        "escalated_by": alert.escalated_by,
-        "escalated_at": alert.escalated_at,
-        "resolved_by": alert.resolved_by,
-        "resolved_at": alert.resolved_at,
-    }
+alert_channels = alert_service.channels
+alert_to_public = alert_service.to_public
 
 
 def scenario_to_public(run: models.ScenarioRun) -> dict:
@@ -1162,84 +1135,8 @@ def scenario_to_public(run: models.ScenarioRun) -> dict:
     }
 
 
-def record_alert_audit(
-    db: Session,
-    alert: models.AlertEvent,
-    operator: models.User,
-    action: str,
-    from_status: str | None,
-    to_status: str,
-    notes: str,
-) -> None:
-    """Persist an audit event for an operator alert-workflow change."""
-    db.add(
-        models.AlertAuditLog(
-            alert_id=alert.id,
-            action=action,
-            from_status=from_status,
-            to_status=to_status,
-            notes=notes.strip()[:1000] or None,
-            operator_id=operator.id,
-            operator_email=operator.email,
-        )
-    )
-
-
-def persist_alert_event(
-    db: Session,
-    station_id: str,
-    station_name: str,
-    data_source: str,
-    risk_level: str,
-    message: str,
-) -> models.AlertEvent | None:
-    """Create or update a persistent alert for Moderate/High/Severe risk.
-
-    Repeated simulator ticks should not create a wall of duplicate operator
-    tasks. For a still-active station/source alert, this helper updates the
-    risk level and message. Once an operator resolves an alert, a later risky
-    reading can create a new alert event.
-    """
-    if risk_level not in {"Moderate", "High", "Severe"}:
-        return None
-
-    active_alert = (
-        db.query(models.AlertEvent)
-        .filter(
-            models.AlertEvent.station_id == station_id,
-            models.AlertEvent.data_source == data_source,
-            models.AlertEvent.status.in_(["new", "acknowledged", "escalated"]),
-        )
-        .order_by(models.AlertEvent.updated_at.desc(), models.AlertEvent.id.desc())
-        .first()
-    )
-    now = datetime.utcnow()
-    safe_message = message if message.endswith("follow official guidance.") else f"{message} follow official guidance."
-    if active_alert:
-        active_alert.station_name = station_name
-        active_alert.risk_level = risk_level
-        active_alert.message = safe_message
-        active_alert.channels_json = json.dumps(alert_channels())
-        active_alert.updated_at = now
-        db.commit()
-        db.refresh(active_alert)
-        return active_alert
-
-    alert = models.AlertEvent(
-        station_id=station_id,
-        station_name=station_name,
-        data_source=data_source,
-        risk_level=risk_level,
-        message=safe_message,
-        channels_json=json.dumps(alert_channels()),
-        status="new",
-        created_at=now,
-        updated_at=now,
-    )
-    db.add(alert)
-    db.commit()
-    db.refresh(alert)
-    return alert
+record_alert_audit = alert_service.record_audit
+persist_alert_event = alert_service.persist_event
 
 
 def model_metrics_payload() -> dict:
@@ -1660,41 +1557,15 @@ def change_alert_status(
     db: Session,
     operator: models.User,
 ) -> dict:
-    """Apply an operator alert-workflow status change and write an audit row."""
-    alert = db.get(models.AlertEvent, alert_id)
-    if alert is None:
+    """HTTP-compatible wrapper around the alert workflow service."""
+    try:
+        return alert_service.change_status(
+            db, alert_id, target_status, action, payload.notes, operator
+        )
+    except alert_service.AlertNotFoundError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Alert event not found.")
-    allowed = {
-        "new": {"acknowledged", "escalated", "resolved"},
-        "acknowledged": {"escalated", "resolved"},
-        "escalated": {"resolved"},
-        "resolved": set(),
-    }
-    if target_status not in allowed.get(alert.status, set()):
+    except alert_service.InvalidAlertTransitionError:
         raise HTTPException(status_code=409, detail="This alert status transition is not allowed. Refresh the alert queue.")
-
-    previous_status = alert.status
-    now = datetime.utcnow()
-    alert.status = target_status
-    alert.updated_at = now
-    alert.operator_notes = payload.notes.strip()[:1000] or alert.operator_notes
-    if target_status == "acknowledged":
-        alert.acknowledged_by = operator.id
-        alert.acknowledged_at = now
-    elif target_status == "escalated":
-        if not alert.acknowledged_at:
-            alert.acknowledged_by = operator.id
-            alert.acknowledged_at = now
-        alert.escalated_by = operator.id
-        alert.escalated_at = now
-    elif target_status == "resolved":
-        alert.resolved_by = operator.id
-        alert.resolved_at = now
-
-    record_alert_audit(db, alert, operator, action, previous_status, target_status, payload.notes)
-    db.commit()
-    db.refresh(alert)
-    return alert_to_public(alert)
 
 
 @app.post("/api/alerts/{alert_id}/acknowledge")
@@ -1738,15 +1609,10 @@ def read_alert_audit(
 ):
     """Return the audit trail for one alert event."""
     _operator_email = operator.email  # Keeps dependency explicit and easy to explain.
-    alert = db.get(models.AlertEvent, alert_id)
-    if alert is None:
+    try:
+        return alert_service.audit_trail(db, alert_id)
+    except alert_service.AlertNotFoundError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Alert event not found.")
-    return (
-        db.query(models.AlertAuditLog)
-        .filter(models.AlertAuditLog.alert_id == alert_id)
-        .order_by(models.AlertAuditLog.created_at.asc(), models.AlertAuditLog.id.asc())
-        .all()
-    )
 
 
 @app.post("/api/scenario/run")
