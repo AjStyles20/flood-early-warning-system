@@ -47,8 +47,8 @@ class NormalizedReadParityTests(unittest.TestCase):
         return (
             row.station_id, row.station_name, row.data_source,
             round(row.lat, 6), round(row.lon, 6), row.timestamp,
-            row.water_level_m, row.rainfall_mm_hr, row.flow_rate_m3s,
-            row.battery_pct, row.signal,
+            row.water_level_m, row.danger_level_m, row.threshold_type,
+            row.rainfall_mm_hr, row.flow_rate_m3s, row.battery_pct, row.signal,
         )
 
     def test_latest_station_source_evidence_matches_legacy(self):
@@ -67,6 +67,8 @@ class NormalizedReadParityTests(unittest.TestCase):
         self.assertIsNone(row.rainfall_mm_hr)
         self.assertIsNone(row.flow_rate_m3s)
         self.assertIsNone(row.battery_pct)
+        self.assertEqual(row.danger_level_m, 2.5)
+        self.assertEqual(row.threshold_type, "prototype_demo")
 
 
 if __name__ == "__main__":
