@@ -537,3 +537,14 @@ The implementation intentionally does not invent a scientific correction rule. A
 The normalized Station entity now enforces geographic domain bounds at the database layer: latitude must remain between −90 and 90 degrees inclusive, and longitude between −180 and 180 degrees inclusive. This complements request/schema validation because normalized stations may also be created by imports, scripts or future repository paths that do not necessarily pass through the same API model.
 
 Dedicated regression tests verify that the four geographic boundary values are accepted and values immediately outside either domain are rejected with an integrity error. The test is wired into CI. Run `35961809041` passed, including MySQL integration. The constraint proves coordinate-domain validity only; it does not prove that a syntactically valid coordinate is the correct surveyed/authoritative location of a station.
+
+
+### 3.6.x Temporal Metadata Integrity
+
+**Figure 3.x — Dataset and threshold temporal metadata integrity**
+
+![FloodWatch temporal metadata integrity](diagrams/floodwatch_temporal_metadata_integrity.svg)
+
+The normalized schema now rejects internally impossible temporal metadata. Dataset coverage must satisfy `coverage_start <= coverage_end` whenever both bounds are known, while Threshold validity must satisfy `valid_from <= valid_to` whenever both are present. Open/unknown bounds remain permitted because a dataset may have incomplete metadata and an active threshold may legitimately be open-ended. Dataset `evidence_type` is also constrained to the same controlled evidence vocabulary used by DataSource.
+
+Dedicated tests attempt a reversed dataset coverage interval, an unsupported dataset evidence type and a reversed threshold validity interval; all must fail at the database boundary. CI run `35962149212` passed, including MySQL integration. These constraints establish internal metadata consistency, not independent verification that a provider's claimed coverage or threshold authority is correct.
