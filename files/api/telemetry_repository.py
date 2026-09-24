@@ -38,6 +38,8 @@ def create_record(db: Session, reading: models.TelemetryCreate) -> models.Teleme
     return record
 
 
+# Legacy read helpers below are retained only for migration/parity tests until DB-5.
+# Production operational modules are CI-guarded from depending on them.
 def list_records(
     db: Session,
     *,
