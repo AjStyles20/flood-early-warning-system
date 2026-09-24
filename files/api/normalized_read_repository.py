@@ -18,6 +18,7 @@ _SOURCE_TO_LEGACY = {"LOCAL_SENSOR": "hardware", "SIMULATED": "simulated"}
 
 @dataclass(frozen=True)
 class NormalizedTelemetryEvidence:
+    id: int
     station_id: str
     station_name: str
     data_source: str
@@ -103,6 +104,7 @@ def latest_evidence(
             # explicit threshold with provenance/type.
             continue
         result.append(NormalizedTelemetryEvidence(
+            id=stage_obs.id,
             station_id=station.station_code,
             station_name=station.name,
             data_source=legacy_source,
@@ -180,6 +182,7 @@ def list_evidence(
         if threshold is None:
             continue
         result.append(NormalizedTelemetryEvidence(
+            id=obs.id,
             station_id=station.station_code,
             station_name=station.name,
             data_source=_SOURCE_TO_LEGACY[source.code],
