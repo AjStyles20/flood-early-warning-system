@@ -6,6 +6,7 @@ import unittest
 from datetime import datetime
 
 from sqlalchemy import inspect
+from sqlalchemy.exc import IntegrityError
 
 
 class ObservationRepositoryTests(unittest.TestCase):
@@ -68,6 +69,28 @@ class ObservationRepositoryTests(unittest.TestCase):
     def test_threshold_unit_is_owned_by_variable(self):
         columns = {item["name"] for item in inspect(self.database.engine).get_columns("thresholds")}
         self.assertNotIn("unit", columns)
+
+
+    def test_data_source_observational_flag_matches_evidence_type(self):
+        self.repo.seed_catalogues(self.db)
+        observed = self.repo.get_source(self.db, "LOCAL_SENSOR")
+        simulated = self.repo.get_source(self.db, "SIMULATED")
+        self.assertTrue(observed.is_observational)
+        self.assertEqual(observed.evidence_type, "observed")
+        self.assertFalse(simulated.is_observational)
+        self.assertNotEqual(simulated.evidence_type, "observed")
+
+        invalid = self.models.DataSource(
+            code="INVALID_OBS_FLAG",
+            name="Invalid source",
+            evidence_type="simulated",
+            provider="test",
+            is_observational=True,
+        )
+        self.db.add(invalid)
+        with self.assertRaises(IntegrityError):
+            self.db.commit()
+        self.db.rollback()
 
 
 if __name__ == "__main__":
