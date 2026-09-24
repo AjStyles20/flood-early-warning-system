@@ -264,7 +264,9 @@ test('newsletter requests remain mail drafts and do not claim a saved subscripti
 
 // Defense-closure guard: the selected-station curve must remain a transparent
 // per-reading trend projection rather than a risk-colour-shaped fake forecast.
-assert(dashboardHtml.includes("+6 readings"), "Dashboard trend axis must use readings, not unsupported hours.");
-assert(!dashboardHtml.includes("+6 hours"), "Dashboard must not imply an unsupported six-hour forecast.");
-assert(dashboardJs.includes("currentLevel + (6 * rateOfRise)"), "Trend projection must derive from current level and observed rate of rise.");
-assert(!dashboardJs.includes('station.risk_level === "Severe") {\n    yEnd = 20'), "Curve endpoint must not be fabricated from risk class.");
+const dashboardHtmlClosure = fs.readFileSync(path.join(__dirname, "templates/pages/dashboard.html"), "utf8");
+const dashboardJsClosure = fs.readFileSync(path.join(__dirname, "static/js/dashboard.js"), "utf8");
+assert(dashboardHtmlClosure.includes("+6 readings"), "Dashboard trend axis must use readings, not unsupported hours.");
+assert(!dashboardHtmlClosure.includes("+6 hours"), "Dashboard must not imply an unsupported six-hour forecast.");
+assert(dashboardJsClosure.includes("currentLevel + (6 * rateOfRise)"), "Trend projection must derive from current level and observed rate of rise.");
+assert(!dashboardJsClosure.includes('station.risk_level === "Severe") {\n    yEnd = 20'), "Curve endpoint must not be fabricated from risk class.");
