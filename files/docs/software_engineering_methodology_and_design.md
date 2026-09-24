@@ -393,3 +393,10 @@ DB-4 is intentionally split into **parity** and **promotion**. The normalized re
 ![FloodWatch typed threshold applicability](diagrams/floodwatch_threshold_applicability.svg)
 
 The current-state contract requires both evidence and a decision threshold, but these are separate domain concepts. `threshold_repository.py` owns typed/time-valid threshold selection. Compatibility telemetry can seed a `prototype_demo` (or otherwise validated typed) threshold without converting it into an observation or claiming official provenance. Missing applicable configuration produces no normalized current-state candidate rather than a hidden default.
+
+
+## 10.x Full current-state parity
+
+![FloodWatch current-state parity](diagrams/floodwatch_current_state_parity.svg)
+
+The normalized candidate path now reaches the same `RiskStatus` boundary as the legacy path. It derives trend from normalized stage history, applies typed threshold configuration, and reuses the same explainable classification policy. Full contract parity is tested before route promotion, following the strangler migration principle of separating **prove equivalence** from **switch consumers**.
