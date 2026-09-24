@@ -58,6 +58,16 @@ class OperationsTest(unittest.TestCase):
                 with SessionLocal() as db:
                     assign_role(db, f"{role}@example.com", role)
 
+    def test_public_risk_status_does_not_claim_real_email_or_sms_delivery(self):
+        self.assertEqual(self.guest.post("/api/telemetry", json=reading("CHANNEL-01", "hardware")).status_code, 200)
+        response = self.guest.get("/api/risk-status?data_source=hardware")
+        self.assertEqual(response.status_code, 200)
+        row = next(item for item in response.json() if item["station_id"] == "CHANNEL-01")
+        self.assertEqual(row["alert_channels"]["web"], "available")
+        self.assertEqual(row["alert_channels"]["email"], "simulated")
+        self.assertEqual(row["alert_channels"]["sms"], "simulated")
+
+
     def test_alert_workflow_and_persistence(self):
         self.assertEqual(self.guest.post("/api/telemetry", json=reading()).status_code, 200)
         self.guest.post("/api/telemetry", json=reading())
