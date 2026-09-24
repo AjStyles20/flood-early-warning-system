@@ -1870,3 +1870,12 @@ Closed the deferred `DataSource.is_observational` consistency issue. Added a dat
 CI run `35960727840` failed on both SQLite and MySQL. The constraint correctly exposed that existing observed catalogue rows such as `LOCAL_SENSOR` had relied on the ORM's default `False` instead of explicitly declaring `is_observational=True`. Updated the controlled source catalogue so every source class states the flag explicitly. Final run `35960831160`: **PASS**, including MySQL integration. Created `diagrams/floodwatch_source_evidence_consistency.svg`.
 
 **Data-source evidence consistency: PASS.** This protects provenance classification; it does not establish sensor calibration or observational scientific validity. No research experiment/model training was run.
+
+
+## 2026-09-24 - Observation Duplicate/Correction Policy
+
+Closed the deferred normalized-observation duplicate-policy issue without inventing scientific correction semantics. Added `observation_write_policy.py`. For the same station/variable/source/observed timestamp, an exact value/dataset/quality/signal replay returns the existing normalized row; different content raises `ObservationConflictError`. Updated the telemetry normalization adapter to use this staged policy inside the existing atomic dual-write transaction.
+
+Added regression coverage: an identical hardware payload replay leaves exactly one normalized stage Observation, while a different water-level value at the same identity is rejected and the original normalized evidence remains. CI run `35961211681`: **PASS**, including MySQL integration. Created `diagrams/floodwatch_observation_duplicate_policy.svg`.
+
+**Normalized observation duplicate policy: PASS.** This provides transport idempotency and prevents silent evidence overwrite. A versioned authoritative correction workflow remains future work. Physical Pico regression remains pending; DB-5 remains blocked. No research experiment/model training was run.
