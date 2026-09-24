@@ -1950,3 +1950,12 @@ Changed the compatibility adapter so both `official_operational` and `research_s
 Created `diagrams/floodwatch_threshold_evidence_authority.svg` and synchronized Chapter 3, software design, database design and this work log.
 
 **Threshold evidence authority boundary: PASS.** This does not create an official or research threshold workflow; it prevents generic telemetry from falsely claiming one.
+
+
+## 2026-09-24 - Defense Closure: Per-Reading Trend Contract
+
+Followed the dashboard projection repair into the backend contract. Verified that `rate_of_rise_m` is implemented as current stage minus the previous reading for the same station/source; it is not divided by elapsed time. The Pydantic contract already described this correctly, but the normalized current-state implementation now explicitly documents the invariant.
+
+Added a regression with readings 30 minutes apart and a 0.8 m level change. The expected public value remains 0.8 m since the previous reading; the test deliberately prevents future code/documentation from silently interpreting it as metres/hour. CI run `35968490410`: **PASS**, including MySQL integration.
+
+**Trend-unit consistency: PASS.** A true time-normalized rate may be introduced later under a separately named field if required; it must not silently change the meaning of the existing API contract during defense closure.
