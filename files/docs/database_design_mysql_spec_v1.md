@@ -432,3 +432,10 @@ The previously deferred duplicate-observation policy is now defined at the appli
 ![FloodWatch station coordinate integrity](diagrams/floodwatch_station_coordinate_integrity.svg)
 
 The previously listed latitude/longitude validation item is now implemented as database CHECK constraints: `-90 <= latitude <= 90` and `-180 <= longitude <= 180`. Boundary-value and invalid-value regression tests are part of CI. Run `35961809041` passed including MySQL integration. This validates coordinate domains, not geographic provenance or survey accuracy.
+
+
+## Temporal metadata constraints
+
+![FloodWatch temporal metadata integrity](diagrams/floodwatch_temporal_metadata_integrity.svg)
+
+Dataset coverage and Threshold validity now have database CHECK constraints preventing an end time/date before the corresponding start when both bounds are known. Dataset `evidence_type` is constrained to observed/derived/simulated/reanalysis/modelled. Open-ended or unknown bounds remain valid. CI run `35962149212` passed including MySQL integration.
