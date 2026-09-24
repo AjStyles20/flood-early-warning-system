@@ -77,10 +77,21 @@ def _value_at(db: Session, *, station_id: int, source_id: int, code: str, observ
     return row.value if row is not None else None
 
 
-def latest_evidence(db: Session) -> list[NormalizedTelemetryEvidence]:
-    """Reconstruct newest normalized evidence per station/source for parity."""
+def latest_evidence(
+    db: Session,
+    *,
+    data_source: str | None = None,
+) -> list[NormalizedTelemetryEvidence]:
+    """Reconstruct newest normalized evidence per station/source.
+
+    data_source filters the normalized provenance mapping without falling back
+    to the legacy telemetry table.
+    """
     result = []
     for stage_obs, station, source in _latest_stage_rows(db):
+        legacy_source = _SOURCE_TO_LEGACY[source.code]
+        if data_source is not None and legacy_source != data_source:
+            continue
         threshold = threshold_repository.applicable_threshold(
             db,
             station_id=station.id,
@@ -94,7 +105,7 @@ def latest_evidence(db: Session) -> list[NormalizedTelemetryEvidence]:
         result.append(NormalizedTelemetryEvidence(
             station_id=station.station_code,
             station_name=station.name,
-            data_source=_SOURCE_TO_LEGACY[source.code],
+            data_source=legacy_source,
             lat=station.latitude,
             lon=station.longitude,
             timestamp=stage_obs.observed_at,
@@ -107,3 +118,17 @@ def latest_evidence(db: Session) -> list[NormalizedTelemetryEvidence]:
             threshold_type=threshold.threshold_type,
         ))
     return result
+
+
+def latest_per_station(
+    db: Session,
+    *,
+    data_source: str | None = None,
+) -> list[NormalizedTelemetryEvidence]:
+    """Newest normalized evidence per station, matching legacy tie semantics."""
+    rows = latest_evidence(db, data_source=data_source)
+    rows.sort(key=lambda row: (row.station_id, row.timestamp), reverse=True)
+    latest = {}
+    for row in rows:
+        latest.setdefault(row.station_id, row)
+    return list(latest.values())
