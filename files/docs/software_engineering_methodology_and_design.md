@@ -463,3 +463,10 @@ The database strangler migration ends with an external-system acceptance test be
 ![FloodWatch deterministic equal-timestamp tie break](diagrams/floodwatch_equal_timestamp_tie_break.svg)
 
 Database migrations must preserve edge-case selection semantics, not only ordinary values. Latest-reading selection therefore uses a total ordering: observation timestamp first and persistence identifier second. This prevents nondeterministic source selection when timestamps are equal and makes the rule executable through parity tests.
+
+
+## 10.x Authority-aware threshold ingestion
+
+![FloodWatch threshold authority boundary](diagrams/floodwatch_threshold_authority_boundary.svg)
+
+Validation of a field's syntax is not validation of its authority. The generic telemetry contract may accept a threshold-type label for backward compatibility, but the normalization boundary now prevents that untrusted label from becoming an official operational claim. This is a provenance and trust-boundary control, distinct from ordinary input validation.
