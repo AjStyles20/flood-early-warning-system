@@ -15,11 +15,12 @@ from typing import Literal
 from sqlalchemy.orm import Session
 
 import models
+import alert_delivery
 
 
 ACTIVE_STATUSES = ("new", "acknowledged", "escalated")
 ALERT_WORTHY_LEVELS = {"Moderate", "High", "Severe"}
-CORE_CHANNELS = {"web": "available", "email": "simulated", "sms": "simulated"}
+CORE_CHANNELS = {"web": "available", "email": "not_configured", "sms": "not_configured"}
 
 _ALLOWED_TRANSITIONS = {
     "new": {"acknowledged", "escalated", "resolved"},
@@ -39,7 +40,7 @@ class InvalidAlertTransitionError(ValueError):
 
 def channels() -> dict[str, str]:
     """Return a copy of the approved core-channel capability state."""
-    return dict(CORE_CHANNELS)
+    return alert_delivery.capabilities()
 
 
 def to_public(alert: models.AlertEvent) -> dict:
@@ -99,6 +100,7 @@ def persist_event(
     data_source: str,
     risk_level: str,
     message: str,
+    channels: dict[str, str] | None = None,
 ) -> models.AlertEvent | None:
     """Create/update one active alert; suppress duplicate active workflow tasks."""
     if risk_level not in ALERT_WORTHY_LEVELS:
@@ -121,7 +123,7 @@ def persist_event(
         active_alert.station_name = station_name
         active_alert.risk_level = risk_level
         active_alert.message = safe_message
-        active_alert.channels_json = json.dumps(channels())
+        active_alert.channels_json = json.dumps(channels or alert_delivery.capabilities())
         active_alert.updated_at = now
         db.commit()
         db.refresh(active_alert)
@@ -133,7 +135,7 @@ def persist_event(
         data_source=data_source,
         risk_level=risk_level,
         message=safe_message,
-        channels_json=json.dumps(channels()),
+        channels_json=json.dumps(channels or alert_delivery.capabilities()),
         status="new",
         created_at=now,
         updated_at=now,
