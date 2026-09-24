@@ -397,3 +397,10 @@ Normalized latest-per-station reads now resolve equal timestamps using the Obser
 ![FloodWatch threshold authority boundary](diagrams/floodwatch_threshold_authority_boundary.svg)
 
 Generic telemetry ingestion is not an authoritative threshold-import channel. If a compatibility payload supplies `official_operational`, the normalized mirror stores the threshold as `prototype_demo` and records why the authority claim was not accepted. Official operational thresholds require a separate verified source/authorization mechanism. CI run `35958515275` passed.
+
+
+## Threshold temporal change points
+
+![FloodWatch temporal threshold change points](diagrams/floodwatch_threshold_change_points.svg)
+
+Compatibility thresholds now use `valid_from`/`valid_to` as non-overlapping change-point intervals. Identical values reuse the current open interval; a changed value closes the previous interval immediately before the new observation timestamp and opens a replacement. Historical observation reconstruction can therefore resolve contemporaneous configuration. Final CI run `35959110710` passed including MySQL integration.
