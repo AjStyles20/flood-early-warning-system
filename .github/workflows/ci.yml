@@ -62,3 +62,34 @@ jobs:
             sleep 3
           done
           exit 1
+
+
+  mysql-integration:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: floodwatch_ci
+          MYSQL_USER: floodwatch_ci
+          MYSQL_PASSWORD: floodwatch_ci_password
+          MYSQL_ROOT_PASSWORD: floodwatch_root_ci_password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -ufloodwatch_ci -pfloodwatch_ci_password"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      FLOOD_EWS_DATABASE_URL: mysql+pymysql://floodwatch_ci:floodwatch_ci_password@127.0.0.1:3306/floodwatch_ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install API dependencies
+        run: python -m pip install -r files/api/requirements-dev.txt
+      - name: Run MySQL DB-1 integration gate
+        working-directory: files/api
+        run: python -u test_mysql_integration.py
