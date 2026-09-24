@@ -442,3 +442,10 @@ After write-path convergence, remaining consumers were searched for direct `Tele
 ![FloodWatch normalized telemetry history projection](diagrams/floodwatch_normalized_history_projection.svg)
 
 The telemetry history API now demonstrates the compatibility-projection pattern: the external response shape can remain stable while its persistence source changes. This reduces migration impact on the data page and clients. The failed first CI run was valuable contract evidence: persistence equivalence alone was insufficient because the HTTP schema also required an identifier. The normalized stage Observation identifier now satisfies that contract.
+
+
+## 10.x Architectural regression guard
+
+![FloodWatch legacy telemetry dependency guard](diagrams/floodwatch_legacy_read_guard.svg)
+
+Migration rules are now executable rather than documentation-only. CI scans selected production modules and rejects reintroduction of direct compatibility-table reads. This is an architecture test: ordinary unit tests could still pass if a developer accidentally restored a legacy query while both stores contained equivalent data. The guard protects the intended dependency direction independently of data parity.
