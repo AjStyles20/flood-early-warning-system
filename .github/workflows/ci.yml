@@ -35,6 +35,7 @@ jobs:
           python -u test_telemetry_service.py
           python -u test_scenario_normalized_path.py
           python -u test_normalized_operational_consumers.py
+          python -u test_normalized_telemetry_history.py
           python -u test_current_state_service.py
           python -u test_alert_service.py
           python -u test_api.py
