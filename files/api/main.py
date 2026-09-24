@@ -1169,14 +1169,12 @@ def read_telemetry(
     data_source: Literal["simulated", "hardware"] | None = Query(default=None),
     db: Session = Depends(get_db),
 ):
-    """Return stored telemetry rows, optionally filtered by sensor source.
+    """Return the normalized telemetry-shaped history projection.
 
-    The raw telemetry table is useful during demonstrations because it proves
-    that simulated readings and hardware-ready readings are stored separately.
-    Ordering newest-first keeps the data page aligned with what an operator
-    expects to inspect first after a simulator or hardware node sends updates.
+    The public compatibility contract is preserved while persistence is read
+    from normalized observations, provenance and temporal thresholds.
     """
-    return telemetry_repository.list_records(
+    return normalized_read_repository.list_evidence(
         db,
         skip=skip,
         limit=limit,
