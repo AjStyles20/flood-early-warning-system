@@ -467,3 +467,14 @@ The physical gate remains **PENDING**. Passing CI cannot substitute for evidence
 A pre-retirement edge-case audit identified that normalized `latest_per_station` selected by station and timestamp but did not explicitly include the normalized Observation identifier as a tie-breaker. If two source readings for the same station shared an identical timestamp, selection could therefore depend on incidental row ordering. The normalized rule was hardened to order by timestamp and then persistence identifier, matching the legacy compatibility rule in which the later persisted row wins an equal-timestamp tie.
 
 A dedicated parity test writes hardware and simulated readings for the same station at exactly the same timestamp and verifies that legacy and normalized latest-per-station selection choose the same later-persisted state. GitHub Actions run `35958025759` passed, including MySQL integration. This is a migration determinism rule, not a hydrological interpretation rule.
+
+
+### 3.6.x Threshold Authority and Provenance Boundary
+
+**Figure 3.x — Threshold authority boundary**
+
+![FloodWatch threshold authority boundary](diagrams/floodwatch_threshold_authority_boundary.svg)
+
+A provenance audit identified that the generic `TelemetryCreate` compatibility contract permits the label `official_operational`. Before hardening, a sensor/simulator client could therefore cause the normalized mirror to create an official-typed Threshold even though the generic ingestion channel carries no independent authority credential or verified hydrological source. The normalization adapter now prevents that promotion: an `official_operational` label supplied through generic telemetry is stored as `prototype_demo` with explicit provenance explaining that the channel is not authorized to assert an official threshold.
+
+A regression test verifies that no `official_operational` Threshold is created through this path. GitHub Actions run `35958515275` passed, including MySQL integration. A genuine official threshold will require a separate authenticated/import workflow with independently verified authority evidence; that capability is not fabricated by the current prototype.
