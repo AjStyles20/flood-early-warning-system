@@ -132,3 +132,66 @@ def latest_per_station(
     for row in rows:
         latest.setdefault(row.station_id, row)
     return list(latest.values())
+
+
+def list_evidence(
+    db: Session,
+    *,
+    skip: int = 0,
+    limit: int = 100,
+    data_source: str | None = None,
+) -> list[NormalizedTelemetryEvidence]:
+    """Return normalized stage evidence newest-first for the public history API.
+
+    Each stage observation is reconstructed with same-timestamp optional
+    measurements and the threshold applicable at that observation time.
+    """
+    stage = db.query(models.Variable).filter(models.Variable.code == "river_stage").first()
+    if stage is None:
+        return []
+
+    query = (
+        db.query(models.Observation, models.Station, models.DataSource)
+        .join(models.Station, models.Observation.station_id == models.Station.id)
+        .join(models.DataSource, models.Observation.source_id == models.DataSource.id)
+        .filter(
+            models.Observation.variable_id == stage.id,
+            models.DataSource.code.in_(tuple(_SOURCE_TO_LEGACY)),
+        )
+    )
+    if data_source is not None:
+        source_code = {"hardware": "LOCAL_SENSOR", "simulated": "SIMULATED"}[data_source]
+        query = query.filter(models.DataSource.code == source_code)
+
+    rows = (
+        query.order_by(models.Observation.observed_at.desc(), models.Observation.id.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+    result = []
+    for obs, station, source in rows:
+        threshold = threshold_repository.applicable_threshold(
+            db,
+            station_id=station.id,
+            variable_id=obs.variable_id,
+            observed_at=obs.observed_at,
+        )
+        if threshold is None:
+            continue
+        result.append(NormalizedTelemetryEvidence(
+            station_id=station.station_code,
+            station_name=station.name,
+            data_source=_SOURCE_TO_LEGACY[source.code],
+            lat=station.latitude,
+            lon=station.longitude,
+            timestamp=obs.observed_at,
+            water_level_m=obs.value,
+            rainfall_mm_hr=_value_at(db, station_id=station.id, source_id=source.id, code="rainfall_rate", observed_at=obs.observed_at),
+            flow_rate_m3s=_value_at(db, station_id=station.id, source_id=source.id, code="river_discharge", observed_at=obs.observed_at),
+            battery_pct=_value_at(db, station_id=station.id, source_id=source.id, code="battery_pct", observed_at=obs.observed_at),
+            signal=obs.signal_status,
+            danger_level_m=threshold.value,
+            threshold_type=threshold.threshold_type,
+        ))
+    return result
