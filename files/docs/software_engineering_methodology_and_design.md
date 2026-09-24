@@ -456,3 +456,10 @@ Migration rules are now executable rather than documentation-only. CI scans sele
 ![FloodWatch physical hardware regression gate](diagrams/floodwatch_physical_regression_gate.svg)
 
 The database strangler migration ends with an external-system acceptance test because serial hardware cannot be represented faithfully by ordinary CI. The gate combines observed live bridge POSTs, a read-only normalized-database verifier, API current-state confirmation and dashboard inspection. This preserves the distinction between automated software verification and physical integration validation.
+
+
+## 10.x Deterministic tie semantics
+
+![FloodWatch deterministic equal-timestamp tie break](diagrams/floodwatch_equal_timestamp_tie_break.svg)
+
+Database migrations must preserve edge-case selection semantics, not only ordinary values. Latest-reading selection therefore uses a total ordering: observation timestamp first and persistence identifier second. This prevents nondeterministic source selection when timestamps are equal and makes the rule executable through parity tests.
