@@ -335,3 +335,12 @@ Normalized evidence reconstruction now matches the legacy latest-per-station/sou
 Threshold persistence now has an explicit repository and an index covering station, variable, type and validity. The lookup requires active configuration whose validity interval contains the observation time. The unit remains owned by Variable. Compatibility-derived threshold provenance explicitly states that it is not independently verified as official. This prevents repeated prototype use from laundering a demonstration threshold into an authoritative threshold.
 
 DB-4 normalized evidence reconstruction now includes threshold value/type. Full current-state parity remains the next gate.
+
+
+## DB-4B status — current-state parity
+
+![FloodWatch current-state parity](diagrams/floodwatch_current_state_parity.svg)
+
+Normalized persistence now supports reconstruction through current-state decision support rather than only raw evidence. Previous normalized stage observations provide the rate-of-rise input; the applicable Threshold provides decision configuration; the shared risk engine produces the display assessment. CI verifies parity against the legacy service for both hardware and simulator paths.
+
+**DB-4B current-state parity: PASS under SQLite compatibility CI. Operational route promotion remains a separate pending step.**
