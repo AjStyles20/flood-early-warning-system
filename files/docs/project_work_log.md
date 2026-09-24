@@ -1856,3 +1856,8 @@ Added `test_db5_readiness.py` and wired it into CI. The test asserts: (1) the le
 CI run `35960131647`: **PASS**, including MySQL integration. Created `diagrams/floodwatch_db5_readiness_gate.svg`.
 
 **DB-5 readiness automation: PASS. DB-5 retirement: BLOCKED/PENDING physical regression + explicit authorization.** No research experiment/model training was run.
+
+
+## 2026-09-24 - Pydantic TelemetryResponse Follow-up
+
+A source-level follow-up to the runtime deprecation cleanup found one remaining legacy Pydantic class-based `Config` in `TelemetryResponse`. Replaced it with `ConfigDict(from_attributes=True)`, preserving serialization of SQLAlchemy rows and normalized projection objects. CI run `35960447499`: **PASS**, including MySQL integration. This corrects the earlier cleanup's incomplete scope; no new system/research capability is claimed.
