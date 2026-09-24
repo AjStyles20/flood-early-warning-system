@@ -16,7 +16,8 @@ class ScenarioNormalizedPathTests(unittest.TestCase):
         os.environ["FLOOD_EWS_NEWS_PROVIDER"] = "off"
         import database, models, main
         from manage_operator import assign_role
-        cls.database, cls.models, cls.main, cls.assign_role = database, models, main, assign_role
+        cls.database, cls.models, cls.main = database, models, main
+        cls.assign_role = staticmethod(assign_role)
         models.Base.metadata.create_all(bind=database.engine)
         cls.client = TestClient(main.app)
 
