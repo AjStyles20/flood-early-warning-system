@@ -513,3 +513,16 @@ This is intentionally a readiness guard rather than a retirement test: CI must n
 The normalized provenance model contained both `evidence_type` and `is_observational`. Without a consistency rule those fields could contradict each other, for example a simulated source marked observational. A database CHECK constraint now requires `is_observational=true` exactly for `evidence_type='observed'`, while derived, simulated, reanalysis and modelled sources must be non-observational. The controlled source catalogue now sets this property explicitly rather than relying on the ORM default.
 
 The first CI run (`35960727840`) correctly failed on both SQLite and MySQL because the new constraint exposed that the existing observed catalogue entries had relied on the old default `False`. The catalogue was corrected to state its semantics explicitly. Final run `35960831160` passed, including MySQL integration. This enforces provenance consistency but does not certify calibration or scientific quality of an observational source.
+
+
+### 3.6.x Observation Duplicate and Correction Policy
+
+**Figure 3.x — Normalized observation duplicate/correction policy**
+
+![FloodWatch normalized observation duplicate policy](diagrams/floodwatch_observation_duplicate_policy.svg)
+
+The normalized observation identity is treated as station + variable + source + observation timestamp. A new write policy now distinguishes a transport replay from a scientific correction. If an incoming observation has the same identity and exactly the same value/dataset/quality/signal metadata, the normalized write is idempotent and reuses the existing row. If the identity matches but the evidence content differs, the write is rejected rather than silently creating competing duplicates or overwriting historical evidence.
+
+This policy is now applied to compatibility telemetry normalization. A regression test proves that replaying an identical hardware payload leaves one normalized stage observation, while changing the stage value at the same station/source/timestamp raises a conflict and preserves the existing observation. CI run `35961211681` passed, including MySQL integration.
+
+The implementation intentionally does not invent a scientific correction rule. Authoritative retrospective corrections require an explicit versioned correction/revision workflow with provenance; until that exists, conflicting evidence is rejected.
