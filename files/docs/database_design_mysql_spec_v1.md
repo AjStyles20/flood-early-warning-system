@@ -404,3 +404,10 @@ Generic telemetry ingestion is not an authoritative threshold-import channel. If
 ![FloodWatch temporal threshold change points](diagrams/floodwatch_threshold_change_points.svg)
 
 Compatibility thresholds now use `valid_from`/`valid_to` as non-overlapping change-point intervals. Identical values reuse the current open interval; a changed value closes the previous interval immediately before the new observation timestamp and opens a replacement. Historical observation reconstruction can therefore resolve contemporaneous configuration. Final CI run `35959110710` passed including MySQL integration.
+
+
+## DB-5 executable readiness boundary
+
+![FloodWatch DB-5 readiness gate](diagrams/floodwatch_db5_readiness_gate.svg)
+
+A dedicated CI test now codifies the conditions immediately preceding legacy telemetry retirement. It requires normalized operational-read independence while also requiring `TelemetryRecord` and dual-write to remain present until the external physical gate and explicit authorization are satisfied. CI run `35960131647` passed. **DB-5 itself was not performed.**
