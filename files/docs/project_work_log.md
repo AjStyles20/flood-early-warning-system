@@ -1789,3 +1789,14 @@ Added `test_normalized_telemetry_history.py`, including a destructive independen
 Created and embedded `diagrams/floodwatch_normalized_history_projection.svg`.
 
 **Normalized telemetry history read promotion: PASS.** Legacy persistence is still retained for rollback and remaining retirement gates; this increment removes another read dependency rather than deleting data. Physical Pico regression remains pending. No research experiment/model training was run.
+
+
+## 2026-09-24 - Legacy Telemetry Read-Dependency Guard
+
+Performed a final production-route search after normalized history promotion. The only remaining `main.py` dependencies were obsolete compatibility helper aliases and an otherwise unused `telemetry_repository` import. Removed both.
+
+Added `test_legacy_telemetry_dependency_guard.py`. Unlike parity tests, this is an architecture regression test: it scans operational production modules and fails if direct `TelemetryRecord` queries are reintroduced, or if `main.py` regains the legacy repository import/latest-record aliases. This prevents a future change from silently restoring the old source of truth while both stores happen to contain equal data.
+
+CI run `35957537472`: **PASS**, including MySQL integration. Created and embedded `diagrams/floodwatch_legacy_read_guard.svg`.
+
+**Audited operational legacy-read dependency gate: PASS and CI-guarded.** The legacy model/write path has deliberately not been deleted. Physical Pico regression and explicit DB-5 authorization remain required. No research experiment/model training was run.
