@@ -526,3 +526,14 @@ The normalized observation identity is treated as station + variable + source + 
 This policy is now applied to compatibility telemetry normalization. A regression test proves that replaying an identical hardware payload leaves one normalized stage observation, while changing the stage value at the same station/source/timestamp raises a conflict and preserves the existing observation. CI run `35961211681` passed, including MySQL integration.
 
 The implementation intentionally does not invent a scientific correction rule. Authoritative retrospective corrections require an explicit versioned correction/revision workflow with provenance; until that exists, conflicting evidence is rejected.
+
+
+### 3.6.x Station Coordinate Integrity
+
+**Figure 3.x — Station coordinate integrity constraints**
+
+![FloodWatch station coordinate integrity](diagrams/floodwatch_station_coordinate_integrity.svg)
+
+The normalized Station entity now enforces geographic domain bounds at the database layer: latitude must remain between −90 and 90 degrees inclusive, and longitude between −180 and 180 degrees inclusive. This complements request/schema validation because normalized stations may also be created by imports, scripts or future repository paths that do not necessarily pass through the same API model.
+
+Dedicated regression tests verify that the four geographic boundary values are accepted and values immediately outside either domain are rejected with an integrity error. The test is wired into CI. Run `35961809041` passed, including MySQL integration. The constraint proves coordinate-domain validity only; it does not prove that a syntactically valid coordinate is the correct surveyed/authoritative location of a station.
