@@ -390,3 +390,14 @@ The raw `/api/telemetry` compatibility contract remains unchanged and DB-3 conti
 The target DBMS was exercised against a real MySQL 8.4 service rather than inferred from SQLite compatibility. A dedicated CI job supplies `FLOOD_EWS_DATABASE_URL` using the `mysql+pymysql` dialect, creates the SQLAlchemy schema in a disposable MySQL database, writes one validated hardware telemetry reading through the atomic dual-write path, reconstructs normalized evidence and threshold configuration, and executes the normalized current-state service. The gate verifies one legacy record, one stage Observation and one Threshold, with the hardware assessment remaining free of simulator ML probability.
 
 GitHub Actions run `35955625737` passed. This establishes application-level MySQL execution evidence. It does not claim that the student's local MySQL Workbench/server installation or the physical Pico path has been tested by CI.
+
+
+### 3.6.x Telemetry Application-Service Refactor
+
+**Figure 3.x — Telemetry application-service boundary**
+
+![FloodWatch telemetry service boundary](diagrams/floodwatch_telemetry_service_boundary.svg)
+
+After normalized persistence and current-state promotion were stabilized, telemetry use-case orchestration was extracted from `main.py` into `telemetry_service.py`. FastAPI routes now retain transport responsibilities such as request validation, authorization and HTTP responses, while the application service coordinates repository persistence, immediate threshold assessment, notification/alert persistence and normalized risk-status construction. REST and CSV ingestion therefore share one application workflow in addition to the same repository boundary.
+
+This is a structural refactor rather than a change in scientific behaviour. The public API contracts, normalized decision semantics and legacy rollback store remain unchanged. GitHub Actions run `35956139992` passed after the refactor.
