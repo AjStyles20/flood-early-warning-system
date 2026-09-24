@@ -412,3 +412,14 @@ This is a structural refactor rather than a change in scientific behaviour. The 
 A post-promotion audit found that the operator scenario endpoint still created `TelemetryRecord` directly. This was valid before normalized current-state promotion but became an architectural regression afterward: a newly generated scenario could exist in the compatibility table while `/api/risk-status` read only normalized observations. The route was corrected to construct a validated `TelemetryCreate` with `data_source="simulated"` and pass it through `telemetry_service.ingest`, preserving the same dual-write, threshold and alert workflow as REST/CSV telemetry.
 
 A dedicated regression test verifies that scenario execution creates the compatibility row and normalized simulated river-stage observation and that the scenario is subsequently visible through the normalized risk-status endpoint. The first CI run (`35956409588`) failed because the newly written test accidentally bound the imported role-assignment helper as an instance method; production code and the MySQL job were not the cause. The test fixture was corrected and run `35956524052` passed.
+
+
+### 3.6.x Operational Read Independence from the Compatibility Table
+
+**Figure 3.x — Normalized operational read independence**
+
+![FloodWatch operational read independence](diagrams/floodwatch_operational_read_independence.svg)
+
+The producer audit was followed by a consumer audit. Two remaining operational routes—manual alert dispatch and operator scenario initiation—still selected their current station state directly from the legacy `TelemetryRecord` table. They were migrated to the normalized current-state path exposed through `telemetry_service.risk_statuses`. Alert dispatch now constructs its simulated bulletin from normalized current state, and scenario initiation obtains its baseline water level, threshold, threshold type, coordinates and pre-scenario risk from the same normalized path before dual-writing the new synthetic reading.
+
+A stronger regression test deletes every legacy `TelemetryRecord` after normalized ingestion and then verifies that both alert dispatch and scenario initiation still succeed. This demonstrates that these audited operational consumers no longer require the compatibility table for reads. GitHub Actions run `35956778318` passed, including the MySQL integration job. The legacy table is nevertheless retained as a rollback/reference store until the remaining compatibility audit and physical Pico regression are complete.
