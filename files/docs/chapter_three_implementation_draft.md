@@ -445,3 +445,14 @@ The first CI run (`35957056596`) correctly rejected the promotion because the ex
 After current-state, alert/scenario and historical telemetry consumers had been promoted, the production route module was audited again. Obsolete compatibility aliases that delegated latest-record reads to `telemetry_repository` were removed together with the now-unused repository import. A CI architecture guard now scans the operational modules and fails if direct `TelemetryRecord` queries, the legacy repository import in `main.py`, or the obsolete latest-record aliases are reintroduced.
 
 GitHub Actions run `35957537472` passed, including MySQL integration. This establishes a mechanically protected no-legacy-read boundary for the audited operational modules. It does not delete `TelemetryRecord`: the model, dual-write path and legacy parity tests remain as migration/rollback evidence until the physical Pico regression and an explicit DB-5 retirement decision.
+
+
+### 3.6.x Physical Hardware Regression Gate Preparation
+
+**Figure 3.x — Physical Pico-to-normalized-system regression gate**
+
+![FloodWatch physical hardware regression gate](diagrams/floodwatch_physical_regression_gate.svg)
+
+Following removal and CI-guarding of operational legacy reads, the remaining external migration gate was formalized. A read-only verifier, `files/hardware/verify_physical_hardware_regression.py`, checks that a freshly posted hardware reading exists as a normalized `LOCAL_SENSOR` river-stage Observation, has active typed threshold configuration, remains equal to the temporary dual-write rollback row, and does not fabricate rainfall, discharge or battery values. The verifier deliberately does not access the serial port: it is valid only after the live Pico/serial bridge has visibly posted fresh readings.
+
+The physical gate remains **PENDING**. Passing CI cannot substitute for evidence from the actual Pico, assigned Windows COM port, bridge HTTP responses and dashboard display. The required evidence package is now documented in the hardware integration guide. This test establishes post-migration sensing-to-software integration only; it is not hydrological calibration, Lokoja field validation or predictive-model validation.
