@@ -64,8 +64,8 @@ class OperationsTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         row = next(item for item in response.json() if item["station_id"] == "CHANNEL-01")
         self.assertEqual(row["alert_channels"]["web"], "available")
-        self.assertEqual(row["alert_channels"]["email"], "simulated")
-        self.assertEqual(row["alert_channels"]["sms"], "simulated")
+        self.assertEqual(row["alert_channels"]["email"], "not_configured")
+        self.assertEqual(row["alert_channels"]["sms"], "not_configured")
 
 
     def test_alert_workflow_and_persistence(self):
@@ -83,7 +83,7 @@ class OperationsTest(unittest.TestCase):
             response = self.operator.post(url + "/" + action, json={"notes": note})
             self.assertEqual(response.status_code, 200, response.text)
             self.assertEqual(response.json()["status"], target)
-            self.assertEqual(response.json()["channels"]["sms"], "simulated")
+            self.assertEqual(response.json()["channels"]["sms"], "not_configured")
         self.assertEqual(self.operator.post(url + "/acknowledge", json={}).status_code, 409)
         self.assertEqual(self.operator.post(url + "/resolve", json={}).status_code, 409)
         audit = self.operator.get(url + "/audit").json()
