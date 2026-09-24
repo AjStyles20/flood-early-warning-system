@@ -494,3 +494,10 @@ The strangler migration now has a CI-enforced boundary. The readiness test simul
 ### Runtime cleanup follow-up: telemetry response model
 
 A follow-up source audit found one remaining class-based Pydantic `Config` declaration in `TelemetryResponse`. It was migrated to `ConfigDict(from_attributes=True)`, preserving attribute-based serialization for both SQLAlchemy compatibility rows and normalized projection objects. Full CI run `35960447499` passed, including MySQL integration.
+
+
+## 10.x Provenance consistency invariant
+
+![FloodWatch data-source evidence consistency](diagrams/floodwatch_source_evidence_consistency.svg)
+
+Redundant provenance metadata is dangerous unless its values are constrained to agree. `DataSource.evidence_type` and `is_observational` are now linked by a database invariant and the controlled catalogue supplies the boolean explicitly. This prevents contradictory source classifications from surviving persistence.
