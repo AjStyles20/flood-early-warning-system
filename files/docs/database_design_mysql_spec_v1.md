@@ -411,3 +411,10 @@ Compatibility thresholds now use `valid_from`/`valid_to` as non-overlapping chan
 ![FloodWatch DB-5 readiness gate](diagrams/floodwatch_db5_readiness_gate.svg)
 
 A dedicated CI test now codifies the conditions immediately preceding legacy telemetry retirement. It requires normalized operational-read independence while also requiring `TelemetryRecord` and dual-write to remain present until the external physical gate and explicit authorization are satisfied. CI run `35960131647` passed. **DB-5 itself was not performed.**
+
+
+## Data-source evidence consistency
+
+![FloodWatch data-source evidence consistency](diagrams/floodwatch_source_evidence_consistency.svg)
+
+The previously deferred `DataSource.is_observational` consistency issue is now closed. A database CHECK constraint requires observed evidence to be observational and all derived/simulated/reanalysis/modelled evidence to be non-observational. The seed catalogue declares the flag explicitly. Initial CI `35960727840` failed because the new invariant exposed catalogue reliance on the old default; after correcting the catalogue, run `35960831160` passed on the full suite including MySQL integration.
