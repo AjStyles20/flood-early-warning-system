@@ -550,3 +550,10 @@ A closure audit removed a misleading forecast-shaped visualization. Because the 
 ![FloodWatch threshold evidence authority](diagrams/floodwatch_threshold_evidence_authority.svg)
 
 The telemetry adapter applies least-authority semantics to threshold evidence. A sensor/simulator client is authorized to submit telemetry but is not thereby authorized to establish institutional or research provenance. Both `official_operational` and `research_statistical` labels are therefore reduced to `prototype_demo` on the generic compatibility path. This prevents transport authority from becoming evidence authority.
+
+
+## 10.x Alert delivery capability semantics
+
+![FloodWatch alert delivery evidence boundary](diagrams/floodwatch_alert_delivery_boundary.svg)
+
+FloodWatch separates workflow capability from delivery evidence. Persistent alerts and web presentation are implemented; email and SMS are demonstration channels until an external gateway is configured and delivery is verified. The API therefore reports those channels as `simulated` rather than `available`.
