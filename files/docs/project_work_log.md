@@ -1827,3 +1827,14 @@ Closed the previously recorded provenance gap in generic telemetry normalization
 Added a regression test proving that generic ingestion cannot create any `official_operational` Threshold row. CI run `35958515275`: **PASS**, including MySQL integration. Created `diagrams/floodwatch_threshold_authority_boundary.svg`.
 
 **Generic-ingestion official-threshold authority gap: CLOSED.** A genuine authoritative threshold-import workflow remains future work and must require independently verified source/authorization evidence. Physical Pico regression remains pending; DB-5 remains blocked. No research experiment/model training was run.
+
+
+## 2026-09-24 - Historical Threshold Change-Point Semantics
+
+Closed the previously recorded threshold-history caveat for the chronological compatibility ingestion path. Added `stage_compatibility_threshold`: first configuration opens at the reading timestamp; unchanged type/value reuses the interval; a changed threshold closes the prior open interval one microsecond before the new timestamp and opens the replacement at the change point. The normalized adapter now uses this function.
+
+Added a regression test proving a 2.0 m threshold remains applicable to the earlier observation after a later 2.5 m change. CI run `35958918179` failed on SQLite aware/naive datetime comparison; fixed comparison normalization. Run `35959013431` then failed because the test expected timezone-aware SQLite round-trip values; corrected only the representation assertion. Final run `35959110710`: **PASS**, including MySQL integration.
+
+Created `diagrams/floodwatch_threshold_change_points.svg`.
+
+**Chronological compatibility threshold-history semantics: PASS.** Out-of-order authoritative revisions remain a separate governance capability and are not claimed. Physical Pico regression remains pending; DB-5 remains blocked. No research experiment/model training was run.
