@@ -105,12 +105,13 @@ def stage_normalized_mirror(db: Session, reading: models.TelemetryCreate) -> lis
             "channel; stored as prototype_demo pending independent authority evidence"
         )
 
-    threshold_repository.stage_threshold(
+    threshold_repository.stage_compatibility_threshold(
         db,
         station=station,
         variable=stage_variable,
         threshold_type=threshold_type,
         value=reading.danger_level_m,
         source_reference=source_reference,
+        observed_at=reading.timestamp,
     )
     return rows
