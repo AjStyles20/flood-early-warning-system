@@ -368,3 +368,14 @@ A normalized candidate service, `normalized_current_state_service.py`, now compu
 The parity gate compares the complete public `RiskStatus` contract, including rate of rise, risk level, risk ratio, optional ML probability, model-availability flag, message, colour, language and alert-channel metadata. GitHub Actions run `35951919460` passed. This proves software-behaviour parity for the tested dual-written prototype evidence, not hydrological validity or research-model performance.
 
 The public API/dashboard has deliberately not been switched in this increment. Route promotion is retained as a separate controlled change so any regression can be attributed clearly.
+
+
+### 3.6.x DB-4 Operational Current-State Read Promotion
+
+**Figure 3.x — Normalized operational risk-status promotion**
+
+![FloodWatch normalized operational read promotion](diagrams/floodwatch_operational_read_promotion.svg)
+
+After full current-state parity passed, the public `GET /api/risk-status` endpoint was promoted from legacy `TelemetryRecord` reads to the normalized observation/threshold path. Hardware, simulated and hybrid modes now consume normalized evidence through `normalized_read_repository.py` and `normalized_current_state_service.py`. Hybrid mode retains the existing policy of selecting the highest current risk per station, with timestamp as the tie-breaker. Source filtering is applied at the normalized provenance boundary.
+
+The raw `/api/telemetry` compatibility contract remains unchanged and DB-3 continues writing the legacy store. This provides a rollback/reference path until physical Pico regression and MySQL-specific execution are completed. GitHub Actions run `35955191785` passed after promotion.
