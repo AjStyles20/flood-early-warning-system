@@ -3,7 +3,7 @@
 Thresholds are configuration/evidence metadata, never sensor observations.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
@@ -105,7 +105,16 @@ def stage_compatibility_threshold(
         return current
 
     if current is not None:
-        if current.valid_from is not None and observed_at <= current.valid_from:
+        current_start = current.valid_from
+        comparison_time = observed_at
+        # SQLite commonly returns timezone-naive DateTime values even when the
+        # ingested compatibility timestamp was UTC-aware. Normalize only for
+        # the ordering comparison; persisted timestamps keep the DB contract.
+        if current_start is not None and current_start.tzinfo is None and comparison_time.tzinfo is not None:
+            current_start = current_start.replace(tzinfo=timezone.utc)
+        elif current_start is not None and current_start.tzinfo is not None and comparison_time.tzinfo is None:
+            comparison_time = comparison_time.replace(tzinfo=timezone.utc)
+        if current_start is not None and comparison_time <= current_start:
             raise ValueError("Compatibility threshold change points must be ingested in chronological order.")
         current.valid_to = observed_at - timedelta(microseconds=1)
 
