@@ -129,7 +129,10 @@ def latest_per_station(
 ) -> list[NormalizedTelemetryEvidence]:
     """Newest normalized evidence per station, matching legacy tie semantics."""
     rows = latest_evidence(db, data_source=data_source)
-    rows.sort(key=lambda row: (row.station_id, row.timestamp), reverse=True)
+    # Timestamp alone is insufficient when two source readings for one station
+    # share the same timestamp. Mirror the legacy table's deterministic
+    # timestamp-then-id rule so the later persisted normalized stage wins.
+    rows.sort(key=lambda row: (row.station_id, row.timestamp, row.id), reverse=True)
     latest = {}
     for row in rows:
         latest.setdefault(row.station_id, row)
