@@ -482,3 +482,10 @@ Threshold configuration is now versioned as validity intervals for compatibility
 ## 10.x Runtime compatibility maintenance
 
 After the migration gates stabilized, CI warnings were treated as maintenance evidence rather than ignored. SQLAlchemy timestamp defaults in the ORM models were migrated away from deprecated `datetime.utcnow` calls to explicit UTC-aware `datetime.now(timezone.utc)` factories. Pydantic response models were migrated from deprecated class-based `Config` declarations to Pydantic v2 `ConfigDict(from_attributes=True)`. These changes do not alter FloodWatch's research claims or architecture; they reduce avoidable dependency-upgrade risk while preserving ORM serialization behavior. Full CI run `35959714303` passed, including MySQL integration.
+
+
+## 10.x Executable migration-retirement gate
+
+![FloodWatch DB-5 readiness gate](diagrams/floodwatch_db5_readiness_gate.svg)
+
+The strangler migration now has a CI-enforced boundary. The readiness test simultaneously prevents regression back to operational legacy reads and prevents premature deletion of the rollback representation. This makes the migration state explicit: normalized operation is established, compatibility persistence remains deliberate, and physical acceptance remains an external prerequisite.
