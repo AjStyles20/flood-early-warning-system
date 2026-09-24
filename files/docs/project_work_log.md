@@ -1723,3 +1723,14 @@ Added `test_current_state_parity.py`, comparing the complete public `RiskStatus`
 Created and embedded `diagrams/floodwatch_current_state_parity.svg`.
 
 **DB-4B Full Current-State Parity: PASS under SQLite compatibility CI.** Operational API/dashboard read promotion is NEXT and remains deliberately separate. Physical Pico regression and MySQL-specific DB-1 execution remain required before DB-5 legacy retirement. No research experiment/model training was run.
+
+
+## 2026-09-24 - DB-4 Operational Risk-Status Promotion
+
+Promoted `GET /api/risk-status` to normalized reads after the prior full current-state parity gate passed. Added source-filtered/latest-per-station normalized repository reads and changed hardware, simulated and hybrid current-state consumers to `normalized_current_state_service.status_from_evidence`. Hybrid risk selection semantics were preserved.
+
+Added `test_risk_status_promotion.py` to exercise the real API after dual-write, including hardware trend/risk output, hybrid highest-risk selection and source-filter isolation. GitHub Actions run `35955191785` completed successfully.
+
+Created and embedded `diagrams/floodwatch_operational_read_promotion.svg`.
+
+**DB-4 operational current-state promotion: PASS under SQLite compatibility CI.** Legacy telemetry remains dual-written as rollback/reference evidence; raw `/api/telemetry` compatibility is unchanged. Physical Pico regression and MySQL-specific DB-1 execution remain required before DB-5 retirement. No research experiment/model training was run.
