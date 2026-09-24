@@ -379,3 +379,14 @@ The public API/dashboard has deliberately not been switched in this increment. R
 After full current-state parity passed, the public `GET /api/risk-status` endpoint was promoted from legacy `TelemetryRecord` reads to the normalized observation/threshold path. Hardware, simulated and hybrid modes now consume normalized evidence through `normalized_read_repository.py` and `normalized_current_state_service.py`. Hybrid mode retains the existing policy of selecting the highest current risk per station, with timestamp as the tie-breaker. Source filtering is applied at the normalized provenance boundary.
 
 The raw `/api/telemetry` compatibility contract remains unchanged and DB-3 continues writing the legacy store. This provides a rollback/reference path until physical Pico regression and MySQL-specific execution are completed. GitHub Actions run `35955191785` passed after promotion.
+
+
+### 3.6.x MySQL DB-1 Execution Gate
+
+**Figure 3.x — MySQL DB-1 execution and integration gate**
+
+![FloodWatch MySQL DB-1 gate](diagrams/floodwatch_mysql_db1_gate.svg)
+
+The target DBMS was exercised against a real MySQL 8.4 service rather than inferred from SQLite compatibility. A dedicated CI job supplies `FLOOD_EWS_DATABASE_URL` using the `mysql+pymysql` dialect, creates the SQLAlchemy schema in a disposable MySQL database, writes one validated hardware telemetry reading through the atomic dual-write path, reconstructs normalized evidence and threshold configuration, and executes the normalized current-state service. The gate verifies one legacy record, one stage Observation and one Threshold, with the hardware assessment remaining free of simulator ML probability.
+
+GitHub Actions run `35955625737` passed. This establishes application-level MySQL execution evidence. It does not claim that the student's local MySQL Workbench/server installation or the physical Pico path has been tested by CI.
