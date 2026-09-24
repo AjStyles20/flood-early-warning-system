@@ -1897,3 +1897,12 @@ Hardened normalized Dataset and Threshold metadata. Added CHECK constraints requ
 Added `test_temporal_metadata_constraints.py` covering reversed dataset coverage, unsupported dataset evidence type and reversed threshold validity. Wired it into CI. Run `35962149212`: **PASS**, including MySQL integration. Created `diagrams/floodwatch_temporal_metadata_integrity.svg`.
 
 **Temporal metadata structural integrity: PASS.** These checks do not independently validate provider coverage claims or threshold authority. Physical Pico regression remains pending; DB-5 remains blocked. No research experiment/model training was run.
+
+
+## 2026-09-24 - Unified Normalized Observation Write Boundary
+
+Follow-up audit found a policy-bypass risk: the telemetry normalization adapter used `observation_write_policy`, but general `observation_repository.create_observation` still created rows directly. Refactored the repository to delegate to the shared staged write policy before commit. Added a provenance guard requiring an attached Dataset's `evidence_type` to match the Observation DataSource's `evidence_type`.
+
+Expanded repository tests to prove exact replay returns the same Observation ID with one persisted row, a changed value at the same evidence identity is rejected, and a simulated Dataset cannot be attached to an observed DataSource. CI run `35962568513`: **PASS**, including MySQL integration. Created `diagrams/floodwatch_unified_observation_write_boundary.svg`.
+
+**Normalized write-policy convergence: PASS.** This is provenance/engineering integrity, not scientific validation of a source. Physical Pico regression remains pending; DB-5 remains blocked. No research experiment/model training was run.
