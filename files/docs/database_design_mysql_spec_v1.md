@@ -376,3 +376,10 @@ DB-1 now has direct MySQL execution evidence. The CI integration job creates the
 ![FloodWatch legacy telemetry dependency guard](diagrams/floodwatch_legacy_read_guard.svg)
 
 The compatibility table remains a dual-write rollback/reference representation, but audited operational modules are prohibited by CI from querying it directly. This provides a pre-retirement control: normalized reads are now not only implemented but mechanically enforced. Legacy deletion remains separately gated.
+
+
+## Physical pre-retirement gate
+
+![FloodWatch physical hardware regression gate](diagrams/floodwatch_physical_regression_gate.svg)
+
+Before DB-5 removes the compatibility table or stops dual-write, a fresh physical hardware reading must traverse the post-migration stack and be verified in normalized MySQL persistence. The repository now contains a read-only verifier for this purpose. **Status: PENDING physical execution; not satisfiable by CI alone.**
