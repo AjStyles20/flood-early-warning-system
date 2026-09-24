@@ -333,3 +333,10 @@ For the live physical demo, configure `FLOOD_EWS_SERIAL_PORT`, `FLOOD_EWS_API_UR
 ![FloodWatch alert delivery evidence boundary](diagrams/floodwatch_alert_delivery_boundary.svg)
 
 When demonstrating alerts, state that FloodWatch implements persistent alert generation, operator workflow and simulated multi-channel notification. The web channel is available in the application; email and SMS are currently simulated. Do not claim that an external SMS/email provider delivered a message unless that integration is separately configured and evidenced.
+
+
+## Live email/SMS alert demonstration
+
+![FloodWatch real alert delivery architecture](diagrams/floodwatch_real_alert_delivery.svg)
+
+The code path for EmailJS and Twilio SMS is implemented. Before demonstrating it, configure the provider environment variables locally and send one controlled test alert to an authorized test recipient. Show the resulting channel state in the persistent alert. Describe a channel as real delivery only when the live test returns `sent`; otherwise state the observed `failed` or `not_configured` status.
