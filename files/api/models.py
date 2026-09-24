@@ -308,12 +308,9 @@ class TelemetryCreate(BaseModel):
 class TelemetryResponse(TelemetryCreate):
     id: int
 
-    class Config:
-        # This is a crucial setting. 
-        # By default, Pydantic expects to read simple Python dictionaries.
-        # But we will be handing it complex SQLAlchemy Database objects (TelemetryRecord).
-        # 'from_attributes = True' tells Pydantic: "Don't panic, you are allowed to read data directly from the database object."
-        from_attributes = True
+    # API responses may be built from SQLAlchemy rows or normalized projection
+    # objects. Pydantic v2 reads either through attribute access.
+    model_config = ConfigDict(from_attributes=True)
 
 
 # This schema is deliberately separate from the stored telemetry schema.  It
