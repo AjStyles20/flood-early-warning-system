@@ -559,3 +559,14 @@ Dedicated tests attempt a reversed dataset coverage interval, an unsupported dat
 A follow-up architecture audit found that the duplicate/correction policy was enforced by the telemetry normalization adapter but the general `observation_repository.create_observation` path still constructed Observation rows directly. That meant two legitimate normalized-write paths could apply different evidence semantics. The repository now delegates to the same shared `observation_write_policy.stage_observation` boundary before committing.
 
 The shared boundary also validates Dataset/DataSource provenance consistency when a dataset is attached: their `evidence_type` values must agree. This prevents, for example, a Dataset classified as simulated from being attached to an Observation whose DataSource classifies it as observed. Tests now prove repository-level exact replay idempotency, conflicting duplicate rejection and dataset/source evidence mismatch rejection. CI run `35962568513` passed, including MySQL integration.
+
+
+### 3.6.x Database-Enforced Observation Identity
+
+**Figure 3.x — Observation identity defense in depth**
+
+![FloodWatch observation identity constraint](diagrams/floodwatch_observation_identity_constraint.svg)
+
+The shared observation write policy provides semantic handling of duplicates, but application checks alone do not protect against direct SQL/import paths or concurrent writes. The Observation table therefore now has a composite UNIQUE constraint over `station_id + variable_id + source_id + observed_at`. The application layer still distinguishes exact replay from conflicting evidence; the database is the final invariant preventing two normalized rows from occupying the same evidence identity.
+
+A direct ORM insert test deliberately bypasses the write policy and confirms that the second identical identity is rejected. The MySQL DB-1 integration test now performs the same bypass attempt against MySQL. Initial CI run `35963073064` failed before test execution because `UniqueConstraint` had not been added to the SQLAlchemy import list; this implementation error was corrected. Final run `35963183379` passed the complete suite including MySQL integration.
