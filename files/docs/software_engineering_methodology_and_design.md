@@ -522,3 +522,10 @@ Station coordinate validation is enforced at persistence as well as at applicati
 ![FloodWatch temporal metadata integrity](diagrams/floodwatch_temporal_metadata_integrity.svg)
 
 Historical and configuration provenance depend on valid intervals. FloodWatch now enforces ordering invariants for Dataset coverage and Threshold validity at persistence, while retaining nullable/open bounds where the domain permits them. Dataset evidence classification is also restricted to the controlled evidence vocabulary.
+
+
+## 10.x Single normalized evidence-write policy
+
+![FloodWatch unified observation write boundary](diagrams/floodwatch_unified_observation_write_boundary.svg)
+
+The repository and compatibility adapter now converge on one normalized observation write policy. This removes policy duplication and prevents a future caller from bypassing replay/conflict semantics merely by using the general repository rather than telemetry ingestion. Dataset/source evidence classifications are also checked for agreement at this boundary.
