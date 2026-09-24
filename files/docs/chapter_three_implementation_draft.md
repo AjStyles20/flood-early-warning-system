@@ -590,3 +590,12 @@ The curve is now an explicitly labelled six-reading trend projection. Its endpoi
 ![FloodWatch threshold evidence authority](diagrams/floodwatch_threshold_evidence_authority.svg)
 
 A threshold type is an evidence claim, not merely a UI label. The generic telemetry endpoint can transport a threshold value needed by the compatibility path, but it cannot establish that the value is an officially authorized operational threshold or a research-derived statistical threshold. Therefore, generic ingestion now downgrades caller-supplied `official_operational` **and** `research_statistical` labels to `prototype_demo`, while recording why the supplied authority was not accepted. Promotion to either stronger type requires a separate provenance-controlled workflow.
+
+
+### 3.6.x Physical Bridge Contract Alignment
+
+**Figure 3.x — Physical bridge/API contract**
+
+![FloodWatch physical bridge contract](diagrams/floodwatch_physical_bridge_contract.svg)
+
+The defense-closure audit compared the actual Pico serial bridge with the current FastAPI ingestion contract and hardware guide. The bridge had the correct API port (8010), but was hard-coded to COM4 and did not support the current optional ingestion-token header; the guide also retained older port-8000 and obsolete token-name instructions. The bridge now reads serial port, baud, API URL and ingestion token from environment variables and sends `X-Ingestion-Token` when configured. The guide and executable DB-5 readiness test now assert the same port/header contract. CI run `35969481452` passed.
