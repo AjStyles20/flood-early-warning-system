@@ -135,5 +135,23 @@ class TelemetryDualWriteTests(unittest.TestCase):
         self.assertEqual(current.value, 2.5)
 
 
+    def test_exact_normalized_replay_is_idempotent_but_conflicting_duplicate_is_rejected(self):
+        first = self.reading()
+        self.repo.create_record(self.db, first)
+        self.assertEqual(self.db.query(self.models.Observation).count(), 1)
+
+        # A transport retry with the exact same evidence must not create a
+        # second normalized observation.
+        self.repo.create_record(self.db, self.reading())
+        self.assertEqual(self.db.query(self.models.Observation).count(), 1)
+
+        conflict = self.reading()
+        conflict.water_level_m = 1.99
+        with self.assertRaises(ValueError):
+            self.repo.create_record(self.db, conflict)
+        self.db.rollback()
+        self.assertEqual(self.db.query(self.models.Observation).count(), 1)
+
+
 if __name__ == "__main__":
     unittest.main()
