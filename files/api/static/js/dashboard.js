@@ -1039,21 +1039,18 @@ function renderSelectedStationPanel(visibleStations, totalCount) {
     }
   }
 
-  // Horizon Forecast Curve
+  // Six-reading trend projection. This is deliberately derived from the
+  // observed rate-of-rise, not from risk colour and not from the ML model.
+  // The API's rate is a change per reading, so the UI must not label it hours.
   setText("curve-danger-val", `${formatNumber(station.danger_level_m, 1)} m`);
-  const danger = asNumber(station.danger_level_m, 10.0);
-  const currentLevel = asNumber(station.water_level_m, 5.0);
-  const yStart = Math.max(20, Math.min(115, 115 - (currentLevel / danger) * 80));
-  let yEnd;
-  if (station.risk_level === "Severe") {
-    yEnd = 20;
-  } else if (station.risk_level === "High") {
-    yEnd = 32;
-  } else if (station.risk_level === "Moderate") {
-    yEnd = 58;
-  } else {
-    yEnd = 95;
-  }
+  const danger = Math.max(asNumber(station.danger_level_m, 1.0), 0.0001);
+  const currentLevel = Math.max(asNumber(station.water_level_m, 0.0), 0.0);
+  const rateOfRise = asNumber(station.rate_of_rise_m, 0.0);
+  const projectedLevel = Math.max(0, currentLevel + (6 * rateOfRise));
+  const graphCeiling = Math.max(danger * 1.15, currentLevel, projectedLevel, 0.1);
+  const toY = (level) => Math.max(15, Math.min(115, 115 - (level / graphCeiling) * 90));
+  const yStart = toY(currentLevel);
+  const yEnd = toY(projectedLevel);
 
   const fillPath = document.getElementById("horizon-fill-path");
   const strokePath = document.getElementById("horizon-stroke-path");
@@ -1063,7 +1060,7 @@ function renderSelectedStationPanel(visibleStations, totalCount) {
   const curveColor = (station.risk_level === "Severe" || station.risk_level === "High") ? "#ef4444" : (station.risk_level === "Moderate" ? "#f59e0b" : "#10b981");
 
   if (fillPath && strokePath) {
-    const cpY = (yStart + yEnd) / 2 - 12;
+    const cpY = (yStart + yEnd) / 2;
     fillPath.setAttribute("d", `M 0 ${yStart} Q 400 ${cpY} 800 ${yEnd} L 800 130 L 0 130 Z`);
     strokePath.setAttribute("d", `M 0 ${yStart} Q 400 ${cpY} 800 ${yEnd}`);
     strokePath.setAttribute("stroke", curveColor);
