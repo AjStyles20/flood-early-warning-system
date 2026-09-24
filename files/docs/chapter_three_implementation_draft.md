@@ -456,3 +456,14 @@ GitHub Actions run `35957537472` passed, including MySQL integration. This estab
 Following removal and CI-guarding of operational legacy reads, the remaining external migration gate was formalized. A read-only verifier, `files/hardware/verify_physical_hardware_regression.py`, checks that a freshly posted hardware reading exists as a normalized `LOCAL_SENSOR` river-stage Observation, has active typed threshold configuration, remains equal to the temporary dual-write rollback row, and does not fabricate rainfall, discharge or battery values. The verifier deliberately does not access the serial port: it is valid only after the live Pico/serial bridge has visibly posted fresh readings.
 
 The physical gate remains **PENDING**. Passing CI cannot substitute for evidence from the actual Pico, assigned Windows COM port, bridge HTTP responses and dashboard display. The required evidence package is now documented in the hardware integration guide. This test establishes post-migration sensing-to-software integration only; it is not hydrological calibration, Lokoja field validation or predictive-model validation.
+
+
+### 3.6.x Deterministic Equal-Timestamp Selection
+
+**Figure 3.x — Deterministic latest-reading tie semantics**
+
+![FloodWatch deterministic equal-timestamp tie break](diagrams/floodwatch_equal_timestamp_tie_break.svg)
+
+A pre-retirement edge-case audit identified that normalized `latest_per_station` selected by station and timestamp but did not explicitly include the normalized Observation identifier as a tie-breaker. If two source readings for the same station shared an identical timestamp, selection could therefore depend on incidental row ordering. The normalized rule was hardened to order by timestamp and then persistence identifier, matching the legacy compatibility rule in which the later persisted row wins an equal-timestamp tie.
+
+A dedicated parity test writes hardware and simulated readings for the same station at exactly the same timestamp and verifies that legacy and normalized latest-per-station selection choose the same later-persisted state. GitHub Actions run `35958025759` passed, including MySQL integration. This is a migration determinism rule, not a hydrological interpretation rule.
