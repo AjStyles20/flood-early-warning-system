@@ -1838,3 +1838,10 @@ Added a regression test proving a 2.0 m threshold remains applicable to the earl
 Created `diagrams/floodwatch_threshold_change_points.svg`.
 
 **Chronological compatibility threshold-history semantics: PASS.** Out-of-order authoritative revisions remain a separate governance capability and are not claimed. Physical Pico regression remains pending; DB-5 remains blocked. No research experiment/model training was run.
+
+
+## 2026-09-24 - Runtime Deprecation Cleanup
+
+The threshold-history CI logs repeatedly exposed two maintenance warnings unrelated to the research logic: Python's deprecated `datetime.utcnow()` usage in SQLAlchemy defaults and Pydantic v2's deprecated class-based `Config` ORM serialization declarations. Updated ORM timestamp factories to explicit UTC-aware `datetime.now(timezone.utc)` calls and migrated the affected Pydantic response models to `ConfigDict(from_attributes=True)`.
+
+CI run `35959714303`: **PASS**, including MySQL integration. This is dependency/runtime maintenance, not a new system capability or scientific result. The GitHub runner also reports upstream Node 20 action deprecation notices for current action versions; those are external workflow-action maintenance signals rather than application failures and were not conflated with FloodWatch correctness.
