@@ -114,10 +114,10 @@ class TelemetryDualWriteTests(unittest.TestCase):
         rows = self.db.query(self.models.Threshold).order_by(self.models.Threshold.valid_from.asc()).all()
         self.assertEqual(len(rows), 2)
         self.assertEqual(rows[0].value, 2.0)
-        self.assertEqual(rows[0].valid_from, first.timestamp)
-        self.assertLess(rows[0].valid_to, second.timestamp)
+        self.assertEqual(rows[0].valid_from, first.timestamp.replace(tzinfo=None))
+        self.assertLess(rows[0].valid_to, second.timestamp.replace(tzinfo=None))
         self.assertEqual(rows[1].value, 2.5)
-        self.assertEqual(rows[1].valid_from, second.timestamp)
+        self.assertEqual(rows[1].valid_from, second.timestamp.replace(tzinfo=None))
         self.assertIsNone(rows[1].valid_to)
 
         import threshold_repository
