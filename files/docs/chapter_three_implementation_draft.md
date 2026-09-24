@@ -478,3 +478,16 @@ A dedicated parity test writes hardware and simulated readings for the same stat
 A provenance audit identified that the generic `TelemetryCreate` compatibility contract permits the label `official_operational`. Before hardening, a sensor/simulator client could therefore cause the normalized mirror to create an official-typed Threshold even though the generic ingestion channel carries no independent authority credential or verified hydrological source. The normalization adapter now prevents that promotion: an `official_operational` label supplied through generic telemetry is stored as `prototype_demo` with explicit provenance explaining that the channel is not authorized to assert an official threshold.
 
 A regression test verifies that no `official_operational` Threshold is created through this path. GitHub Actions run `35958515275` passed, including MySQL integration. A genuine official threshold will require a separate authenticated/import workflow with independently verified authority evidence; that capability is not fabricated by the current prototype.
+
+
+### 3.6.x Historical Threshold Change-Point Semantics
+
+**Figure 3.x — Temporal threshold change-point semantics**
+
+![FloodWatch temporal threshold change points](diagrams/floodwatch_threshold_change_points.svg)
+
+The compatibility threshold mirror was hardened so a threshold change no longer creates multiple indefinitely open configurations. The first compatibility threshold opens at the telemetry observation timestamp. Repeated readings with the same type/value reuse that interval. When the threshold type/value changes at a later timestamp, the previous interval is closed immediately before the change point and a replacement interval opens at the new timestamp. Historical normalized reads therefore resolve the threshold that was applicable when each observation occurred rather than silently applying the newest threshold to earlier evidence.
+
+The first CI run (`35958918179`) exposed an offset-aware versus offset-naive datetime comparison difference in SQLite. The comparison logic was normalized for the compatibility check. A second run (`35959013431`) then exposed that the test itself expected timezone-aware SQLite round-tripping; the assertion was corrected to the database's compatibility representation without weakening the temporal-value checks. Final run `35959110710` passed, including MySQL integration.
+
+The compatibility change-point helper intentionally requires chronological ingestion. General out-of-order authoritative threshold revision is a separate data-governance problem and is not claimed as solved by this prototype path.
