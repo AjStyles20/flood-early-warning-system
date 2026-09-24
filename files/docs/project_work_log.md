@@ -1756,3 +1756,14 @@ Added `test_telemetry_service.py` to verify dual-write/alert orchestration and n
 Created and embedded `diagrams/floodwatch_telemetry_service_boundary.svg`.
 
 **Telemetry service modularisation increment: PASS.** Public contracts and scientific semantics were not changed. Physical Pico regression remains pending before DB-5 retirement. No research experiment/model training was run.
+
+
+## 2026-09-24 - Scenario Normalized-Path Regression Repair
+
+During the next producer audit after DB-4 promotion, found that `POST /api/scenario/run` still inserted `TelemetryRecord` directly. Because `/api/risk-status` now reads normalized observations, scenario output could become invisible to the operational current-state consumer. Replaced the direct insert with a validated simulated `TelemetryCreate` passed through `telemetry_service.ingest`, preserving dual-write, threshold normalization and alert orchestration.
+
+Added `test_scenario_normalized_path.py` to verify legacy + normalized scenario persistence and normalized risk-status visibility. CI run `35956409588` initially failed due solely to a test-fixture Python binding error (`assign_role` stored as a class attribute became a bound method); MySQL integration still passed. Corrected the fixture with `staticmethod`. Rerun `35956524052` completed successfully.
+
+Created and embedded `diagrams/floodwatch_scenario_normalized_path.svg`.
+
+**Scenario normalized-path regression: FIXED / PASS.** Scenario data remains synthetic/demo evidence. Physical Pico regression remains pending before DB-5. No research experiment/model training was run.
