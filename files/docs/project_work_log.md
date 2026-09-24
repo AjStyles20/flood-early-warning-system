@@ -1818,3 +1818,12 @@ Reviewed the previously noted deterministic tie-semantics risk before DB-5. `nor
 Added a parity regression case with hardware and simulated readings for the same station and exactly the same timestamp. The later persisted reading must be selected by both legacy and normalized implementations. CI run `35958025759`: **PASS**, including MySQL integration. Created `diagrams/floodwatch_equal_timestamp_tie_break.svg`.
 
 **Equal-timestamp deterministic parity: PASS.** This closes the previously identified read-selection edge case. Physical Pico regression remains pending; DB-5 remains blocked. No research experiment/model training was run.
+
+
+## 2026-09-24 - Threshold Authority Boundary Hardened
+
+Closed the previously recorded provenance gap in generic telemetry normalization. `TelemetryCreate` accepts `official_operational` as a compatibility label, but that client-provided string is not proof of hydrological authority. Before this change the normalized adapter would have persisted the label as an official Threshold. It now downgrades that case to `prototype_demo` and records an explicit source reference stating that generic telemetry ingestion is not an authorized official-threshold channel.
+
+Added a regression test proving that generic ingestion cannot create any `official_operational` Threshold row. CI run `35958515275`: **PASS**, including MySQL integration. Created `diagrams/floodwatch_threshold_authority_boundary.svg`.
+
+**Generic-ingestion official-threshold authority gap: CLOSED.** A genuine authoritative threshold-import workflow remains future work and must require independently verified source/authorization evidence. Physical Pico regression remains pending; DB-5 remains blocked. No research experiment/model training was run.
