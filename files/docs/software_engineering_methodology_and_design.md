@@ -407,3 +407,10 @@ The normalized candidate path now reaches the same `RiskStatus` boundary as the 
 ![FloodWatch normalized operational read promotion](diagrams/floodwatch_operational_read_promotion.svg)
 
 The strangler migration has now promoted one consumer: `/api/risk-status`. The endpoint reads normalized observations and typed thresholds while the legacy table remains dual-written. This separates consumer migration from legacy retirement and keeps rollback evidence available. Raw telemetry APIs are intentionally unchanged.
+
+
+## 10.x MySQL integration gate
+
+![FloodWatch MySQL DB-1 gate](diagrams/floodwatch_mysql_db1_gate.svg)
+
+CI now includes a real MySQL 8.4 service job. The same repository/service architecture used in SQLite compatibility tests is executed through SQLAlchemy/PyMySQL against MySQL. Docker Compose was also changed so the development stack provisions MySQL as the application database rather than silently defaulting the containerized system to SQLite.
