@@ -383,3 +383,10 @@ The compatibility table remains a dual-write rollback/reference representation, 
 ![FloodWatch physical hardware regression gate](diagrams/floodwatch_physical_regression_gate.svg)
 
 Before DB-5 removes the compatibility table or stops dual-write, a fresh physical hardware reading must traverse the post-migration stack and be verified in normalized MySQL persistence. The repository now contains a read-only verifier for this purpose. **Status: PENDING physical execution; not satisfiable by CI alone.**
+
+
+## Deterministic latest-row ordering
+
+![FloodWatch deterministic equal-timestamp tie break](diagrams/floodwatch_equal_timestamp_tie_break.svg)
+
+Normalized latest-per-station reads now resolve equal timestamps using the Observation primary key as a secondary descending key. This mirrors the temporary legacy table's timestamp/id ordering and closes a pre-DB-5 parity edge case. CI run `35958025759` passed on the full suite including MySQL integration.
