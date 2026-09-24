@@ -83,7 +83,7 @@ class OperationsTest(unittest.TestCase):
             response = self.operator.post(url + "/" + action, json={"notes": note})
             self.assertEqual(response.status_code, 200, response.text)
             self.assertEqual(response.json()["status"], target)
-            self.assertEqual(response.json()["channels"]["sms"], "not_configured")
+            self.assertEqual(response.json()["channels"]["sms"], "not_required")
         self.assertEqual(self.operator.post(url + "/acknowledge", json={}).status_code, 409)
         self.assertEqual(self.operator.post(url + "/resolve", json={}).status_code, 409)
         audit = self.operator.get(url + "/audit").json()
