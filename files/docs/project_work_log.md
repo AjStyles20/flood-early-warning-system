@@ -1845,3 +1845,14 @@ Created `diagrams/floodwatch_threshold_change_points.svg`.
 The threshold-history CI logs repeatedly exposed two maintenance warnings unrelated to the research logic: Python's deprecated `datetime.utcnow()` usage in SQLAlchemy defaults and Pydantic v2's deprecated class-based `Config` ORM serialization declarations. Updated ORM timestamp factories to explicit UTC-aware `datetime.now(timezone.utc)` calls and migrated the affected Pydantic response models to `ConfigDict(from_attributes=True)`.
 
 CI run `35959714303`: **PASS**, including MySQL integration. This is dependency/runtime maintenance, not a new system capability or scientific result. The GitHub runner also reports upstream Node 20 action deprecation notices for current action versions; those are external workflow-action maintenance signals rather than application failures and were not conflated with FloodWatch correctness.
+
+
+## 2026-09-24 - DB-5 Readiness Boundary Codified
+
+Audited the remaining legacy telemetry references. Production operational modules remain free of direct legacy reads; `telemetry_repository` retains read helpers only for migration/parity tests and the write path still deliberately creates the rollback/reference `TelemetryRecord` alongside normalized evidence.
+
+Added `test_db5_readiness.py` and wired it into CI. The test asserts: (1) the legacy model still exists until retirement authorization; (2) audited production modules do not query it; (3) atomic dual-write remains available as rollback evidence; and (4) the physical-regression verifier/procedure are present. This prevents an accidental destructive DB-5 change from being mistaken for progress.
+
+CI run `35960131647`: **PASS**, including MySQL integration. Created `diagrams/floodwatch_db5_readiness_gate.svg`.
+
+**DB-5 readiness automation: PASS. DB-5 retirement: BLOCKED/PENDING physical regression + explicit authorization.** No research experiment/model training was run.
