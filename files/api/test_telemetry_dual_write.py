@@ -100,5 +100,40 @@ class TelemetryDualWriteTests(unittest.TestCase):
         )
 
 
+    def test_threshold_change_creates_temporal_change_point_and_preserves_history(self):
+        first = self.reading()
+        first.timestamp = datetime(2026, 9, 24, 0, 0, tzinfo=timezone.utc)
+        first.danger_level_m = 2.0
+        self.repo.create_record(self.db, first)
+
+        second = self.reading()
+        second.timestamp = datetime(2026, 9, 24, 1, 0, tzinfo=timezone.utc)
+        second.danger_level_m = 2.5
+        self.repo.create_record(self.db, second)
+
+        rows = self.db.query(self.models.Threshold).order_by(self.models.Threshold.valid_from.asc()).all()
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(rows[0].value, 2.0)
+        self.assertEqual(rows[0].valid_from, first.timestamp)
+        self.assertLess(rows[0].valid_to, second.timestamp)
+        self.assertEqual(rows[1].value, 2.5)
+        self.assertEqual(rows[1].valid_from, second.timestamp)
+        self.assertIsNone(rows[1].valid_to)
+
+        import threshold_repository
+        station = self.db.query(self.models.Station).filter(self.models.Station.station_code == "HW-01").one()
+        variable = self.db.query(self.models.Variable).filter(self.models.Variable.code == "river_stage").one()
+        old = threshold_repository.applicable_threshold(
+            self.db, station_id=station.id, variable_id=variable.id,
+            observed_at=first.timestamp,
+        )
+        current = threshold_repository.applicable_threshold(
+            self.db, station_id=station.id, variable_id=variable.id,
+            observed_at=second.timestamp,
+        )
+        self.assertEqual(old.value, 2.0)
+        self.assertEqual(current.value, 2.5)
+
+
 if __name__ == "__main__":
     unittest.main()
