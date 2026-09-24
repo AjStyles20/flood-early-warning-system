@@ -1977,3 +1977,12 @@ A follow-up cross-check against the actual FastAPI `authorize_ingestion` impleme
 Corrected the Pico bridge, hardware guide and executable DB-5 readiness guard to the backend's canonical contract. CI run `35970202614`: **PASS**, including MySQL integration.
 
 This correction is intentionally recorded rather than hidden: it demonstrates why closure requires end-to-end contract auditing rather than relying on documentation assumptions. The live physical gate remains pending.
+
+
+## 2026-09-24 - Defense Closure: Alert Delivery Semantics
+
+Audited alert capability claims across `main.py`, `alert_service.py`, `notifications.py` and operational tests. Found one public-contract mismatch: persistent alert records correctly stored email/SMS as simulated, but `/api/risk-status` was being supplied `CORE_ALERT_CHANNELS` with email/SMS marked `available`. That could imply a real delivery integration that is not evidenced.
+
+Changed the public capability map to `web=available`, `email=simulated`, `sms=simulated`; aligned the notification service fallback vocabulary and added an operational regression test against the public risk-status API. CI run `35970678307`: **PASS**, including MySQL integration. Created `diagrams/floodwatch_alert_delivery_boundary.svg` and synchronized Chapter 3, software design, defense script and work log.
+
+**Alert delivery evidence semantics: PASS. Real external SMS/email delivery: DEFERRED.**
