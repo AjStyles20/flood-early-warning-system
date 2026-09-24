@@ -217,13 +217,13 @@ The previous perfect baseline result is not used because it came from current-th
 
 The notification layer is implemented in `files/api/notifications.py`.
 
-For the prototype, notifications are simulated and written to a local JSONL log. The active demonstration channels are:
+The web dashboard records advisory status. `alert_delivery.py` implements optional server-side EmailJS email and Twilio SMS attempts for alert-worthy **hardware** readings. Missing provider configuration is recorded as `not_configured`, a rejected/failed attempt as `failed`, and provider acceptance as `sent`; the last state does not prove recipient delivery. Simulator readings record `not_required` for external channels unless `FLOOD_EWS_ALLOW_SIMULATED_PROVIDER_DELIVERY=true` is deliberately set with controlled recipients. The operator's manual alert-log button records a test bulletin and does not contact providers. Local JSONL is supplementary to the persistent alert workflow.
 
-- web dashboard;
-- simulated email;
-- simulated SMS.
+**Figure 3.9.1 — Alert dispatch decision and evidence boundary**
 
-This supports the project requirement that warning access should not assume smartphone ownership. No real SMS or email is sent unless a real provider gateway is configured and tested.
+![FloodWatch alert dispatch decision](diagrams/floodwatch_alert_dispatch_decision.svg)
+
+Figure 3.9.1 shows that the station's database lock spans the active-alert check, optional provider attempt, and persistence of channel outcomes. Readings at the same or lower active risk level reuse the previous result; a higher risk level permits a new attempt. SQLite concurrency and the MySQL integration path have automated evidence. An external provider accepting a request before a later database failure can leave the outcome uncertain. Recipient receipt and physical Pico-to-MySQL operation remain separate verification gates.
 
 ## 3.10 GIS Dashboard and Accessibility Design
 
@@ -607,7 +607,7 @@ The defense-closure audit compared the actual Pico serial bridge with the curren
 
 ![FloodWatch alert delivery evidence boundary](diagrams/floodwatch_alert_delivery_boundary.svg)
 
-The operational alert workflow persists alert events, supports operator acknowledgement/escalation/resolution, and records an audit trail. The current prototype does not have evidence of external SMS or email delivery. During closure, the public risk-status capability map was therefore corrected to expose `web: available`, `email: simulated`, and `sms: simulated`. This matches the notification service and prevents a dashboard/API client from interpreting an implemented workflow as proof of provider delivery.
+The operational alert workflow persists alert events, supports operator acknowledgement/escalation/resolution, and records an audit trail. Figure 3.x documents the **earlier simulation-only boundary**, which was superseded by the provider integration described next. The current public capability map is provider-aware, while individual alert records store actual attempt outcomes. No live recipient receipt has yet been evidenced; the provider adapters must not be described as proof of delivery.
 
 
 ### 3.6.x Real Alert Provider Integration
