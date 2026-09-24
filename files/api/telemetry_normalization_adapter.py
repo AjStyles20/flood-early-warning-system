@@ -97,12 +97,14 @@ def stage_normalized_mirror(db: Session, reading: models.TelemetryCreate) -> lis
         "legacy_telemetry_compatibility: validated TelemetryCreate payload; "
         "not independently verified as an official hydrological threshold"
     )
-    if threshold_type == "official_operational":
+    if threshold_type in {"official_operational", "research_statistical"}:
+        supplied_type = threshold_type
         threshold_type = "prototype_demo"
         source_reference = (
-            "legacy_telemetry_compatibility: caller supplied official_operational, "
-            "but generic telemetry ingestion is not an authorized official-threshold "
-            "channel; stored as prototype_demo pending independent authority evidence"
+            f"legacy_telemetry_compatibility: caller supplied {supplied_type}, "
+            "but generic telemetry ingestion is not an authorized threshold-evidence "
+            "channel; stored as prototype_demo pending a separate provenance-controlled "
+            "threshold workflow"
         )
 
     threshold_repository.stage_compatibility_threshold(
