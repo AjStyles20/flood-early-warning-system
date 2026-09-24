@@ -13,7 +13,7 @@ flowchart TD
     Sensor[Locally justified physical input] --> Node[Microcontroller node]
     Node --> JSON[Telemetry JSON payload]
     JSON --> API[POST /api/telemetry]
-    API --> DB[(SQLite flood_data.db)]
+    API --> DB[(MySQL / normalized observations)]
     DB --> Risk[Current-state threshold assessment]
     Risk --> Dashboard[GIS dashboard]
 ```
@@ -156,3 +156,48 @@ Avoid saying:
 > The physical hardware has been field-tested.
 
 unless it has actually been connected and tested.
+
+
+## 9. Physical regression gate after normalized-read promotion
+
+The software migration is now far enough that the original physical path must be re-run before the legacy telemetry table can be retired.
+
+The required defense/development chain is:
+
+```text
+Pico analogue input
+    -> USB serial / COM4
+    -> Python serial bridge
+    -> POST /api/telemetry
+    -> atomic dual-write
+    -> MySQL normalized LOCAL_SENSOR Observation + typed Threshold
+    -> /api/risk-status?data_source=hardware
+    -> dashboard Hardware/Hybrid view
+```
+
+This is a **physical integration regression**, not a hydrological calibration experiment. It proves that the already-demonstrated Pico-to-software path still works after the database/read-path migration. It does not prove that the analogue input is an accurate Lokoja river-stage sensor.
+
+### Procedure
+
+1. Start MySQL Server and the FloodWatch API with `FLOOD_EWS_DATABASE_URL` pointing to the intended MySQL database.
+2. Confirm `GET /health` reports a healthy application/database state.
+3. Connect the Raspberry Pi Pico and confirm Windows assigns the expected serial port (previously COM4; use the actual current port if Windows assigns another).
+4. Start the existing serial bridge and move the controlled analogue input through at least two visibly different levels.
+5. Confirm the bridge receives HTTP 200 responses from `POST /api/telemetry`.
+6. Open `/api/risk-status?data_source=hardware` and confirm the station, latest water level, threshold type, source and rate-of-rise update.
+7. Open the dashboard, select Hardware, then Hybrid, and confirm the same fresh hardware-originated state is visible.
+8. Run the read-only database verifier from the repository root or with the API modules on `PYTHONPATH`:
+
+```powershell
+cd files\api
+$env:PYTHONPATH = "."
+python ..\hardware\verify_physical_hardware_regression.py HW-01
+```
+
+Use the actual station ID if the bridge uses a different one.
+
+The verifier checks normalized `LOCAL_SENSOR` stage persistence, active threshold configuration, dual-write parity and the rule that unmeasured hardware rainfall, flow and battery remain null. It does **not** access COM4 itself, so a PASS is valid only when it is run immediately after observing the live Pico/bridge POSTs described above.
+
+### Pass evidence to record
+
+Record the date/time, serial port, station ID, two or more raw/converted bridge readings, HTTP 200 responses, verifier output, `/api/risk-status` result and one dashboard screenshot. If any stage fails, DB-5 remains blocked and the failure should be logged rather than bypassed.
