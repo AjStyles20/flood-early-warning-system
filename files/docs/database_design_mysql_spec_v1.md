@@ -446,3 +446,10 @@ Dataset coverage and Threshold validity now have database CHECK constraints prev
 ![FloodWatch unified observation write boundary](diagrams/floodwatch_unified_observation_write_boundary.svg)
 
 The duplicate/correction policy is no longer limited to compatibility telemetry. `observation_repository.create_observation` delegates to the shared staged write policy, providing exact-replay idempotency and conflicting-duplicate rejection to general normalized writes. When Dataset is present, its evidence type must agree with DataSource evidence type. CI run `35962568513` passed including MySQL integration.
+
+
+## Observation evidence-identity uniqueness
+
+![FloodWatch observation identity constraint](diagrams/floodwatch_observation_identity_constraint.svg)
+
+The Observation table now has `UNIQUE(station_id, variable_id, source_id, observed_at)`. This complements the application duplicate/correction policy: exact retries can be recognized and reused before insertion, while the database remains the final backstop against direct/bypassed duplicate persistence. A direct-insert test and the MySQL integration gate verify the constraint. Initial CI `35963073064` exposed a missing `UniqueConstraint` import; after correction, run `35963183379` passed.
