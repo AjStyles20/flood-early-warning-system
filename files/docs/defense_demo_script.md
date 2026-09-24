@@ -319,3 +319,10 @@ Before defense, the physical path must be rerun using the procedure in `hardware
 ![FloodWatch dashboard trend projection](diagrams/floodwatch_dashboard_trend_projection.svg)
 
 If asked about the curve in the selected-station panel, say: “This is not the thesis ML forecast. It is a transparent six-reading persistence projection based on the latest observed change, shown against the configured threshold. I deliberately label the horizon in readings because the operational telemetry interval is not guaranteed to be one hour.” Do not call the curve a six-hour forecast.
+
+
+## Physical demo bridge setup
+
+![FloodWatch physical bridge contract](diagrams/floodwatch_physical_bridge_contract.svg)
+
+For the live physical demo, configure `FLOOD_EWS_SERIAL_PORT`, `FLOOD_EWS_API_URL` and, when API ingestion protection is enabled, `FLOOD_EWS_INGESTION_TOKEN`. The bridge attaches the matching `X-Ingestion-Token` header. Do not assume COM4 if Windows assigns another port. The software contract is CI-guarded, but the physical regression is not considered passed until the live Pico/MySQL/dashboard procedure is performed.
