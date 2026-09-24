@@ -1879,3 +1879,12 @@ Closed the deferred normalized-observation duplicate-policy issue without invent
 Added regression coverage: an identical hardware payload replay leaves exactly one normalized stage Observation, while a different water-level value at the same identity is rejected and the original normalized evidence remains. CI run `35961211681`: **PASS**, including MySQL integration. Created `diagrams/floodwatch_observation_duplicate_policy.svg`.
 
 **Normalized observation duplicate policy: PASS.** This provides transport idempotency and prevents silent evidence overwrite. A versioned authoritative correction workflow remains future work. Physical Pico regression remains pending; DB-5 remains blocked. No research experiment/model training was run.
+
+
+## 2026-09-24 - Station Coordinate Integrity
+
+Closed the deferred normalized-station coordinate-domain constraint. Added database CHECK constraints for inclusive latitude [-90, 90] and longitude [-180, 180]. Added `test_station_coordinates.py` covering valid extreme boundaries plus out-of-range latitude and longitude rejection, and wired the test into CI.
+
+CI run `35961809041`: **PASS**, including MySQL integration. Created `diagrams/floodwatch_station_coordinate_integrity.svg` and synchronized design/database documentation.
+
+**Station coordinate-domain integrity: PASS.** This does not establish that a valid coordinate is the correct authoritative station location. Physical Pico regression remains pending; DB-5 remains blocked. No research experiment/model training was run.
