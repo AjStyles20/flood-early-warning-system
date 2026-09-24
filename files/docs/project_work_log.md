@@ -1712,3 +1712,14 @@ Extended `normalized_read_repository.py` and DB-4 parity tests to include `dange
 Created and embedded `diagrams/floodwatch_threshold_applicability.svg`.
 
 **Typed Threshold Configuration: PASS under SQLite compatibility CI. DB-4 evidence + threshold parity: PASS. Full current-state parity is NEXT.** MySQL-specific execution and physical Pico regression remain pending; DB-5 remains blocked. No research experiment/model training was run.
+
+
+## 2026-09-24 - DB-4B Full Current-State Parity Increment
+
+Implemented `normalized_current_state_service.py`. The candidate service computes rate of rise from prior normalized stage observations, consumes the applicable typed threshold, and uses the same `risk_engine.classify` policy as the legacy current-state service. Simulator-only ML display information remains separate and follows the same invocation conditions; hardware remains threshold-only.
+
+Added `test_current_state_parity.py`, comparing the complete public `RiskStatus` contract between legacy and normalized paths for hardware and simulator evidence, including trend, risk level/ratio, ML fields, message, colour, language and alert-channel metadata. GitHub Actions run `35951919460` completed successfully.
+
+Created and embedded `diagrams/floodwatch_current_state_parity.svg`.
+
+**DB-4B Full Current-State Parity: PASS under SQLite compatibility CI.** Operational API/dashboard read promotion is NEXT and remains deliberately separate. Physical Pico regression and MySQL-specific DB-1 execution remain required before DB-5 legacy retirement. No research experiment/model training was run.
