@@ -184,6 +184,16 @@ class DataSource(Base):
 
 class Dataset(Base):
     __tablename__ = "datasets"
+    __table_args__ = (
+        CheckConstraint(
+            "evidence_type IN ('observed', 'derived', 'simulated', 'reanalysis', 'modelled')",
+            name="ck_datasets_evidence_type",
+        ),
+        CheckConstraint(
+            "coverage_start IS NULL OR coverage_end IS NULL OR coverage_start <= coverage_end",
+            name="ck_datasets_coverage_order",
+        ),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     dataset_code = Column(String(96), unique=True, index=True, nullable=False)
@@ -222,6 +232,10 @@ class Threshold(Base):
         CheckConstraint(
             "threshold_type IN ('official_operational', 'research_statistical', 'prototype_demo')",
             name="ck_thresholds_type",
+        ),
+        CheckConstraint(
+            "valid_from IS NULL OR valid_to IS NULL OR valid_from <= valid_to",
+            name="ck_thresholds_validity_order",
         ),
         Index("ix_threshold_station_variable_active", "station_id", "variable_id", "active"),
         Index("ix_threshold_station_variable_type_validity", "station_id", "variable_id", "threshold_type", "valid_from", "valid_to"),
