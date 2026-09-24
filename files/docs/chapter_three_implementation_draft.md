@@ -608,3 +608,12 @@ The defense-closure audit compared the actual Pico serial bridge with the curren
 ![FloodWatch alert delivery evidence boundary](diagrams/floodwatch_alert_delivery_boundary.svg)
 
 The operational alert workflow persists alert events, supports operator acknowledgement/escalation/resolution, and records an audit trail. The current prototype does not have evidence of external SMS or email delivery. During closure, the public risk-status capability map was therefore corrected to expose `web: available`, `email: simulated`, and `sms: simulated`. This matches the notification service and prevents a dashboard/API client from interpreting an implemented workflow as proof of provider delivery.
+
+
+### 3.6.x Real Alert Provider Integration
+
+**Figure 3.x — Real alert delivery architecture**
+
+![FloodWatch real alert delivery architecture](diagrams/floodwatch_real_alert_delivery.svg)
+
+The closure requirement was strengthened from simulated channels to executable provider delivery. FloodWatch now contains server-side EmailJS and Twilio SMS adapters. Provider credentials and recipients are supplied only through environment variables. For each alert-worthy observation, the delivery layer reports `sent`, `failed`, or `not_configured`; the web channel remains `available`. The resulting outcomes are persisted with the alert workflow rather than assuming that configured means delivered. CI mocks provider responses and verifies the state machine without sending real messages. A live provider test is still required before claiming real-world delivery evidence.
