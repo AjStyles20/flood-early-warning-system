@@ -186,7 +186,13 @@ flowchart LR
 
 ![FloodWatch alert workflow](diagrams/floodwatch_alert_workflow.svg)
 
-The alert service owns persistent alert lifecycle rules independently of FastAPI transport. Active duplicate suppression is keyed by station/source, valid transitions are explicit, and every operator transition is audited. Delivery capability labels remain honest: web is available while email/SMS are simulated.
+The alert service owns persistent alert lifecycle rules independently of FastAPI transport. Active duplicate suppression is keyed by station/source, valid transitions are explicit, and every operator transition is audited. EmailJS and Twilio adapters make configured provider attempts; simulator readings cannot contact providers unless explicitly opted in. `sent` means provider acceptance and does not establish recipient delivery.
+
+**Figure 8.4.1 — Alert dispatch decision and evidence boundary**
+
+![FloodWatch alert dispatch decision](diagrams/floodwatch_alert_dispatch_decision.svg)
+
+Figure 8.4.1 shows the database station lock protecting the decision, provider attempt and stored channel result. A repeated reading at the same or lower active risk reuses the saved result; an increase permits a new attempt. This is a synchronous best-effort path, so provider acceptance followed by database failure still requires reconciliation.
 
 ## 9. Activity diagram - telemetry processing
 
