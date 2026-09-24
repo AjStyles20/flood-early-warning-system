@@ -26,6 +26,11 @@ def stage_observation(
     quality_flag: str | None = None,
     signal_status: str | None = None,
 ) -> models.Observation:
+    if dataset is not None and dataset.evidence_type != source.evidence_type:
+        raise ObservationConflictError(
+            "Dataset evidence_type must match the DataSource evidence_type for an observation."
+        )
+
     existing = (
         db.query(models.Observation)
         .filter(
