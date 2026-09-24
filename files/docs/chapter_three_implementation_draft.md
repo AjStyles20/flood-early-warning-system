@@ -570,3 +570,14 @@ The shared boundary also validates Dataset/DataSource provenance consistency whe
 The shared observation write policy provides semantic handling of duplicates, but application checks alone do not protect against direct SQL/import paths or concurrent writes. The Observation table therefore now has a composite UNIQUE constraint over `station_id + variable_id + source_id + observed_at`. The application layer still distinguishes exact replay from conflicting evidence; the database is the final invariant preventing two normalized rows from occupying the same evidence identity.
 
 A direct ORM insert test deliberately bypasses the write policy and confirms that the second identical identity is rejected. The MySQL DB-1 integration test now performs the same bypass attempt against MySQL. Initial CI run `35963073064` failed before test execution because `UniqueConstraint` had not been added to the SQLAlchemy import list; this implementation error was corrected. Final run `35963183379` passed the complete suite including MySQL integration.
+
+
+### 3.6.x Dashboard Trend Projection Integrity
+
+**Figure 3.x — Transparent dashboard trend projection**
+
+![FloodWatch dashboard trend projection](diagrams/floodwatch_dashboard_trend_projection.svg)
+
+During the defense-closure audit, the selected-station dashboard was found to contain a visually convincing six-hour curve whose endpoint was chosen from the station risk class rather than produced by an hourly forecasting method. That presentation could imply predictive evidence that the implementation did not possess. It was therefore corrected rather than defended.
+
+The curve is now an explicitly labelled six-reading trend projection. Its endpoint is calculated as `current level + 6 × latest per-reading rate of rise`, with the configured threshold shown as context. The x-axis says `+6 readings`, not `+6 hours`. It is not generated from risk colour and is not described as an ML or hydrological forecast. A frontend regression guard prevents the unsupported hourly label/risk-class endpoint from returning. CI run `35967402520` passed.
