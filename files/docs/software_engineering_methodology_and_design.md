@@ -508,3 +508,10 @@ Redundant provenance metadata is dangerous unless its values are constrained to 
 ![FloodWatch normalized observation duplicate policy](diagrams/floodwatch_observation_duplicate_policy.svg)
 
 FloodWatch now distinguishes delivery retry semantics from data-correction semantics. Exact normalized observation replays are idempotent, which protects serial/API retries from creating duplicate evidence. A different value or metadata at the same station/variable/source/time is a semantic conflict and is rejected until an explicit correction workflow can record why evidence changed.
+
+
+## 10.x Coordinate integrity defense-in-depth
+
+![FloodWatch station coordinate integrity](diagrams/floodwatch_station_coordinate_integrity.svg)
+
+Station coordinate validation is enforced at persistence as well as at application boundaries. Database CHECK constraints protect the normalized model from invalid latitude/longitude values introduced by non-API write paths. This is defense-in-depth: domain validity is enforced independently of whichever client produced the station metadata.
