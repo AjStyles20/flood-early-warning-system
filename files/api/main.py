@@ -1390,25 +1390,27 @@ def dispatch_alert(
     station_id = str(payload.get("station_id") or "").strip()
     if not station_id:
         raise HTTPException(status_code=422, detail="station_id is required before an alert simulation can be logged")
-    latest = (
-        db.query(models.TelemetryRecord)
-        .filter(models.TelemetryRecord.station_id == station_id)
-        .order_by(models.TelemetryRecord.timestamp.desc())
-        .first()
-    )
-    if latest is None:
+    candidates = [
+        item for item in telemetry_service.risk_statuses(
+            db,
+            data_source="hybrid",
+            language="en",
+            alert_channels=dict(CORE_ALERT_CHANNELS),
+            risk_rank=RISK_RANK,
+        )
+        if item.station_id == station_id
+    ]
+    if not candidates:
         raise HTTPException(status_code=404, detail="No telemetry exists for this station. Start the simulator or connect hardware first.")
-
-    station_name = latest.station_name
-    assessment = assess_record(latest, db)
+    current = candidates[0]
 
     event = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "station_id": station_id,
-        "station_name": station_name,
-        "data_source": latest.data_source,
-        "risk_level": assessment.risk_level,
-        "message": f"Simulated alert bulletin logged: {assessment.message}",
+        "station_name": current.station_name,
+        "data_source": current.data_source,
+        "risk_level": current.risk_level,
+        "message": f"Simulated alert bulletin logged: {current.message}",
         "channels": alert_channels(),
         "operator_id": operator.id,
         "operator_email": operator.email,
@@ -1423,9 +1425,9 @@ def dispatch_alert(
     persisted = persist_alert_event(
         db,
         station_id,
-        station_name,
-        latest.data_source,
-        assessment.risk_level,
+        current.station_name,
+        current.data_source,
+        current.risk_level,
         event["message"],
     )
     if persisted:
@@ -1515,22 +1517,26 @@ def run_scenario(
     if scenario not in {"flood", "normal"}:
         raise HTTPException(status_code=422, detail="scenario must be either 'flood' or 'normal'")
 
-    latest = (
-        db.query(models.TelemetryRecord)
-        .filter(models.TelemetryRecord.station_id == station_id)
-        .order_by(models.TelemetryRecord.timestamp.desc())
-        .first()
-    )
-
-    if latest is None:
+    candidates = [
+        item for item in telemetry_service.risk_statuses(
+            db,
+            data_source="hybrid",
+            language="en",
+            alert_channels=dict(CORE_ALERT_CHANNELS),
+            risk_rank=RISK_RANK,
+        )
+        if item.station_id == station_id
+    ]
+    if not candidates:
         raise HTTPException(status_code=404, detail="No telemetry exists for this station. Start the simulator or connect hardware first.")
+    current = candidates[0]
 
-    danger = latest.danger_level_m
-    lat = latest.lat
-    lon = latest.lon
-    station_name = latest.station_name
-    current_w = latest.water_level_m
-    before_assessment = assess_record(latest, db)
+    danger = current.danger_level_m
+    lat = current.lat
+    lon = current.lon
+    station_name = current.station_name
+    current_w = current.water_level_m
+    before_risk = current.risk_level
 
     if scenario == "flood":
         new_level = max(current_w, min(danger * 1.15, current_w + round(danger * 0.12, 2)))
@@ -1552,7 +1558,7 @@ def run_scenario(
         timestamp=datetime.now(timezone.utc),
         water_level_m=round(new_level, 2),
         danger_level_m=danger,
-        threshold_type=latest.threshold_type,
+        threshold_type=current.threshold_type,
         rainfall_mm_hr=rainfall,
         flow_rate_m3s=round(new_level * 10.5, 1),
         battery_pct=96.0,
@@ -1569,9 +1575,9 @@ def run_scenario(
         station_id=station_id,
         station_name=station_name,
         scenario=scenario,
-        before_risk=before_assessment.risk_level,
+        before_risk=before_risk,
         after_risk=assessment.risk_level,
-        before_water_level_m=latest.water_level_m,
+        before_water_level_m=current_w,
         after_water_level_m=new_record.water_level_m,
         operator_id=operator.id,
         operator_email=operator.email,
