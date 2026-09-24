@@ -89,15 +89,28 @@ def stage_normalized_mirror(db: Session, reading: models.TelemetryCreate) -> lis
     # Legacy prototype thresholds have no independent external source, so their
     # provenance is explicitly compatibility-derived rather than "official".
     stage_variable = observation_repository.get_variable(db, "river_stage")
+    # The generic telemetry ingestion contract is not an authority channel.
+    # A caller may preserve a supplied type label for compatibility, but it
+    # cannot create an authoritative threshold claim through this path.
+    threshold_type = reading.threshold_type
+    source_reference = (
+        "legacy_telemetry_compatibility: validated TelemetryCreate payload; "
+        "not independently verified as an official hydrological threshold"
+    )
+    if threshold_type == "official_operational":
+        threshold_type = "prototype_demo"
+        source_reference = (
+            "legacy_telemetry_compatibility: caller supplied official_operational, "
+            "but generic telemetry ingestion is not an authorized official-threshold "
+            "channel; stored as prototype_demo pending independent authority evidence"
+        )
+
     threshold_repository.stage_threshold(
         db,
         station=station,
         variable=stage_variable,
-        threshold_type=reading.threshold_type,
+        threshold_type=threshold_type,
         value=reading.danger_level_m,
-        source_reference=(
-            "legacy_telemetry_compatibility: validated TelemetryCreate payload; "
-            "not independently verified as an official hydrological threshold"
-        ),
+        source_reference=source_reference,
     )
     return rows
