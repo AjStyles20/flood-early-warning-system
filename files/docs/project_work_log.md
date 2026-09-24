@@ -1778,3 +1778,14 @@ Added `test_normalized_operational_consumers.py`. The test first ingests normali
 CI run `35956778318`: **PASS**, including MySQL integration. Created `diagrams/floodwatch_operational_read_independence.svg`.
 
 **Audited operational consumer read independence: PASS.** DB-5 remains blocked pending remaining compatibility audit and physical Pico regression. No research experiment/model training was run.
+
+
+## 2026-09-24 - Normalized Telemetry History Promotion
+
+Migrated public `GET /api/telemetry` from `telemetry_repository.list_records` to `normalized_read_repository.list_evidence`. The projection reconstructs the existing telemetry response from river-stage Observation rows, same-timestamp optional measurements, DataSource provenance and the applicable temporal Threshold, while preserving newest-first ordering, source filters and pagination.
+
+Added `test_normalized_telemetry_history.py`, including a destructive independence test that deletes all legacy telemetry rows before reading the API. CI run `35957056596` failed because `TelemetryResponse` requires `id` and the initial normalized dataclass did not expose one. MySQL integration passed in that run, isolating the defect to the compatibility projection. Added the anchoring Observation id to `NormalizedTelemetryEvidence`; rerun `35957220042` passed completely.
+
+Created and embedded `diagrams/floodwatch_normalized_history_projection.svg`.
+
+**Normalized telemetry history read promotion: PASS.** Legacy persistence is still retained for rollback and remaining retirement gates; this increment removes another read dependency rather than deleting data. Physical Pico regression remains pending. No research experiment/model training was run.
