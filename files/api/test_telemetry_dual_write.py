@@ -85,5 +85,20 @@ class TelemetryDualWriteTests(unittest.TestCase):
         self.assertEqual(self.db.query(self.models.Threshold).count(), 1)
 
 
+    def test_generic_ingestion_cannot_create_official_threshold_authority(self):
+        reading = self.reading()
+        reading.threshold_type = "official_operational"
+        self.repo.create_record(self.db, reading)
+        threshold = self.db.query(self.models.Threshold).one()
+        self.assertEqual(threshold.threshold_type, "prototype_demo")
+        self.assertIn("not an authorized official-threshold channel", threshold.source_reference)
+        self.assertEqual(
+            self.db.query(self.models.Threshold)
+            .filter(self.models.Threshold.threshold_type == "official_operational")
+            .count(),
+            0,
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
