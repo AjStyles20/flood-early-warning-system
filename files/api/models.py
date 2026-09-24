@@ -210,6 +210,10 @@ class Dataset(Base):
 class Observation(Base):
     __tablename__ = "observations"
     __table_args__ = (
+        UniqueConstraint(
+            "station_id", "variable_id", "source_id", "observed_at",
+            name="uq_observation_evidence_identity",
+        ),
         Index("ix_observation_station_variable_time", "station_id", "variable_id", "observed_at"),
         Index("ix_observation_source_time", "source_id", "observed_at"),
     )
