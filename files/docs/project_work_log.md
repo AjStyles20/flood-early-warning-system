@@ -1745,3 +1745,14 @@ Added `test_mysql_integration.py`, a destructive test intended only for a dispos
 Added a separate GitHub Actions MySQL service job. Run `35955625737` completed successfully. Created and embedded `diagrams/floodwatch_mysql_db1_gate.svg`.
 
 **DB-1 MySQL application execution: PASS.** This does not prove the user's local Workbench installation or physical COM4/Pico path. The physical Pico regression remains the principal external gate before DB-5 legacy retirement. No research experiment/model training was run.
+
+
+## 2026-09-24 - Telemetry Application-Service Refactor
+
+Inspected the post-DB-4 route structure and identified telemetry orchestration still embedded in `main.py`: REST ingestion, CSV ingestion and risk-status assembly. Added `telemetry_service.py` so routes own HTTP concerns while the application service coordinates dual-write persistence, immediate threshold notification/alert workflow and normalized risk-status/hybrid selection. REST and CSV now invoke the same use-case workflow.
+
+Added `test_telemetry_service.py` to verify dual-write/alert orchestration and normalized risk-status/trend behaviour at the service boundary. Existing API, operational, promotion, MySQL and HTTP tests remain in CI. GitHub Actions run `35956139992` completed successfully.
+
+Created and embedded `diagrams/floodwatch_telemetry_service_boundary.svg`.
+
+**Telemetry service modularisation increment: PASS.** Public contracts and scientific semantics were not changed. Physical Pico regression remains pending before DB-5 retirement. No research experiment/model training was run.
