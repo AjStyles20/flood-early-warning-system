@@ -162,6 +162,11 @@ class DataSource(Base):
             "evidence_type IN ('observed', 'derived', 'simulated', 'reanalysis', 'modelled')",
             name="ck_data_sources_evidence_type",
         ),
+        CheckConstraint(
+            "(is_observational = 1 AND evidence_type = 'observed') OR "
+            "(is_observational = 0 AND evidence_type <> 'observed')",
+            name="ck_data_sources_observational_consistency",
+        ),
     )
 
     id = Column(Integer, primary_key=True, index=True)
