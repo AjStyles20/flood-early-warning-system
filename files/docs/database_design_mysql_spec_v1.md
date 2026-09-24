@@ -344,3 +344,12 @@ DB-4 normalized evidence reconstruction now includes threshold value/type. Full 
 Normalized persistence now supports reconstruction through current-state decision support rather than only raw evidence. Previous normalized stage observations provide the rate-of-rise input; the applicable Threshold provides decision configuration; the shared risk engine produces the display assessment. CI verifies parity against the legacy service for both hardware and simulator paths.
 
 **DB-4B current-state parity: PASS under SQLite compatibility CI. Operational route promotion remains a separate pending step.**
+
+
+## DB-4 operational promotion status
+
+![FloodWatch normalized operational read promotion](diagrams/floodwatch_operational_read_promotion.svg)
+
+The current-state API now reads from the normalized model. The compatibility telemetry table remains written and queryable but is no longer the source for `/api/risk-status`. This is not DB-5 retirement: physical Pico regression and MySQL-specific execution remain mandatory before removal of legacy persistence.
+
+**DB-4 operational risk-status promotion: PASS under SQLite compatibility CI.**
