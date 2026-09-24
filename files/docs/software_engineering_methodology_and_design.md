@@ -414,3 +414,10 @@ The strangler migration has now promoted one consumer: `/api/risk-status`. The e
 ![FloodWatch MySQL DB-1 gate](diagrams/floodwatch_mysql_db1_gate.svg)
 
 CI now includes a real MySQL 8.4 service job. The same repository/service architecture used in SQLite compatibility tests is executed through SQLAlchemy/PyMySQL against MySQL. Docker Compose was also changed so the development stack provisions MySQL as the application database rather than silently defaulting the containerized system to SQLite.
+
+
+## 10.x Telemetry application-service boundary
+
+![FloodWatch telemetry service boundary](diagrams/floodwatch_telemetry_service_boundary.svg)
+
+A service layer now separates HTTP transport from telemetry use-case orchestration. `main.py` validates/routes; `telemetry_service.py` coordinates the use case; repositories own database access; current-state/risk services own interpretation. This follows separation of concerns and reduces the reasons `main.py` must change. It is not a claim that every endpoint must be split into a separate file immediately; modularisation is incremental and regression-gated.
