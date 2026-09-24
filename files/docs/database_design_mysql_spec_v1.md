@@ -362,3 +362,10 @@ The current-state API now reads from the normalized model. The compatibility tel
 DB-1 now has direct MySQL execution evidence. The CI integration job creates the schema on MySQL 8.4 and verifies dual-write, normalized evidence reconstruction, typed threshold persistence and normalized current-state assessment. Docker Compose now represents the declared deployment architecture by provisioning a MySQL service and connecting the API through `mysql+pymysql`.
 
 **DB-1 MySQL application execution: PASS in disposable CI MySQL. Local Workbench/server verification remains a defense/development environment check, not a missing application-code gate.**
+
+
+## Normalized historical read promotion
+
+![FloodWatch normalized telemetry history projection](diagrams/floodwatch_normalized_history_projection.svg)
+
+`GET /api/telemetry` no longer requires `TelemetryRecord` for reads. Historical telemetry-shaped rows are projected from normalized stage observations, same-time optional variables, source provenance and temporally applicable thresholds. The anchoring Observation primary key is used as the compatibility response identifier. The legacy table remains dual-written pending final retirement gates.
