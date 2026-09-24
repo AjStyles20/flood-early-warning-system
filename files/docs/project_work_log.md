@@ -1767,3 +1767,14 @@ Added `test_scenario_normalized_path.py` to verify legacy + normalized scenario 
 Created and embedded `diagrams/floodwatch_scenario_normalized_path.svg`.
 
 **Scenario normalized-path regression: FIXED / PASS.** Scenario data remains synthetic/demo evidence. Physical Pico regression remains pending before DB-5. No research experiment/model training was run.
+
+
+## 2026-09-24 - Operational Legacy-Read Removal
+
+Searched `main.py` for direct `TelemetryRecord` consumers after repairing the scenario producer. Found two operational dependencies: manual alert dispatch and scenario initiation. Migrated both to `telemetry_service.risk_statuses`, so they obtain station/source selection, threshold configuration and current risk from normalized evidence. Scenario output continues through the shared dual-write service.
+
+Added `test_normalized_operational_consumers.py`. The test first ingests normalized/compatibility telemetry, then deliberately deletes all `TelemetryRecord` rows. It proves that alert dispatch still succeeds and that a new scenario can still be initiated and subsequently observed through normalized risk status. This is direct evidence of read independence rather than merely equality while both stores exist.
+
+CI run `35956778318`: **PASS**, including MySQL integration. Created `diagrams/floodwatch_operational_read_independence.svg`.
+
+**Audited operational consumer read independence: PASS.** DB-5 remains blocked pending remaining compatibility audit and physical Pico regression. No research experiment/model training was run.
