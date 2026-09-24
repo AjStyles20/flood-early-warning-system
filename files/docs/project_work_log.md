@@ -1928,3 +1928,14 @@ Audited high-visibility run/defense documentation and corrected stale architectu
 **Closure rule:** new work must support core functionality, fix a demonstrated defect, support an evidence-backed thesis claim, or improve reproducibility/defense. Otherwise defer it.
 
 **P0 remaining external gate:** current Pico -> serial bridge -> FastAPI -> MySQL normalized persistence -> risk-status -> dashboard physical regression on the user's machine. DB-5 remains blocked. Real observational predictive claims remain blocked until the research protocol/result exists.
+
+
+## 2026-09-24 - Defense Closure: Dashboard Forecast-Semantics Repair
+
+P0 product audit found that the selected-station UI drew a visually forecast-like `+6 hours` curve but selected its endpoint from the current risk class. No hourly hydrological model produced that curve. This was a defense/evidence defect, not merely cosmetic.
+
+Changed the UI to a transparent six-reading trend projection derived from `current level + 6 × rate-of-rise`; changed the axis from `+6 hours` to `+6 readings`; removed risk-class-derived endpoints; and added frontend regression assertions preventing the unsupported representation from returning.
+
+Initial CI run `35967261564` failed because the newly appended frontend assertions referenced fixture variable names that did not exist in the test file. The MySQL job itself passed. Corrected the test fixture scoping; final CI run `35967402520`: **PASS**. Created `diagrams/floodwatch_dashboard_trend_projection.svg`.
+
+**Dashboard projection semantics: PASS.** The trend curve is engineering decision-support visualization only, not observational predictive validation. Physical post-migration regression remains pending.
