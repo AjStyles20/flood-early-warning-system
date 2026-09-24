@@ -564,3 +564,10 @@ FloodWatch separates workflow capability from delivery evidence. Persistent aler
 ![FloodWatch real alert delivery architecture](diagrams/floodwatch_real_alert_delivery.svg)
 
 The alert subsystem now applies an adapter boundary around external providers. EmailJS handles email and Twilio handles SMS when configured; missing credentials produce `not_configured`, network/provider failure produces `failed`, and only a successful provider response produces `sent`. Telemetry persistence is not rolled back by a notification-provider outage. Secrets remain runtime configuration rather than repository content.
+
+
+## 10.x Real alert provider adapters
+
+![FloodWatch real alert delivery](diagrams/floodwatch_real_alert_delivery.svg)
+
+FloodWatch now uses explicit provider adapters for EmailJS email and Twilio SMS. Delivery is failure-isolated from telemetry persistence: provider failure is represented as `failed` and must not prevent the observation itself from being stored. Secrets remain outside source control. The architecture separates capability configuration from delivery evidence.
