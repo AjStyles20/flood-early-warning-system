@@ -1,10 +1,29 @@
 services:
+  floodwatch-db:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: ${FLOODWATCH_MYSQL_DATABASE:-floodwatch}
+      MYSQL_USER: ${FLOODWATCH_MYSQL_USER:-floodwatch_app}
+      MYSQL_PASSWORD: ${FLOODWATCH_MYSQL_PASSWORD:-floodwatch_dev}
+      MYSQL_ROOT_PASSWORD: ${FLOODWATCH_MYSQL_ROOT_PASSWORD:-floodwatch_root_dev}
+    volumes:
+      - floodwatch_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u${FLOODWATCH_MYSQL_USER:-floodwatch_app}", "-p${FLOODWATCH_MYSQL_PASSWORD:-floodwatch_dev}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
   floodwatch-api:
     build: .
+    depends_on:
+      floodwatch-db:
+        condition: service_healthy
     ports:
       - "8000:8000"
     environment:
-      FLOOD_EWS_DATABASE_URL: sqlite:////app/runtime/flood_data.db
+      FLOOD_EWS_DATABASE_URL: mysql+pymysql://${FLOODWATCH_MYSQL_USER:-floodwatch_app}:${FLOODWATCH_MYSQL_PASSWORD:-floodwatch_dev}@floodwatch-db:3306/${FLOODWATCH_MYSQL_DATABASE:-floodwatch}
       FLOOD_EWS_RUNTIME_DIR: /app/runtime
       FLOOD_EWS_INGEST_TOKEN: ${FLOOD_EWS_INGEST_TOKEN:-}
       FLOOD_EWS_NEWS_PROVIDER: ${FLOOD_EWS_NEWS_PROVIDER:-auto}
@@ -20,7 +39,7 @@ services:
       FLOOD_EWS_NEWS_COUNTRY: ${FLOOD_EWS_NEWS_COUNTRY:-}
       FLOOD_EWS_SECURE_COOKIES: ${FLOOD_EWS_SECURE_COOKIES:-0}
     volumes:
-      - floodwatch_data:/app/runtime
+      - floodwatch_runtime:/app/runtime
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5).read()"]
       interval: 30s
@@ -29,4 +48,5 @@ services:
       start_period: 30s
 
 volumes:
-  floodwatch_data:
+  floodwatch_mysql_data:
+  floodwatch_runtime:
