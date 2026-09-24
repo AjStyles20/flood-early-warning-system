@@ -400,3 +400,10 @@ The current-state contract requires both evidence and a decision threshold, but 
 ![FloodWatch current-state parity](diagrams/floodwatch_current_state_parity.svg)
 
 The normalized candidate path now reaches the same `RiskStatus` boundary as the legacy path. It derives trend from normalized stage history, applies typed threshold configuration, and reuses the same explainable classification policy. Full contract parity is tested before route promotion, following the strangler migration principle of separating **prove equivalence** from **switch consumers**.
+
+
+## 10.x Operational normalized-read promotion
+
+![FloodWatch normalized operational read promotion](diagrams/floodwatch_operational_read_promotion.svg)
+
+The strangler migration has now promoted one consumer: `/api/risk-status`. The endpoint reads normalized observations and typed thresholds while the legacy table remains dual-written. This separates consumer migration from legacy retirement and keeps rollback evidence available. Raw telemetry APIs are intentionally unchanged.
