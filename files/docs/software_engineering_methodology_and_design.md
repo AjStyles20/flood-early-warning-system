@@ -470,3 +470,10 @@ Database migrations must preserve edge-case selection semantics, not only ordina
 ![FloodWatch threshold authority boundary](diagrams/floodwatch_threshold_authority_boundary.svg)
 
 Validation of a field's syntax is not validation of its authority. The generic telemetry contract may accept a threshold-type label for backward compatibility, but the normalization boundary now prevents that untrusted label from becoming an official operational claim. This is a provenance and trust-boundary control, distinct from ordinary input validation.
+
+
+## 10.x Temporal configuration change points
+
+![FloodWatch temporal threshold change points](diagrams/floodwatch_threshold_change_points.svg)
+
+Threshold configuration is now versioned as validity intervals for compatibility ingestion. This prevents configuration drift from rewriting the interpretation of historical observations. The implementation also records an explicit constraint: compatibility change points are chronological; a general bitemporal correction/revision system would be a larger governance feature and is outside this migration increment.
