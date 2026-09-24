@@ -100,6 +100,21 @@ class TelemetryDualWriteTests(unittest.TestCase):
         )
 
 
+    def test_generic_ingestion_cannot_create_research_statistical_threshold_authority(self):
+        reading = self.reading()
+        reading.threshold_type = "research_statistical"
+        self.repo.create_record(self.db, reading)
+        threshold = self.db.query(self.models.Threshold).one()
+        self.assertEqual(threshold.threshold_type, "prototype_demo")
+        self.assertIn("not an authorized threshold-evidence channel", threshold.source_reference)
+        self.assertEqual(
+            self.db.query(self.models.Threshold)
+            .filter(self.models.Threshold.threshold_type == "research_statistical")
+            .count(),
+            0,
+        )
+
+
     def test_threshold_change_creates_temporal_change_point_and_preserves_history(self):
         first = self.reading()
         first.timestamp = datetime(2026, 9, 24, 0, 0, tzinfo=timezone.utc)
