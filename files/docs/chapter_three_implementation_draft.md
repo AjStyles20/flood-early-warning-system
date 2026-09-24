@@ -502,3 +502,14 @@ The compatibility change-point helper intentionally requires chronological inges
 The migration boundary is now executable in CI rather than existing only as a documentation warning. `test_db5_readiness.py` verifies that operational production modules remain independent of direct `TelemetryRecord` reads, while the legacy model and atomic dual-write still exist as rollback/reference evidence until retirement is explicitly authorized. It also verifies that the physical-regression verifier and procedure remain present.
 
 This is intentionally a readiness guard rather than a retirement test: CI must not infer that a real Pico/serial/dashboard test occurred. Run `35960131647` passed, including MySQL integration. DB-5 remains blocked by the physical regression and explicit retirement authorization.
+
+
+### 3.6.x Data-Source Evidence Consistency
+
+**Figure 3.x — Data-source evidence consistency constraint**
+
+![FloodWatch data-source evidence consistency](diagrams/floodwatch_source_evidence_consistency.svg)
+
+The normalized provenance model contained both `evidence_type` and `is_observational`. Without a consistency rule those fields could contradict each other, for example a simulated source marked observational. A database CHECK constraint now requires `is_observational=true` exactly for `evidence_type='observed'`, while derived, simulated, reanalysis and modelled sources must be non-observational. The controlled source catalogue now sets this property explicitly rather than relying on the ORM default.
+
+The first CI run (`35960727840`) correctly failed on both SQLite and MySQL because the new constraint exposed that the existing observed catalogue entries had relied on the old default `False`. The catalogue was corrected to state its semantics explicitly. Final run `35960831160` passed, including MySQL integration. This enforces provenance consistency but does not certify calibration or scientific quality of an observational source.
