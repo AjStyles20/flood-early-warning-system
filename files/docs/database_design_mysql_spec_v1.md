@@ -453,3 +453,10 @@ The duplicate/correction policy is no longer limited to compatibility telemetry.
 ![FloodWatch observation identity constraint](diagrams/floodwatch_observation_identity_constraint.svg)
 
 The Observation table now has `UNIQUE(station_id, variable_id, source_id, observed_at)`. This complements the application duplicate/correction policy: exact retries can be recognized and reused before insertion, while the database remains the final backstop against direct/bypassed duplicate persistence. A direct-insert test and the MySQL integration gate verify the constraint. Initial CI `35963073064` exposed a missing `UniqueConstraint` import; after correction, run `35963183379` passed.
+
+
+## Threshold evidence authority guard
+
+![FloodWatch threshold evidence authority](diagrams/floodwatch_threshold_evidence_authority.svg)
+
+The `threshold_type` domain permits `official_operational`, `research_statistical`, and `prototype_demo`, but schema capability does not grant provenance authority. The generic telemetry adapter may create only compatibility/demo threshold evidence. Caller-supplied official or research-statistical labels are stored as `prototype_demo` with an explanatory source reference. A future provenance-controlled import/configuration workflow is required for stronger threshold evidence classes.
