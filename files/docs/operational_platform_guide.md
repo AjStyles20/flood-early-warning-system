@@ -14,7 +14,6 @@ py -m compileall -q .\files\api .\files\flood_sensor_simulator.py
 node .\files\api\test_frontend.cjs
 cd .\files\api
 py -u .\test_model_training.py
-py -u .\train_model.py
 py -u .\test_api.py
 py -u .\test_operational.py
 py -u .\test_http_smoke.py
@@ -60,7 +59,7 @@ station_id,station_name,data_source,lat,lon,timestamp,water_level_m,danger_level
 CSV-01,Example household gauge,hardware,7.8,6.7,2026-09-08T10:00:00Z,2.4,5.0,10,30,95,online
 ```
 
-The example is test input, not evidence of a physical sensor. `data_source` may be omitted (defaults to simulated); all other listed fields are required. Upload at most 2,000 rows per request. Each valid row is saved; invalid rows are counted and up to 25 error descriptions returned. Imports are partial, not all-or-nothing. Structural CSV parse failures are rejected before saving. Duplicate headers, malformed row widths, invalid coordinates, non-finite numeric values and non-positive danger levels are rejected. Reuploading a CSV currently adds readings again; imports are not deduplicated.
+The example is test input, not evidence of a physical sensor. `data_source` may be omitted (defaults to simulated); all other listed fields are required. Upload at most 2,000 rows per request. Each valid row is saved; invalid rows are counted and up to 25 error descriptions returned. Imports are partial, not all-or-nothing. Structural CSV parse failures are rejected before saving. Duplicate headers, malformed row widths, invalid coordinates, non-finite numeric values and non-positive danger levels are rejected. Normalized observation identity is now protected by the shared replay/conflict policy and a database UNIQUE constraint over station + variable + source + observed timestamp. CSV behavior must therefore be interpreted through the current ingestion path rather than the earlier unconditional-duplicate note.
 
 Simulation and hardware are stored separately. Hybrid selects the higher current risk from the available sources for a station. Selecting Hardware does not connect or authenticate a device: it filters readings explicitly tagged `hardware`. The dashboard and evidence table poll every 15 seconds.
 
@@ -84,7 +83,7 @@ Each dashboard scenario stores before/after risk, water level, operator and a sn
 
 ## Deployment
 
-The default remains `sqlite:///flood_data.db`. Docker Compose uses a persistent file at `/app/runtime/flood_data.db` and puts notification logs in the same runtime volume. Container builds train the model with their installed scikit-learn version rather than loading a potentially incompatible workstation pickle.
+MySQL is the target development/operational DBMS. Docker Compose provisions MySQL 8.4 and supplies the API with a `mysql+pymysql` connection through `FLOOD_EWS_DATABASE_URL`. SQLite remains a compatibility/test fallback when that variable is absent. The saved simulator model is development evidence and should not be retrained merely to start or demonstrate the operational application.
 
 From the project root with Docker installed:
 
@@ -96,6 +95,11 @@ docker compose logs --tail 40
 
 `GET /health` returns 200 when the database is reachable and 503 when it is unavailable; model availability is a separate field. Missing news credentials do not make core monitoring unhealthy. The GitHub Actions workflow runs Python/API/model tests, JavaScript checks, HTTP health checks, container build and container health verification. A workflow file is not evidence of a successful hosted CI run.
 
-Docker was not installed in the local verification environment, and this workspace has no Git repository/remote configured. Container execution and hosted GitHub Actions results remain unverified. Pending account confirmation/deletion state is process-local; use a single service worker for the current prototype.
+Hosted GitHub Actions is now verified and includes the MySQL 8.4 integration gate. Local Docker/MySQL Workbench execution on the user's defense laptop remains a separate environment check and must not be inferred from CI. Pending account confirmation/deletion state is process-local; use a single service worker for the current prototype.
 
 See [provider_setup.md](provider_setup.md) for external feeds and messaging preparation, and [project_work_log.md](project_work_log.md) for exact observed test evidence.
+
+
+## Defense closure status — 2026-09-24
+
+The active closure baseline is [defense_closure_baseline.md](defense_closure_baseline.md). During the three-day window, core vertical functionality, physical regression, evidence packaging and defense documentation take precedence over optional feature expansion.
