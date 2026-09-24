@@ -4,7 +4,7 @@ This guide explains how a physical sensor node can connect to the current FloodW
 
 The simulator and hardware still share a migration-compatible telemetry envelope, but their evidence is not scientifically interchangeable. Each reading carries `data_source`, and unavailable physical measurements are represented as `null`, not fabricated numeric zeroes.
 
-2026-09-24 closure update: operators can also upload evidence through `POST /api/telemetry/upload-csv` or the Flood Data page. A source label is supplied provenance, not hardware authentication. Direct telemetry POSTs are protected by `FLOOD_EWS_INGESTION_TOKEN` when configured and use the `X-Ingestion-Token` header. The Pico bridge now reads this token from the environment and attaches the header automatically. Keep public deployments protected. See [operational_platform_guide.md](operational_platform_guide.md) for limits and role setup. Physical sensor accuracy/calibration has not been tested by these software checks.
+2026-09-24 closure update: operators can also upload evidence through `POST /api/telemetry/upload-csv` or the Flood Data page. A source label is supplied provenance, not hardware authentication. Direct telemetry POSTs are protected by `FLOOD_EWS_INGEST_TOKEN` when configured and use the `X-Ingest-Token` header. The Pico bridge now reads this token from the environment and attaches the header automatically. Keep public deployments protected. See [operational_platform_guide.md](operational_platform_guide.md) for limits and role setup. Physical sensor accuracy/calibration has not been tested by these software checks.
 
 ## 1. Hardware-ready architecture
 
@@ -95,8 +95,8 @@ $HardwareReading = @{
 } | ConvertTo-Json
 
 $Headers = @{}
-if ($env:FLOOD_EWS_INGESTION_TOKEN) {
-  $Headers["X-Ingestion-Token"] = $env:FLOOD_EWS_INGESTION_TOKEN
+if ($env:FLOOD_EWS_INGEST_TOKEN) {
+  $Headers["X-Ingest-Token"] = $env:FLOOD_EWS_INGEST_TOKEN
 }
 Invoke-RestMethod -Uri "http://127.0.0.1:8010/api/telemetry" -Method Post -ContentType "application/json" -Headers $Headers -Body $HardwareReading
 ```
@@ -192,7 +192,7 @@ This is a **physical integration regression**, not a hydrological calibration ex
 $env:FLOOD_EWS_SERIAL_PORT = "COM4"   # change if Windows assigned another port
 $env:FLOOD_EWS_API_URL = "http://127.0.0.1:8010/api/telemetry"
 # Use the same token configured for the API, if one is enabled:
-$env:FLOOD_EWS_INGESTION_TOKEN = "<your-local-ingestion-token>"
+$env:FLOOD_EWS_INGEST_TOKEN = "<your-local-ingestion-token>"
 python files\hardware\bridge\pico_serial_bridge.py
 ```
 
