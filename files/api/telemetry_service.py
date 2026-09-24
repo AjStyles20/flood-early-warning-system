@@ -24,7 +24,7 @@ def ingest(
     """Persist validated telemetry and run immediate threshold notification flow."""
     record = telemetry_repository.create_record(db, reading)
     assessment = classify(record.water_level_m, record.danger_level_m)
-    notifications.notify(
+    delivery_channels = notifications.notify(
         record.station_id,
         record.station_name,
         assessment,
@@ -37,6 +37,7 @@ def ingest(
         record.data_source,
         assessment.risk_level,
         assessment.message,
+        channels=delivery_channels,
     )
     return record
 
