@@ -18,6 +18,7 @@ import models
 import telemetry_repository
 import normalized_read_repository
 import normalized_current_state_service
+from sqlalchemy.exc import IntegrityError
 
 
 def main() -> int:
@@ -53,6 +54,25 @@ def main() -> int:
         assert db.query(models.TelemetryRecord).count() == 1
         assert db.query(models.Observation).count() == 1
         assert db.query(models.Threshold).count() == 1
+
+        # DB-level evidence identity must remain unique even if a caller
+        # bypasses the shared application write policy.
+        stage = db.query(models.Variable).filter(models.Variable.code == "river_stage").one()
+        source = db.query(models.DataSource).filter(models.DataSource.code == "LOCAL_SENSOR").one()
+        station = db.query(models.Station).filter(models.Station.station_code == "MYSQL-DB1").one()
+        db.add(models.Observation(
+            station_id=station.id,
+            variable_id=stage.id,
+            source_id=source.id,
+            observed_at=reading.timestamp,
+            value=reading.water_level_m,
+        ))
+        try:
+            db.commit()
+            raise AssertionError("MySQL accepted duplicate normalized observation identity")
+        except IntegrityError:
+            db.rollback()
+        assert db.query(models.Observation).count() == 1
         print("MYSQL_DB1_PASS")
         return 0
     finally:
