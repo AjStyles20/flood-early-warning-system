@@ -91,7 +91,7 @@ class TelemetryDualWriteTests(unittest.TestCase):
         self.repo.create_record(self.db, reading)
         threshold = self.db.query(self.models.Threshold).one()
         self.assertEqual(threshold.threshold_type, "prototype_demo")
-        self.assertIn("not an authorized official-threshold channel", threshold.source_reference)
+        self.assertIn("not an authorized threshold-evidence channel", threshold.source_reference)
         self.assertEqual(
             self.db.query(self.models.Threshold)
             .filter(self.models.Threshold.threshold_type == "official_operational")
