@@ -390,3 +390,10 @@ Before DB-5 removes the compatibility table or stops dual-write, a fresh physica
 ![FloodWatch deterministic equal-timestamp tie break](diagrams/floodwatch_equal_timestamp_tie_break.svg)
 
 Normalized latest-per-station reads now resolve equal timestamps using the Observation primary key as a secondary descending key. This mirrors the temporary legacy table's timestamp/id ordering and closes a pre-DB-5 parity edge case. CI run `35958025759` passed on the full suite including MySQL integration.
+
+
+## Threshold authority boundary
+
+![FloodWatch threshold authority boundary](diagrams/floodwatch_threshold_authority_boundary.svg)
+
+Generic telemetry ingestion is not an authoritative threshold-import channel. If a compatibility payload supplies `official_operational`, the normalized mirror stores the threshold as `prototype_demo` and records why the authority claim was not accepted. Official operational thresholds require a separate verified source/authorization mechanism. CI run `35958515275` passed.
