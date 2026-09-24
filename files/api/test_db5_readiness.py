@@ -44,6 +44,18 @@ class DB5ReadinessTests(unittest.TestCase):
         self.assertIn("models.TelemetryRecord(**reading.model_dump())", text)
         self.assertIn("stage_normalized_mirror", text)
 
+    def test_pico_bridge_matches_current_ingestion_contract(self):
+        bridge = (REPO_ROOT / "files" / "hardware" / "bridge" / "pico_serial_bridge.py").read_text(encoding="utf-8")
+        guide = HARDWARE_GUIDE.read_text(encoding="utf-8")
+        self.assertIn("FLOOD_EWS_API_URL", bridge)
+        self.assertIn("FLOOD_EWS_SERIAL_PORT", bridge)
+        self.assertIn("FLOOD_EWS_INGESTION_TOKEN", bridge)
+        self.assertIn("X-Ingestion-Token", bridge)
+        self.assertIn("127.0.0.1:8010/api/telemetry", bridge)
+        self.assertIn("127.0.0.1:8010/api/telemetry", guide)
+        self.assertNotIn("127.0.0.1:8000/api/telemetry", guide)
+
+
     def test_physical_regression_gate_is_prepared_but_not_faked_by_ci(self):
         self.assertTrue(PHYSICAL_VERIFIER.exists())
         verifier = PHYSICAL_VERIFIER.read_text(encoding="utf-8")
