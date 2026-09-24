@@ -1986,3 +1986,12 @@ Audited alert capability claims across `main.py`, `alert_service.py`, `notificat
 Changed the public capability map to `web=available`, `email=simulated`, `sms=simulated`; aligned the notification service fallback vocabulary and added an operational regression test against the public risk-status API. CI run `35970678307`: **PASS**, including MySQL integration. Created `diagrams/floodwatch_alert_delivery_boundary.svg` and synchronized Chapter 3, software design, defense script and work log.
 
 **Alert delivery evidence semantics: PASS. Real external SMS/email delivery: DEFERRED.**
+
+
+## 2026-09-24 - Functional Closure: Real EmailJS/Twilio Alert Delivery
+
+After the requirement that visible alert channels must perform real work, replaced simulation-only email/SMS behavior with provider adapters. Added `alert_delivery.py` with server-side EmailJS email and Twilio SMS dispatch, environment-only configuration, explicit capability detection, and delivery outcomes `sent` / `failed` / `not_configured`. Telemetry orchestration now passes actual attempt outcomes into the persistent alert record; public risk-status capability is provider-aware.
+
+Tests mock external providers so CI never sends messages or requires secrets. Two intermediate CI runs exposed stale test seams/assertions and were corrected. Final CI run `35972753987`: **PASS**, including MySQL integration. Created `diagrams/floodwatch_real_alert_delivery.svg` and synchronized Chapter 3, software design, defense script and work log.
+
+**Provider delivery implementation: PASS. Live EmailJS/Twilio credential test: PENDING user-local configuration.**
