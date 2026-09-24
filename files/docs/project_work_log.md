@@ -1800,3 +1800,12 @@ Added `test_legacy_telemetry_dependency_guard.py`. Unlike parity tests, this is 
 CI run `35957537472`: **PASS**, including MySQL integration. Created and embedded `diagrams/floodwatch_legacy_read_guard.svg`.
 
 **Audited operational legacy-read dependency gate: PASS and CI-guarded.** The legacy model/write path has deliberately not been deleted. Physical Pico regression and explicit DB-5 authorization remain required. No research experiment/model training was run.
+
+
+## 2026-09-24 - Physical Hardware Regression Gate Prepared
+
+With audited operational legacy reads removed and CI-guarded, formalized the remaining external DB-5 prerequisite. Added `files/hardware/verify_physical_hardware_regression.py`, a read-only verifier to be run immediately after a live Pico/serial-bridge POST. It verifies normalized `LOCAL_SENSOR` river-stage persistence, active threshold configuration, dual-write parity and null handling for unmeasured rainfall/flow/battery.
+
+Updated `hardware_integration_guide.md` to replace the outdated SQLite architecture label with normalized MySQL persistence and added the exact post-migration physical regression procedure: API health, actual Windows serial port, at least two changed physical readings, bridge HTTP 200 responses, normalized risk-status, Hardware/Hybrid dashboard display, verifier output and evidence capture. Created `diagrams/floodwatch_physical_regression_gate.svg`.
+
+**Physical hardware regression: PREPARED / PENDING USER-RUN EXECUTION.** No PASS is claimed. The verifier cannot prove COM serial origin by itself and is valid only alongside the observed live bridge run. DB-5 remains blocked. No research experiment/model training was run.
