@@ -16,7 +16,7 @@ NOTIFICATION_LOG_PATH = RUNTIME_DIR / "simulated_notifications.jsonl"
 
 def notify(station_id: str, station_name: str, assessment: RiskAssessment, data_source: str = "simulated") -> Dict[str, str]:
     """Log one simulated multi-channel alert; no real messages are sent."""
-    channels = {"web": "available", "email": "available", "sms": "available"}
+    channels = {"web": "available", "email": "simulated", "sms": "simulated"}
     if not assessment.should_alert:
         return {"web": "not_required", "email": "not_required", "sms": "not_required"}
 
