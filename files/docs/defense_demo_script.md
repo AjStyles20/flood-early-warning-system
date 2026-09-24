@@ -1,12 +1,12 @@
 # FloodWatch Defense Demo Script
 
-Use this as a calm, repeatable guide for demonstrating the project. The goal is to show the complete approved core pipeline without getting pulled into parked future-work features.
+Use this as a calm, repeatable guide for demonstrating the project. The goal is to show the complete approved core pipeline without getting pulled into parked future-work features. The current three-day closure boundary is documented in [defense_closure_baseline.md](defense_closure_baseline.md).
 
 Optional operational demonstration added 2026-09-08: after showing the original core, sign into an account authorized through `manage_operator.py`, upload CSV evidence, acknowledge/escalate an alert and view its history, then open `/evaluation` and download a scenario PDF. Explain that the report contains a saved holdout-evaluation snapshot, not freshly measured accuracy from one scenario reading. The extension is user-authorized product work; do not describe it as supervisor-approved without agreement. Use [operational_platform_guide.md](operational_platform_guide.md) for commands and [provider_setup.md](provider_setup.md) for news/messaging setup. Docker/hosted CI and real messages were not verified locally.
 
 ## 1. Demo message in one sentence
 
-FloodWatch is a portable flood early warning and decision support prototype that receives simulator or hardware-ready telemetry, stores it in SQLite, applies transparent risk rules and a future-horizon ML model, and displays the result on an accessible GIS dashboard with simulated web, email, and SMS alert logging.
+FloodWatch is a portable flood early warning and decision support prototype that receives simulator or hardware-ready telemetry, stores normalized source-aware evidence, applies transparent threshold-based current-state risk logic, and displays the result on an accessible GIS dashboard with persistent alert workflow support. A saved simulator-only future-horizon ML model is displayed as separate development evidence and is not applied to physical observations.
 
 ## 2. What to say before opening the system
 
@@ -18,7 +18,7 @@ Key guardrails to mention:
 
 - It does not issue autonomous evacuation commands.
 - It supports simulator and hardware-style readings through the same API shape.
-- It uses file-based SQLite, not temporary in-memory storage.
+- MySQL is the target operational DBMS; the current MySQL 8.4 integration gate passes in CI. SQLite remains an isolated compatibility/test fallback.
 - It includes a map and a text station list for accessibility.
 - It simulates email and SMS alerts so access is not smartphone-only.
 - Its ML metrics are from simulator-generated data and are labelled that way.
@@ -34,9 +34,9 @@ Do not paste the `PS C:\...>` prompt. Paste only the command text.
 ```powershell
 cd C:\Users\User\Documents\Word_Document\Project\files\api
 py -m pip install -r .\requirements.txt
-py -u .\train_model.py
 py -u .\test_model_training.py
 py -u .\test_api.py
+py -u .\test_operational.py
 py -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
 ```
 
@@ -181,7 +181,7 @@ py -u .\test_api.py
 
 Say:
 
-> I do not claim the model is field-validated. The evidence here proves that the prototype works on simulator-generated telemetry and that the circular label problem has been removed.
+> The saved model is simulator-only development evidence; I do not claim it is field-validated or use it for physical current-state risk. The operational risk state is produced by transparent threshold logic. The real Lokoja predictive comparison is a separate research experiment.
 
 ### Step 8 - Optional read-only API check
 
@@ -303,3 +303,12 @@ Capture these screenshots for the final report/presentation:
 ## 8. Closing statement
 
 > The completed prototype demonstrates the core idea: an accessible, portable flood early-warning and decision-support system that integrates telemetry, storage, ML prediction, GIS visualization, and simulated multi-channel alerts while staying within safe decision-support boundaries.
+
+
+## Final three-day demo priority
+
+The primary defense demonstration is now the smallest complete vertical product: telemetry producer -> FastAPI validation -> normalized MySQL evidence -> threshold current-state assessment -> dashboard/history -> alert workflow. The preferred producer is the physical Pico after the post-migration regression passes; the simulator is the deterministic fallback. Do not retrain the saved simulator model during the defense setup merely to make the application run.
+
+![Defense-ready core architecture](diagrams/floodwatch_defense_ready_core_architecture.svg)
+
+Before defense, the physical path must be rerun using the procedure in `hardware_integration_guide.md`. Until that happens, describe the historical Pico integration and the current MySQL software gate separately rather than claiming the post-migration physical chain has already passed.
