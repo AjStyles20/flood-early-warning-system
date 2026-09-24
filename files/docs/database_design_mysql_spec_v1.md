@@ -353,3 +353,12 @@ Normalized persistence now supports reconstruction through current-state decisio
 The current-state API now reads from the normalized model. The compatibility telemetry table remains written and queryable but is no longer the source for `/api/risk-status`. This is not DB-5 retirement: physical Pico regression and MySQL-specific execution remain mandatory before removal of legacy persistence.
 
 **DB-4 operational risk-status promotion: PASS under SQLite compatibility CI.**
+
+
+## DB-1 execution result
+
+![FloodWatch MySQL DB-1 gate](diagrams/floodwatch_mysql_db1_gate.svg)
+
+DB-1 now has direct MySQL execution evidence. The CI integration job creates the schema on MySQL 8.4 and verifies dual-write, normalized evidence reconstruction, typed threshold persistence and normalized current-state assessment. Docker Compose now represents the declared deployment architecture by provisioning a MySQL service and connecting the API through `mysql+pymysql`.
+
+**DB-1 MySQL application execution: PASS in disposable CI MySQL. Local Workbench/server verification remains a defense/development environment check, not a missing application-code gate.**
