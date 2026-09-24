@@ -515,3 +515,10 @@ FloodWatch now distinguishes delivery retry semantics from data-correction seman
 ![FloodWatch station coordinate integrity](diagrams/floodwatch_station_coordinate_integrity.svg)
 
 Station coordinate validation is enforced at persistence as well as at application boundaries. Database CHECK constraints protect the normalized model from invalid latitude/longitude values introduced by non-API write paths. This is defense-in-depth: domain validity is enforced independently of whichever client produced the station metadata.
+
+
+## 10.x Temporal metadata invariants
+
+![FloodWatch temporal metadata integrity](diagrams/floodwatch_temporal_metadata_integrity.svg)
+
+Historical and configuration provenance depend on valid intervals. FloodWatch now enforces ordering invariants for Dataset coverage and Threshold validity at persistence, while retaining nullable/open bounds where the domain permits them. Dataset evidence classification is also restricted to the controlled evidence vocabulary.
