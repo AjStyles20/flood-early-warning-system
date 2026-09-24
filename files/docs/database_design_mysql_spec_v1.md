@@ -418,3 +418,10 @@ A dedicated CI test now codifies the conditions immediately preceding legacy tel
 ![FloodWatch data-source evidence consistency](diagrams/floodwatch_source_evidence_consistency.svg)
 
 The previously deferred `DataSource.is_observational` consistency issue is now closed. A database CHECK constraint requires observed evidence to be observational and all derived/simulated/reanalysis/modelled evidence to be non-observational. The seed catalogue declares the flag explicitly. Initial CI `35960727840` failed because the new invariant exposed catalogue reliance on the old default; after correcting the catalogue, run `35960831160` passed on the full suite including MySQL integration.
+
+
+## Observation duplicate/correction policy
+
+![FloodWatch normalized observation duplicate policy](diagrams/floodwatch_observation_duplicate_policy.svg)
+
+The previously deferred duplicate-observation policy is now defined at the application/repository boundary. Observation identity is station + variable + source + observed timestamp. Exact replays reuse the existing row; conflicting content for that identity is rejected. This avoids both duplicate inflation and silent historical overwrite while leaving authoritative revision/versioning as an explicit future governance capability. CI run `35961211681` passed including MySQL integration.
