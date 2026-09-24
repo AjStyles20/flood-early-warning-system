@@ -32,6 +32,7 @@ jobs:
           python -u test_threshold_repository.py
           python -u test_current_state_parity.py
           python -u test_risk_status_promotion.py
+          python -u test_telemetry_service.py
           python -u test_current_state_service.py
           python -u test_alert_service.py
           python -u test_api.py
