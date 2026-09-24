@@ -1888,3 +1888,12 @@ Closed the deferred normalized-station coordinate-domain constraint. Added datab
 CI run `35961809041`: **PASS**, including MySQL integration. Created `diagrams/floodwatch_station_coordinate_integrity.svg` and synchronized design/database documentation.
 
 **Station coordinate-domain integrity: PASS.** This does not establish that a valid coordinate is the correct authoritative station location. Physical Pico regression remains pending; DB-5 remains blocked. No research experiment/model training was run.
+
+
+## 2026-09-24 - Temporal Metadata Integrity
+
+Hardened normalized Dataset and Threshold metadata. Added CHECK constraints requiring Dataset `coverage_start <= coverage_end` and Threshold `valid_from <= valid_to` whenever both values are present. Added the controlled evidence-type CHECK to Dataset so dataset provenance cannot introduce an arbitrary evidence class that disagrees with the source vocabulary.
+
+Added `test_temporal_metadata_constraints.py` covering reversed dataset coverage, unsupported dataset evidence type and reversed threshold validity. Wired it into CI. Run `35962149212`: **PASS**, including MySQL integration. Created `diagrams/floodwatch_temporal_metadata_integrity.svg`.
+
+**Temporal metadata structural integrity: PASS.** These checks do not independently validate provider coverage claims or threshold authority. Physical Pico regression remains pending; DB-5 remains blocked. No research experiment/model training was run.
