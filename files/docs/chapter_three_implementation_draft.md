@@ -617,3 +617,12 @@ The operational alert workflow persists alert events, supports operator acknowle
 ![FloodWatch real alert delivery architecture](diagrams/floodwatch_real_alert_delivery.svg)
 
 The closure requirement was strengthened from simulated channels to executable provider delivery. FloodWatch now contains server-side EmailJS and Twilio SMS adapters. Provider credentials and recipients are supplied only through environment variables. For each alert-worthy observation, the delivery layer reports `sent`, `failed`, or `not_configured`; the web channel remains `available`. The resulting outcomes are persisted with the alert workflow rather than assuming that configured means delivered. CI mocks provider responses and verifies the state machine without sending real messages. A live provider test is still required before claiming real-world delivery evidence.
+
+
+### 3.6.x Real Alert Provider Delivery
+
+**Figure 3.x — FloodWatch Real Alert Delivery Architecture**
+
+![FloodWatch real alert delivery](diagrams/floodwatch_real_alert_delivery.svg)
+
+The alert layer is provider-backed rather than a static interface. Email delivery is implemented through the EmailJS REST API and SMS through the Twilio REST API. Provider credentials and recipients are supplied only through environment variables. The channel state is evidence-based: missing configuration is `not_configured`, a successful provider response is `sent`, and a provider/network error is `failed`. These actual outcomes are passed into persistent alert records rather than assuming that delivery occurred. CI tests provider-state logic with mocks; a claim of live external delivery requires a successful run with the user's local credentials.
