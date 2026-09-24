@@ -71,7 +71,7 @@ Moderate/High/Severe readings create persistent alert events. Repeated readings 
 
 Allowed transitions are `new -> acknowledged/escalated/resolved`, `acknowledged -> escalated/resolved`, and `escalated -> resolved`. Resolved events cannot be reopened by those endpoints. A later elevated reading can create a new event. Resolution records an operator's review status; it does not change the sensor evidence or prove the area is safe.
 
-Escalation is an internal workflow status. Web/email/SMS labels continue to describe simulation; they do not claim an authority was contacted or a message delivered. All risk wording defers to official guidance. Legacy JSONL copies are not mixed back into a populated persistent queue, avoiding duplicate alerts.
+Escalation is an internal workflow status. Web status is recorded in the application. EmailJS/Twilio attempts occur for alert-worthy hardware readings only when configured; simulator readings suppress provider delivery by default, and the manual bulletin action logs a simulation only. The station database lock prevents concurrent workers sharing the same SQLite or MySQL database from sending the same active risk level twice. An accepted provider request (`sent`) does not establish recipient receipt or official-authority contact. All risk wording defers to official guidance. Legacy JSONL copies are not mixed back into a populated persistent queue, avoiding duplicate alerts.
 
 ## Evaluation evidence
 

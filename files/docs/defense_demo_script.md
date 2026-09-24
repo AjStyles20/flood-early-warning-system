@@ -20,7 +20,7 @@ Key guardrails to mention:
 - It supports simulator and hardware-style readings through the same API shape.
 - MySQL is the target operational DBMS; the current MySQL 8.4 integration gate passes in CI. SQLite remains an isolated compatibility/test fallback.
 - It includes a map and a text station list for accessibility.
-- It simulates email and SMS alerts so access is not smartphone-only.
+- Configured EmailJS and Twilio adapters can attempt external alerts from hardware readings; actual receipt is not yet evidenced.
 - Its ML metrics are from simulator-generated data and are labelled that way.
 
 ## 3. Terminal setup
@@ -283,7 +283,7 @@ Answer:
 
 Answer:
 
-> Not in this prototype. It logs simulated web, email, and SMS alerts. Real delivery should only be enabled after a provider gateway is configured and tested.
+> The application has server-side EmailJS and Twilio adapters. Hardware alerts can make provider attempts when credentials and controlled recipients are configured; simulator readings cannot contact providers by default. Our automated tests verify code and stored states, not a live recipient receipt. I would demonstrate live sending only with an authorized controlled test recipient and verify the actual inbox/phone separately.
 
 ## 7. Screenshot checklist
 
@@ -302,7 +302,7 @@ Capture these screenshots for the final report/presentation:
 
 ## 8. Closing statement
 
-> The completed prototype demonstrates the core idea: an accessible, portable flood early-warning and decision-support system that integrates telemetry, storage, ML prediction, GIS visualization, and simulated multi-channel alerts while staying within safe decision-support boundaries.
+> The prototype demonstrates telemetry, storage, threshold-based current risk, GIS visualization and an audited alert workflow. Its simulator-trained ML model is separate development evidence. External email/SMS adapters are implemented, but live recipient delivery remains unverified.
 
 
 ## Final three-day demo priority
@@ -332,18 +332,11 @@ For the live physical demo, configure `FLOOD_EWS_SERIAL_PORT`, `FLOOD_EWS_API_UR
 
 ![FloodWatch alert delivery evidence boundary](diagrams/floodwatch_alert_delivery_boundary.svg)
 
-When demonstrating alerts, state that FloodWatch implements persistent alert generation, operator workflow and simulated multi-channel notification. The web channel is available in the application; email and SMS are currently simulated. Do not claim that an external SMS/email provider delivered a message unless that integration is separately configured and evidenced.
+When demonstrating alerts, show the persistent alert and operator workflow. The web status is available; email and SMS have optional real provider adapters. A simulator reading records external delivery as `not_required` by default, and the manual **Log alert simulation** control sends no provider message. A hardware reading with missing credentials reports `not_configured`; configured attempts report `sent` only after provider acceptance or `failed` on error. None of these states alone proves recipient receipt.
 
 
 ## Live email/SMS alert demonstration
 
 ![FloodWatch real alert delivery architecture](diagrams/floodwatch_real_alert_delivery.svg)
 
-The code path for EmailJS and Twilio SMS is implemented. Before demonstrating it, configure the provider environment variables locally and send one controlled test alert to an authorized test recipient. Show the resulting channel state in the persistent alert. Describe a channel as real delivery only when the live test returns `sent`; otherwise state the observed `failed` or `not_configured` status.
-
-
-## Real email/SMS alert demonstration
-
-![FloodWatch real alert delivery](diagrams/floodwatch_real_alert_delivery.svg)
-
-The application contains functioning EmailJS and Twilio REST adapters. Before claiming real delivery in the defense, configure the provider environment variables locally and demonstrate a successful message to a controlled recipient. The dashboard/API should report `not_configured` without credentials, `failed` after a failed attempt, and `sent` only after provider success. CI verifies the logic but is not evidence that EmailJS/Twilio delivered a live message.
+Before demonstrating external alerts, configure providers and recipients locally, then send one controlled hardware-source test reading to a recipient who agreed to the test. Show the saved provider response and independently verify receipt in the inbox or on the phone. `sent` is provider acceptance; describe receipt only if independently observed. CI never contacts live providers. Account notices and the manual alert-log action remain simulations.

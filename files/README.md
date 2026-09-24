@@ -135,13 +135,13 @@ This avoids the earlier circularity bug where the baseline and label used the sa
 
 ## Active alert channels
 
-The active prototype logs simulated alerts through:
+The flood alert workflow records these channels:
 
 - web
 - email
 - SMS
 
-No real messages are sent unless a real alert provider is configured and tested.
+For alert-worthy hardware telemetry, the application attempts email and SMS through EmailJS and Twilio when their environment variables are configured. Simulator readings do not contact providers by default; to deliberately test delivery from a simulator, set `FLOOD_EWS_ALLOW_SIMULATED_PROVIDER_DELIVERY=true` with controlled recipients. Without provider configuration, the channel outcome is `not_configured`. An accepted provider request is recorded as `sent`; this records provider acceptance, not confirmed recipient delivery. The operator's **Log alert simulation** action records a test bulletin and does not send messages. Account verification and account deletion notices remain local simulations. Subsequent readings at the same or lower risk level reuse the active alert's dispatch result; a risk escalation makes a new provider attempt. The alert decision holds a database lock per station while sending and persisting, so concurrent API workers sharing the same supported SQLite or MySQL database cannot both dispatch the same active risk level. This is still a synchronous, best-effort provider call: an external provider may accept a request before a later database error, and recipient delivery requires separate confirmation. Keep live use limited to controlled recipients until those failure modes and provider receipt evidence are addressed.
 
 ## Optional account-shell notes
 

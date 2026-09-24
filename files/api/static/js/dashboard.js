@@ -40,11 +40,11 @@ const baseLayerLabels = {
 
 const channelLabels = {
   web: "Web dashboard",
-  email: "Simulated email",
-  sms: "Simulated SMS",
+  email: "Email status",
+  sms: "SMS status",
   Dashboard: "Web dashboard",
-  Email: "Simulated email",
-  SMS: "Simulated SMS",
+  Email: "Email status",
+  SMS: "SMS status",
 };
 
 const baseLayers = {
@@ -519,7 +519,7 @@ function channelSummary(station) {
   const channels = station.alert_channels || {};
   const channelEntries = Object.entries(channels);
   if (!channelEntries.length) {
-    return "No simulated alert channel listed";
+    return "No alert channel status recorded";
   }
   return channelEntries.map(([name, status]) => `${escapeHtml(name)}: ${escapeHtml(status)}`).join(" / ");
 }

@@ -21,6 +21,9 @@ def notify(station_id: str, station_name: str, assessment: RiskAssessment, data_
     if not assessment.should_alert:
         return {"web": "not_required", "email": "not_required", "sms": "not_required"}
 
+    if data_source == "simulated" and os.getenv("FLOOD_EWS_ALLOW_SIMULATED_PROVIDER_DELIVERY", "").lower() != "true":
+        return {"web": "available", "email": "not_required", "sms": "not_required"}
+
     event = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "station_id": station_id,

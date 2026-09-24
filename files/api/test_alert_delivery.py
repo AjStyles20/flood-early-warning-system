@@ -5,9 +5,18 @@ import unittest
 from unittest.mock import patch
 
 import alert_delivery
+import notifications
+from risk_engine import classify
 
 
 class AlertDeliveryTests(unittest.TestCase):
+    def test_simulated_telemetry_does_not_contact_providers_by_default(self):
+        with patch.dict(os.environ, {"FLOOD_EWS_ALLOW_SIMULATED_PROVIDER_DELIVERY": ""}), \
+             patch.object(alert_delivery, "dispatch") as dispatch:
+            result = notifications.notify("SIM-01", "Demo", classify(1.8, 2.0), "simulated")
+        self.assertEqual(result, {"web": "available", "email": "not_required", "sms": "not_required"})
+        dispatch.assert_not_called()
+
     def test_unconfigured_is_explicit(self):
         names = [
             "FLOOD_EWS_EMAILJS_SERVICE_ID", "FLOOD_EWS_EMAILJS_ALERT_TEMPLATE_ID",

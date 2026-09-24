@@ -264,4 +264,4 @@ Exclude if not needed:
 - regenerated `__pycache__/` folders
 - `~$*.docx` Word temporary lock files
 
-This keeps the submitted project focused on the approved core pipeline: sensor/simulator input, database storage, ML/risk analysis, accessible GIS dashboard, and simulated web/email/SMS alerts.
+This keeps the submitted project focused on sensor/simulator input, database storage, separate experimental ML evidence, current-state risk analysis, an accessible GIS dashboard, and an auditable alert workflow. EmailJS/Twilio provider adapters exist, but their live recipient delivery has not been verified.

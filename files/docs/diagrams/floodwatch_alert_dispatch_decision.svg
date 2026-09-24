@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="310" viewBox="0 0 960 310" role="img" aria-labelledby="title desc">
+<title id="title">FloodWatch alert dispatch decision</title><desc id="desc">Following telemetry persistence, a database station lock protects the risk decision, optional provider attempt, and saved channel outcome. Simulator provider delivery requires explicit opt-in.</desc>
+<style>text{font-family:Arial,sans-serif;fill:#17202a}.title{font-size:19px;font-weight:bold}.head{font-size:14px;font-weight:bold}.detail{font-size:12px}.box{fill:#fff;stroke:#345267;stroke-width:2}.link{stroke:#345267;stroke-width:2;fill:none}</style>
+<text class="title" x="24" y="34">Figure: Alert dispatch decision and evidence boundary</text>
+<rect class="box" x="22" y="85" width="200" height="130" rx="10"/><text class="head" x="45" y="117">Telemetry persisted</text><text class="detail" x="45" y="146">Source and station known</text><text class="detail" x="45" y="169">Current risk assessed</text>
+<rect class="box" x="260" y="85" width="220" height="130" rx="10"/><text class="head" x="279" y="117">Database station lock</text><text class="detail" x="279" y="146">Read active alert</text><text class="detail" x="279" y="169">New or higher risk?</text><text class="detail" x="279" y="192">Otherwise reuse result</text>
+<rect class="box" x="518" y="85" width="196" height="130" rx="10"/><text class="head" x="538" y="117">Provider attempt</text><text class="detail" x="538" y="146">Hardware if configured</text><text class="detail" x="538" y="169">Simulator: opt-in only</text><text class="detail" x="538" y="192">Acceptance is not receipt</text>
+<rect class="box" x="750" y="85" width="188" height="130" rx="10"/><text class="head" x="769" y="117">Persist outcome</text><text class="detail" x="769" y="146">Channel state and audit</text><text class="detail" x="769" y="169">Commit releases lock</text>
+<path class="link" d="M222 150h38m220 0h38m196 0h36"/><text class="detail" x="24" y="265">An accepted external request followed by database failure can leave delivery uncertain; live recipient confirmation is a separate gate.</text>
+</svg>
