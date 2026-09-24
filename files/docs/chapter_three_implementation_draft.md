@@ -599,3 +599,12 @@ A threshold type is an evidence claim, not merely a UI label. The generic teleme
 ![FloodWatch physical bridge contract](diagrams/floodwatch_physical_bridge_contract.svg)
 
 The defense-closure audit compared the actual Pico serial bridge with the current FastAPI ingestion contract and hardware guide. The bridge had the correct API port (8010), but was hard-coded to COM4 and did not support the current optional ingestion-token header; the guide also retained older port-8000 and obsolete token-name instructions. The bridge now reads serial port, baud, API URL and ingestion token from environment variables and sends `X-Ingestion-Token` when configured. The guide and executable DB-5 readiness test now assert the same port/header contract. CI run `35969481452` passed.
+
+
+### 3.6.x Alert Delivery Evidence Boundary
+
+**Figure 3.x — Alert delivery evidence boundary**
+
+![FloodWatch alert delivery evidence boundary](diagrams/floodwatch_alert_delivery_boundary.svg)
+
+The operational alert workflow persists alert events, supports operator acknowledgement/escalation/resolution, and records an audit trail. The current prototype does not have evidence of external SMS or email delivery. During closure, the public risk-status capability map was therefore corrected to expose `web: available`, `email: simulated`, and `sms: simulated`. This matches the notification service and prevents a dashboard/API client from interpreting an implemented workflow as proof of provider delivery.
