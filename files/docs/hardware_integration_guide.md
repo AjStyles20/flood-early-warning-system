@@ -4,7 +4,7 @@ This guide explains how a physical sensor node can connect to the current FloodW
 
 The simulator and hardware still share a migration-compatible telemetry envelope, but their evidence is not scientifically interchangeable. Each reading carries `data_source`, and unavailable physical measurements are represented as `null`, not fabricated numeric zeroes.
 
-2026-09-08 operational update: operators can also upload evidence through `POST /api/telemetry/upload-csv` or the Flood Data page. A source label is supplied provenance, not hardware authentication. A deployment may set `FLOOD_EWS_INGEST_TOKEN`, in which case direct sensor POSTs must include an `X-Ingest-Token` header. The existing simulator does not yet attach that optional header automatically; leave the key unset for its local demo or update the client before enabling it. Keep public deployments protected. See [operational_platform_guide.md](operational_platform_guide.md) for limits and role setup. Physical sensor accuracy/calibration has not been tested by these software checks.
+2026-09-24 closure update: operators can also upload evidence through `POST /api/telemetry/upload-csv` or the Flood Data page. A source label is supplied provenance, not hardware authentication. Direct telemetry POSTs are protected by `FLOOD_EWS_INGESTION_TOKEN` when configured and use the `X-Ingestion-Token` header. The Pico bridge now reads this token from the environment and attaches the header automatically. Keep public deployments protected. See [operational_platform_guide.md](operational_platform_guide.md) for limits and role setup. Physical sensor accuracy/calibration has not been tested by these software checks.
 
 ## 1. Hardware-ready architecture
 
@@ -38,7 +38,7 @@ For the current controlled prototype, the Pico analogue input represents stage-l
 Send hardware readings to:
 
 ```text
-POST http://127.0.0.1:8000/api/telemetry
+POST http://127.0.0.1:8010/api/telemetry
 ```
 
 Content type:
@@ -94,13 +94,17 @@ $HardwareReading = @{
   signal = "online"
 } | ConvertTo-Json
 
-Invoke-RestMethod -Uri "http://127.0.0.1:8000/api/telemetry" -Method Post -ContentType "application/json" -Body $HardwareReading
+$Headers = @{}
+if ($env:FLOOD_EWS_INGESTION_TOKEN) {
+  $Headers["X-Ingestion-Token"] = $env:FLOOD_EWS_INGESTION_TOKEN
+}
+Invoke-RestMethod -Uri "http://127.0.0.1:8010/api/telemetry" -Method Post -ContentType "application/json" -Headers $Headers -Body $HardwareReading
 ```
 
 After posting, open:
 
 ```text
-http://127.0.0.1:8000/dashboard
+http://127.0.0.1:8010/dashboard
 ```
 
 Set the dashboard source selector to `Hardware` or `Hybrid`.
@@ -182,7 +186,17 @@ This is a **physical integration regression**, not a hydrological calibration ex
 1. Start MySQL Server and the FloodWatch API with `FLOOD_EWS_DATABASE_URL` pointing to the intended MySQL database.
 2. Confirm `GET /health` reports a healthy application/database state.
 3. Connect the Raspberry Pi Pico and confirm Windows assigns the expected serial port (previously COM4; use the actual current port if Windows assigns another).
-4. Start the existing serial bridge and move the controlled analogue input through at least two visibly different levels.
+4. Configure the bridge for the actual local port/API and start it. Defaults are COM4, 115200 baud and port 8010:
+
+```powershell
+$env:FLOOD_EWS_SERIAL_PORT = "COM4"   # change if Windows assigned another port
+$env:FLOOD_EWS_API_URL = "http://127.0.0.1:8010/api/telemetry"
+# Use the same token configured for the API, if one is enabled:
+$env:FLOOD_EWS_INGESTION_TOKEN = "<your-local-ingestion-token>"
+python files\hardware\bridge\pico_serial_bridge.py
+```
+
+Move the controlled analogue input through at least two visibly different levels.
 5. Confirm the bridge receives HTTP 200 responses from `POST /api/telemetry`.
 6. Open `/api/risk-status?data_source=hardware` and confirm the station, latest water level, threshold type, source and rate-of-rise update.
 7. Open the dashboard, select Hardware, then Hybrid, and confirm the same fresh hardware-originated state is visible.
