@@ -34,7 +34,6 @@ import ml_model
 import models
 import news_feeds
 import notifications
-import telemetry_repository
 import telemetry_service
 import current_state_service
 import normalized_read_repository
@@ -1029,16 +1028,6 @@ def old_static_page_redirect(legacy_path: str):
 
 
 compute_rate_of_rise_m = current_state_service.compute_rate_of_rise_m
-
-
-def latest_records_per_station(db: Session, data_source: str | None = None) -> list[models.TelemetryRecord]:
-    """Compatibility alias; query ownership lives in telemetry_repository."""
-    return telemetry_repository.latest_per_station(db, data_source=data_source)
-
-
-def latest_records_per_station_and_source(db: Session) -> list[models.TelemetryRecord]:
-    """Compatibility alias; query ownership lives in telemetry_repository."""
-    return telemetry_repository.latest_per_station_and_source(db)
 
 
 assess_record = current_state_service.assess_record
