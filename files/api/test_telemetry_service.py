@@ -4,6 +4,7 @@ import os
 import tempfile
 import unittest
 from datetime import datetime, timezone
+from unittest.mock import patch
 
 
 class TelemetryServiceTests(unittest.TestCase):
@@ -11,8 +12,9 @@ class TelemetryServiceTests(unittest.TestCase):
     def setUpClass(cls):
         cls.temp_dir = tempfile.TemporaryDirectory()
         os.environ["FLOOD_EWS_DATABASE_URL"] = f"sqlite:///{cls.temp_dir.name}/telemetry_service.db"
-        import database, models, telemetry_service
+        import database, models, telemetry_service, alert_service
         cls.database, cls.models, cls.service = database, models, telemetry_service
+        cls.alert_service = alert_service
         models.Base.metadata.create_all(bind=database.engine)
 
     @classmethod
@@ -21,7 +23,8 @@ class TelemetryServiceTests(unittest.TestCase):
 
     def setUp(self):
         self.db = self.database.SessionLocal()
-        for model in (self.models.Observation, self.models.Threshold, self.models.Dataset,
+        for model in (self.models.AlertAuditLog, self.models.AlertEvent,
+                      self.models.Observation, self.models.Threshold, self.models.Dataset,
                       self.models.Station, self.models.Variable, self.models.DataSource,
                       self.models.TelemetryRecord):
             self.db.query(model).delete()
@@ -64,6 +67,19 @@ class TelemetryServiceTests(unittest.TestCase):
         self.assertEqual(statuses[0].risk_level, "High")
         self.assertEqual(statuses[0].rate_of_rise_m, 0.8)
         self.assertIsNone(statuses[0].ml_probability)
+
+    def test_provider_attempts_only_for_new_alert_and_risk_escalation(self):
+        outcomes = {"web": "available", "email": "sent", "sms": "not_configured"}
+        with patch.object(self.service.notifications, "notify", return_value=outcomes) as notify:
+            for minute, level in ((1, 1.2), (2, 1.4), (3, 1.7), (4, 1.8)):
+                self.service.ingest(
+                    self.db, self.reading(minute=minute, level=level),
+                    persist_alert_event=self.alert_service.persist_event,
+                )
+            self.assertEqual(notify.call_count, 2)
+            alert = self.db.query(self.models.AlertEvent).one()
+            self.assertEqual(alert.risk_level, "High")
+            self.assertEqual(__import__("json").loads(alert.channels_json), outcomes)
 
 
 if __name__ == "__main__":
