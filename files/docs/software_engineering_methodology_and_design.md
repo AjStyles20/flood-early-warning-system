@@ -543,3 +543,10 @@ Duplicate semantics are now enforced at two layers. The shared application polic
 ![FloodWatch dashboard trend projection](diagrams/floodwatch_dashboard_trend_projection.svg)
 
 A closure audit removed a misleading forecast-shaped visualization. Because the operational rate-of-rise is a change per reading rather than a calibrated hourly derivative, the selected-station curve now projects six readings using the transparent persistence rule `x + 6Δx`. The visualization is labelled as a trend projection and kept separate from the experimental predictive-research path.
+
+
+## 10.x Threshold authority separation
+
+![FloodWatch threshold evidence authority](diagrams/floodwatch_threshold_evidence_authority.svg)
+
+The telemetry adapter applies least-authority semantics to threshold evidence. A sensor/simulator client is authorized to submit telemetry but is not thereby authorized to establish institutional or research provenance. Both `official_operational` and `research_statistical` labels are therefore reduced to `prototype_demo` on the generic compatibility path. This prevents transport authority from becoming evidence authority.
