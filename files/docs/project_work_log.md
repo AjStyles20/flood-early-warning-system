@@ -1917,3 +1917,14 @@ Added a repository test that bypasses `observation_write_policy` with two direct
 CI run `35963073064` failed in both jobs before meaningful execution because the new SQLAlchemy `UniqueConstraint` symbol was not imported in `models.py`. Added the missing import. Final run `35963183379`: **PASS**, including MySQL integration. Created `diagrams/floodwatch_observation_identity_constraint.svg`.
 
 **Database-enforced observation identity: PASS.** Physical Pico regression remains pending; DB-5 remains blocked. No research experiment/model training was run.
+
+
+## 2026-09-24 - Three-Day Defense Closure Freeze
+
+The remaining schedule is now three days. Development mode changed from open-ended hardening/feature expansion to defense closure. Created `defense_closure_baseline.md` with P0/P1/deferred scope, a stop rule and a day-by-day execution order. Created `diagrams/floodwatch_defense_ready_core_architecture.svg` to show the frozen vertical product and the scientifically separate research path.
+
+Audited high-visibility run/defense documentation and corrected stale architecture statements: the root README now identifies MySQL as the target operational DBMS; the defense script no longer says the physical current-state path uses the simulator ML model; the operational guide no longer instructs model retraining as a normal startup step or describes Docker Compose as SQLite-based. Hosted CI/MySQL evidence is now distinguished from still-pending local laptop/Workbench and post-migration Pico evidence.
+
+**Closure rule:** new work must support core functionality, fix a demonstrated defect, support an evidence-backed thesis claim, or improve reproducibility/defense. Otherwise defer it.
+
+**P0 remaining external gate:** current Pico -> serial bridge -> FastAPI -> MySQL normalized persistence -> risk-status -> dashboard physical regression on the user's machine. DB-5 remains blocked. Real observational predictive claims remain blocked until the research protocol/result exists.
