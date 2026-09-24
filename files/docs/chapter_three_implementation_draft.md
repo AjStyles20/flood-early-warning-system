@@ -401,3 +401,14 @@ GitHub Actions run `35955625737` passed. This establishes application-level MySQ
 After normalized persistence and current-state promotion were stabilized, telemetry use-case orchestration was extracted from `main.py` into `telemetry_service.py`. FastAPI routes now retain transport responsibilities such as request validation, authorization and HTTP responses, while the application service coordinates repository persistence, immediate threshold assessment, notification/alert persistence and normalized risk-status construction. REST and CSV ingestion therefore share one application workflow in addition to the same repository boundary.
 
 This is a structural refactor rather than a change in scientific behaviour. The public API contracts, normalized decision semantics and legacy rollback store remain unchanged. GitHub Actions run `35956139992` passed after the refactor.
+
+
+### 3.6.x Scenario Ingestion Consistency Regression
+
+**Figure 3.x — Scenario ingestion through the normalized dual-write path**
+
+![FloodWatch scenario normalized path](diagrams/floodwatch_scenario_normalized_path.svg)
+
+A post-promotion audit found that the operator scenario endpoint still created `TelemetryRecord` directly. This was valid before normalized current-state promotion but became an architectural regression afterward: a newly generated scenario could exist in the compatibility table while `/api/risk-status` read only normalized observations. The route was corrected to construct a validated `TelemetryCreate` with `data_source="simulated"` and pass it through `telemetry_service.ingest`, preserving the same dual-write, threshold and alert workflow as REST/CSV telemetry.
+
+A dedicated regression test verifies that scenario execution creates the compatibility row and normalized simulated river-stage observation and that the scenario is subsequently visible through the normalized risk-status endpoint. The first CI run (`35956409588`) failed because the newly written test accidentally bound the imported role-assignment helper as an instance method; production code and the MySQL job were not the cause. The test fixture was corrected and run `35956524052` passed.
