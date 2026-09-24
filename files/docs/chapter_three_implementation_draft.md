@@ -355,3 +355,16 @@ GitHub Actions run `35932249880` passed. Therefore the evidence-field read-parit
 The normalized architecture now represents a decision threshold in the `Threshold` entity rather than as an Observation. `threshold_repository.py` resolves thresholds by station, variable, active state and validity interval. No default threshold is invented when none is applicable. During compatibility dual-write, the validated legacy `danger_level_m` is staged as typed threshold configuration with explicit provenance stating that it was derived from the legacy telemetry contract and is not independently verified as an official hydrological threshold. Identical active compatibility thresholds are reused rather than duplicated for every reading.
 
 Normalized DB-4 reads now reconstruct both observational evidence and the applicable threshold. This extends parity to `danger_level_m` and `threshold_type` while preserving the semantic separation between measurement and decision configuration.
+
+
+### 3.6.x Full Current-State Parity Gate
+
+**Figure 3.x — Legacy versus normalized current-state parity**
+
+![FloodWatch current-state parity](diagrams/floodwatch_current_state_parity.svg)
+
+A normalized candidate service, `normalized_current_state_service.py`, now computes rate-of-rise from previous normalized river-stage observations, resolves the typed threshold already reconstructed by DB-4, and passes the resulting values through the same explainable `risk_engine.classify` logic used by the legacy path. Simulator-only ML information remains separate and is invoked under the same conditions as the legacy service; hardware current state remains threshold-based with no ML probability.
+
+The parity gate compares the complete public `RiskStatus` contract, including rate of rise, risk level, risk ratio, optional ML probability, model-availability flag, message, colour, language and alert-channel metadata. GitHub Actions run `35951919460` passed. This proves software-behaviour parity for the tested dual-written prototype evidence, not hydrological validity or research-model performance.
+
+The public API/dashboard has deliberately not been switched in this increment. Route promotion is retained as a separate controlled change so any regression can be attributed clearly.
