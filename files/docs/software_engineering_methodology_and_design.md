@@ -489,3 +489,8 @@ After the migration gates stabilized, CI warnings were treated as maintenance ev
 ![FloodWatch DB-5 readiness gate](diagrams/floodwatch_db5_readiness_gate.svg)
 
 The strangler migration now has a CI-enforced boundary. The readiness test simultaneously prevents regression back to operational legacy reads and prevents premature deletion of the rollback representation. This makes the migration state explicit: normalized operation is established, compatibility persistence remains deliberate, and physical acceptance remains an external prerequisite.
+
+
+### Runtime cleanup follow-up: telemetry response model
+
+A follow-up source audit found one remaining class-based Pydantic `Config` declaration in `TelemetryResponse`. It was migrated to `ConfigDict(from_attributes=True)`, preserving attribute-based serialization for both SQLAlchemy compatibility rows and normalized projection objects. Full CI run `35960447499` passed, including MySQL integration.
