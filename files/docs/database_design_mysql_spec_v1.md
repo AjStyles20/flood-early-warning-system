@@ -425,3 +425,10 @@ The previously deferred `DataSource.is_observational` consistency issue is now c
 ![FloodWatch normalized observation duplicate policy](diagrams/floodwatch_observation_duplicate_policy.svg)
 
 The previously deferred duplicate-observation policy is now defined at the application/repository boundary. Observation identity is station + variable + source + observed timestamp. Exact replays reuse the existing row; conflicting content for that identity is rejected. This avoids both duplicate inflation and silent historical overwrite while leaving authoritative revision/versioning as an explicit future governance capability. CI run `35961211681` passed including MySQL integration.
+
+
+## Station coordinate constraints
+
+![FloodWatch station coordinate integrity](diagrams/floodwatch_station_coordinate_integrity.svg)
+
+The previously listed latitude/longitude validation item is now implemented as database CHECK constraints: `-90 <= latitude <= 90` and `-180 <= longitude <= 180`. Boundary-value and invalid-value regression tests are part of CI. Run `35961809041` passed including MySQL integration. This validates coordinate domains, not geographic provenance or survey accuracy.
