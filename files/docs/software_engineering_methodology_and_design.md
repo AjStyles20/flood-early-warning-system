@@ -449,3 +449,10 @@ The telemetry history API now demonstrates the compatibility-projection pattern:
 ![FloodWatch legacy telemetry dependency guard](diagrams/floodwatch_legacy_read_guard.svg)
 
 Migration rules are now executable rather than documentation-only. CI scans selected production modules and rejects reintroduction of direct compatibility-table reads. This is an architecture test: ordinary unit tests could still pass if a developer accidentally restored a legacy query while both stores contained equivalent data. The guard protects the intended dependency direction independently of data parity.
+
+
+## 10.x Physical regression acceptance gate
+
+![FloodWatch physical hardware regression gate](diagrams/floodwatch_physical_regression_gate.svg)
+
+The database strangler migration ends with an external-system acceptance test because serial hardware cannot be represented faithfully by ordinary CI. The gate combines observed live bridge POSTs, a read-only normalized-database verifier, API current-state confirmation and dashboard inspection. This preserves the distinction between automated software verification and physical integration validation.
