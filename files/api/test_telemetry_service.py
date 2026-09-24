@@ -41,7 +41,7 @@ class TelemetryServiceTests(unittest.TestCase):
             battery_pct=None, signal="online",
         )
 
-    def persist_alert(self, db, station_id, station_name, source, risk, message):
+    def persist_alert(self, db, station_id, station_name, source, risk, message, channels=None):
         self.alerts.append((station_id, source, risk, message))
 
     def test_ingest_owns_dual_write_and_immediate_alert_orchestration(self):
