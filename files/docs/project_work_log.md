@@ -1861,3 +1861,12 @@ CI run `35960131647`: **PASS**, including MySQL integration. Created `diagrams/f
 ## 2026-09-24 - Pydantic TelemetryResponse Follow-up
 
 A source-level follow-up to the runtime deprecation cleanup found one remaining legacy Pydantic class-based `Config` in `TelemetryResponse`. Replaced it with `ConfigDict(from_attributes=True)`, preserving serialization of SQLAlchemy rows and normalized projection objects. CI run `35960447499`: **PASS**, including MySQL integration. This corrects the earlier cleanup's incomplete scope; no new system/research capability is claimed.
+
+
+## 2026-09-24 - Data-Source Evidence Consistency Hardened
+
+Closed the deferred `DataSource.is_observational` consistency issue. Added a database CHECK invariant tying the boolean to `evidence_type`: only `observed` may be observational; simulated, derived, reanalysis and modelled sources must be non-observational. Added a regression test that attempts to persist a contradictory simulated/observational source and requires an integrity failure.
+
+CI run `35960727840` failed on both SQLite and MySQL. The constraint correctly exposed that existing observed catalogue rows such as `LOCAL_SENSOR` had relied on the ORM's default `False` instead of explicitly declaring `is_observational=True`. Updated the controlled source catalogue so every source class states the flag explicitly. Final run `35960831160`: **PASS**, including MySQL integration. Created `diagrams/floodwatch_source_evidence_consistency.svg`.
+
+**Data-source evidence consistency: PASS.** This protects provenance classification; it does not establish sensor calibration or observational scientific validity. No research experiment/model training was run.
