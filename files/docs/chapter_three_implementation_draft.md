@@ -434,3 +434,14 @@ A stronger regression test deletes every legacy `TelemetryRecord` after normaliz
 The public `GET /api/telemetry` history endpoint was migrated from the compatibility table to a normalized projection. River-stage observations act as the anchor rows; optional rainfall, discharge and battery measurements are reconstructed only when recorded for the same station, source and timestamp, and the threshold applicable at the observation time is resolved from temporal configuration. Newest-first ordering, source filtering and skip/limit pagination are preserved.
 
 The first CI run (`35957056596`) correctly rejected the promotion because the existing `TelemetryResponse` contract requires an `id`, while the normalized projection initially omitted it. The projection was repaired to expose the anchoring Observation identifier as the response identifier. The complete rerun `35957220042` passed, including MySQL integration. A regression test deletes every legacy telemetry row before reading history, demonstrating that the endpoint no longer depends on the compatibility table.
+
+
+### 3.6.x Legacy Read-Dependency Guard
+
+**Figure 3.x — Legacy telemetry read-dependency guard**
+
+![FloodWatch legacy telemetry dependency guard](diagrams/floodwatch_legacy_read_guard.svg)
+
+After current-state, alert/scenario and historical telemetry consumers had been promoted, the production route module was audited again. Obsolete compatibility aliases that delegated latest-record reads to `telemetry_repository` were removed together with the now-unused repository import. A CI architecture guard now scans the operational modules and fails if direct `TelemetryRecord` queries, the legacy repository import in `main.py`, or the obsolete latest-record aliases are reintroduced.
+
+GitHub Actions run `35957537472` passed, including MySQL integration. This establishes a mechanically protected no-legacy-read boundary for the audited operational modules. It does not delete `TelemetryRecord`: the model, dual-write path and legacy parity tests remain as migration/rollback evidence until the physical Pico regression and an explicit DB-5 retirement decision.
