@@ -326,3 +326,10 @@ If asked about the curve in the selected-station panel, say: “This is not the 
 ![FloodWatch physical bridge contract](diagrams/floodwatch_physical_bridge_contract.svg)
 
 For the live physical demo, configure `FLOOD_EWS_SERIAL_PORT`, `FLOOD_EWS_API_URL` and, when API ingestion protection is enabled, `FLOOD_EWS_INGESTION_TOKEN`. The bridge attaches the matching `X-Ingestion-Token` header. Do not assume COM4 if Windows assigns another port. The software contract is CI-guarded, but the physical regression is not considered passed until the live Pico/MySQL/dashboard procedure is performed.
+
+
+## Alert-channel demonstration boundary
+
+![FloodWatch alert delivery evidence boundary](diagrams/floodwatch_alert_delivery_boundary.svg)
+
+When demonstrating alerts, state that FloodWatch implements persistent alert generation, operator workflow and simulated multi-channel notification. The web channel is available in the application; email and SMS are currently simulated. Do not claim that an external SMS/email provider delivered a message unless that integration is separately configured and evidenced.
