@@ -39,6 +39,7 @@ jobs:
           python -u test_legacy_telemetry_dependency_guard.py
           python -u test_db5_readiness.py
           python -u test_station_coordinates.py
+          python -u test_temporal_metadata_constraints.py
           python -u test_current_state_service.py
           python -u test_alert_service.py
           python -u test_api.py
