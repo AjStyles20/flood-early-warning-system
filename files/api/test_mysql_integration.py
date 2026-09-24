@@ -18,6 +18,9 @@ import models
 import telemetry_repository
 import normalized_read_repository
 import normalized_current_state_service
+import telemetry_service
+import alert_service
+from unittest.mock import patch
 from sqlalchemy.exc import IntegrityError
 
 
@@ -53,6 +56,19 @@ def main() -> int:
         assert status.ml_probability is None
         assert db.query(models.TelemetryRecord).count() == 1
         assert db.query(models.Observation).count() == 1
+
+        # Exercise MySQL SELECT ... FOR UPDATE around the provider decision;
+        # a second high reading must reuse the persisted dispatch outcome.
+        for minute in (1, 2):
+            next_reading = reading.model_copy(update={
+                "timestamp": datetime(2026, 9, 24, 3, minute, tzinfo=timezone.utc),
+            })
+            with patch.object(telemetry_service.notifications, "notify", return_value={
+                "web": "available", "email": "sent", "sms": "not_configured",
+            }) as notify:
+                telemetry_service.ingest(db, next_reading, persist_alert_event=alert_service.persist_event)
+                assert notify.call_count == (1 if minute == 1 else 0)
+        assert db.query(models.AlertEvent).count() == 1
         assert db.query(models.Threshold).count() == 1
 
         # DB-level evidence identity must remain unique even if a caller
@@ -72,7 +88,7 @@ def main() -> int:
             raise AssertionError("MySQL accepted duplicate normalized observation identity")
         except IntegrityError:
             db.rollback()
-        assert db.query(models.Observation).count() == 1
+        assert db.query(models.Observation).count() == 3
         print("MYSQL_DB1_PASS")
         return 0
     finally:
