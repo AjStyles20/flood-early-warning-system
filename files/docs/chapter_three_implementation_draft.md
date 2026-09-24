@@ -423,3 +423,14 @@ A dedicated regression test verifies that scenario execution creates the compati
 The producer audit was followed by a consumer audit. Two remaining operational routes—manual alert dispatch and operator scenario initiation—still selected their current station state directly from the legacy `TelemetryRecord` table. They were migrated to the normalized current-state path exposed through `telemetry_service.risk_statuses`. Alert dispatch now constructs its simulated bulletin from normalized current state, and scenario initiation obtains its baseline water level, threshold, threshold type, coordinates and pre-scenario risk from the same normalized path before dual-writing the new synthetic reading.
 
 A stronger regression test deletes every legacy `TelemetryRecord` after normalized ingestion and then verifies that both alert dispatch and scenario initiation still succeed. This demonstrates that these audited operational consumers no longer require the compatibility table for reads. GitHub Actions run `35956778318` passed, including the MySQL integration job. The legacy table is nevertheless retained as a rollback/reference store until the remaining compatibility audit and physical Pico regression are complete.
+
+
+### 3.6.x Normalized Historical Telemetry Read Promotion
+
+**Figure 3.x — Normalized telemetry history projection**
+
+![FloodWatch normalized telemetry history projection](diagrams/floodwatch_normalized_history_projection.svg)
+
+The public `GET /api/telemetry` history endpoint was migrated from the compatibility table to a normalized projection. River-stage observations act as the anchor rows; optional rainfall, discharge and battery measurements are reconstructed only when recorded for the same station, source and timestamp, and the threshold applicable at the observation time is resolved from temporal configuration. Newest-first ordering, source filtering and skip/limit pagination are preserved.
+
+The first CI run (`35957056596`) correctly rejected the promotion because the existing `TelemetryResponse` contract requires an `id`, while the normalized projection initially omitted it. The projection was repaired to expose the anchoring Observation identifier as the response identifier. The complete rerun `35957220042` passed, including MySQL integration. A regression test deletes every legacy telemetry row before reading history, demonstrating that the endpoint no longer depends on the compatibility table.
