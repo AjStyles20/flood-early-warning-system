@@ -5,7 +5,7 @@
 # 1. SQLAlchemy Models: Defines how data is physically stored in the configured relational DBMS.
 # 2. Pydantic Models: Defines how we validate data when it arrives from the internet, ensuring it is correct before saving it.
 
-from sqlalchemy import Boolean, CheckConstraint, Column, Integer, String, Float, DateTime, ForeignKey, Index, Text
+from sqlalchemy import Boolean, CheckConstraint, Column, Integer, String, Float, DateTime, ForeignKey, Index, Text, UniqueConstraint
 from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime, timezone
 from typing import Literal
