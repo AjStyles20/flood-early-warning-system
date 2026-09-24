@@ -93,5 +93,68 @@ class ObservationRepositoryTests(unittest.TestCase):
         self.db.rollback()
 
 
+    def test_repository_reuses_exact_observation_replay(self):
+        self.repo.seed_catalogues(self.db)
+        station = self.models.Station(
+            station_code="REPLAY-01", name="Replay test", latitude=7.8, longitude=6.7
+        )
+        self.db.add(station); self.db.commit(); self.db.refresh(station)
+        variable = self.repo.get_variable(self.db, "river_stage")
+        source = self.repo.get_source(self.db, "LOCAL_SENSOR")
+        observed_at = datetime(2026, 9, 24, 4, 0)
+
+        first = self.repo.create_observation(
+            self.db, station=station, variable=variable, source=source,
+            observed_at=observed_at, value=1.5, quality_flag="controlled_prototype"
+        )
+        replay = self.repo.create_observation(
+            self.db, station=station, variable=variable, source=source,
+            observed_at=observed_at, value=1.5, quality_flag="controlled_prototype"
+        )
+        self.assertEqual(first.id, replay.id)
+        self.assertEqual(self.db.query(self.models.Observation).count(), 1)
+
+    def test_repository_rejects_conflicting_duplicate(self):
+        self.repo.seed_catalogues(self.db)
+        station = self.models.Station(
+            station_code="CONFLICT-01", name="Conflict test", latitude=7.8, longitude=6.7
+        )
+        self.db.add(station); self.db.commit(); self.db.refresh(station)
+        variable = self.repo.get_variable(self.db, "river_stage")
+        source = self.repo.get_source(self.db, "LOCAL_SENSOR")
+        observed_at = datetime(2026, 9, 24, 4, 5)
+        self.repo.create_observation(
+            self.db, station=station, variable=variable, source=source,
+            observed_at=observed_at, value=1.5
+        )
+        with self.assertRaises(ValueError):
+            self.repo.create_observation(
+                self.db, station=station, variable=variable, source=source,
+                observed_at=observed_at, value=1.6
+            )
+        self.db.rollback()
+        self.assertEqual(self.db.query(self.models.Observation).count(), 1)
+
+    def test_dataset_and_source_evidence_types_must_agree(self):
+        self.repo.seed_catalogues(self.db)
+        station = self.models.Station(
+            station_code="PROV-01", name="Provenance test", latitude=7.8, longitude=6.7
+        )
+        dataset = self.models.Dataset(
+            dataset_code="SIM-DATA", title="Simulated dataset", provider="test",
+            evidence_type="simulated", redistribution_status="internal",
+        )
+        self.db.add_all([station, dataset]); self.db.commit()
+        variable = self.repo.get_variable(self.db, "river_stage")
+        observed_source = self.repo.get_source(self.db, "AUTHORITATIVE_OBSERVATION")
+        with self.assertRaises(ValueError):
+            self.repo.create_observation(
+                self.db, station=station, variable=variable, source=observed_source,
+                dataset=dataset, observed_at=datetime(2026, 9, 24, 4, 10), value=1.5
+            )
+        self.db.rollback()
+        self.assertEqual(self.db.query(self.models.Observation).count(), 0)
+
+
 if __name__ == "__main__":
     unittest.main()
