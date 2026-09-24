@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 import models
 import observation_repository
+import observation_write_policy
 import threshold_repository
 
 
@@ -45,18 +46,17 @@ def _observation(
     reading: models.TelemetryCreate,
     value: float,
 ) -> models.Observation:
-    row = models.Observation(
-        station_id=station.id,
-        variable_id=variable.id,
-        source_id=source.id,
-        dataset_id=None,
+    return observation_write_policy.stage_observation(
+        db,
+        station=station,
+        variable=variable,
+        source=source,
         observed_at=reading.timestamp,
         value=value,
+        dataset=None,
         quality_flag="controlled_prototype" if reading.data_source == "hardware" else "simulated",
         signal_status=reading.signal,
     )
-    db.add(row)
-    return row
 
 
 def stage_normalized_mirror(db: Session, reading: models.TelemetryCreate) -> list[models.Observation]:
