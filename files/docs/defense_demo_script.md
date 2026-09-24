@@ -340,3 +340,10 @@ When demonstrating alerts, state that FloodWatch implements persistent alert gen
 ![FloodWatch real alert delivery architecture](diagrams/floodwatch_real_alert_delivery.svg)
 
 The code path for EmailJS and Twilio SMS is implemented. Before demonstrating it, configure the provider environment variables locally and send one controlled test alert to an authorized test recipient. Show the resulting channel state in the persistent alert. Describe a channel as real delivery only when the live test returns `sent`; otherwise state the observed `failed` or `not_configured` status.
+
+
+## Real email/SMS alert demonstration
+
+![FloodWatch real alert delivery](diagrams/floodwatch_real_alert_delivery.svg)
+
+The application contains functioning EmailJS and Twilio REST adapters. Before claiming real delivery in the defense, configure the provider environment variables locally and demonstrate a successful message to a controlled recipient. The dashboard/API should report `not_configured` without credentials, `failed` after a failed attempt, and `sent` only after provider success. CI verifies the logic but is not evidence that EmailJS/Twilio delivered a live message.
