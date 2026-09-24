@@ -529,3 +529,10 @@ Historical and configuration provenance depend on valid intervals. FloodWatch no
 ![FloodWatch unified observation write boundary](diagrams/floodwatch_unified_observation_write_boundary.svg)
 
 The repository and compatibility adapter now converge on one normalized observation write policy. This removes policy duplication and prevents a future caller from bypassing replay/conflict semantics merely by using the general repository rather than telemetry ingestion. Dataset/source evidence classifications are also checked for agreement at this boundary.
+
+
+## 10.x Observation identity defense in depth
+
+![FloodWatch observation identity constraint](diagrams/floodwatch_observation_identity_constraint.svg)
+
+Duplicate semantics are now enforced at two layers. The shared application policy supplies meaningful idempotency/conflict behavior, while a composite database UNIQUE constraint prevents bypass paths or races from persisting duplicate evidence identities. This separates semantic handling from invariant enforcement.
