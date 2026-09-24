@@ -435,3 +435,10 @@ Consumer migration exposed a stale write path: operator scenarios bypassed the n
 ![FloodWatch operational read independence](diagrams/floodwatch_operational_read_independence.svg)
 
 After write-path convergence, remaining consumers were searched for direct `TelemetryRecord` dependencies. Manual alert dispatch and scenario initiation were migrated to normalized current-state reads. The regression proof intentionally removes all compatibility telemetry rows before invoking those routes, which is stronger than a normal parity check: success demonstrates that their operational behaviour is not silently relying on the legacy table. Compatibility aliases and historical list endpoints remain deliberately separate migration concerns.
+
+
+## 10.x Normalized history compatibility projection
+
+![FloodWatch normalized telemetry history projection](diagrams/floodwatch_normalized_history_projection.svg)
+
+The telemetry history API now demonstrates the compatibility-projection pattern: the external response shape can remain stable while its persistence source changes. This reduces migration impact on the data page and clients. The failed first CI run was valuable contract evidence: persistence equivalence alone was insufficient because the HTTP schema also required an identifier. The normalized stage Observation identifier now satisfies that contract.
