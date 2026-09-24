@@ -548,3 +548,14 @@ Dedicated regression tests verify that the four geographic boundary values are a
 The normalized schema now rejects internally impossible temporal metadata. Dataset coverage must satisfy `coverage_start <= coverage_end` whenever both bounds are known, while Threshold validity must satisfy `valid_from <= valid_to` whenever both are present. Open/unknown bounds remain permitted because a dataset may have incomplete metadata and an active threshold may legitimately be open-ended. Dataset `evidence_type` is also constrained to the same controlled evidence vocabulary used by DataSource.
 
 Dedicated tests attempt a reversed dataset coverage interval, an unsupported dataset evidence type and a reversed threshold validity interval; all must fail at the database boundary. CI run `35962149212` passed, including MySQL integration. These constraints establish internal metadata consistency, not independent verification that a provider's claimed coverage or threshold authority is correct.
+
+
+### 3.6.x Unified Normalized Observation Write Boundary
+
+**Figure 3.x — Unified normalized observation write boundary**
+
+![FloodWatch unified observation write boundary](diagrams/floodwatch_unified_observation_write_boundary.svg)
+
+A follow-up architecture audit found that the duplicate/correction policy was enforced by the telemetry normalization adapter but the general `observation_repository.create_observation` path still constructed Observation rows directly. That meant two legitimate normalized-write paths could apply different evidence semantics. The repository now delegates to the same shared `observation_write_policy.stage_observation` boundary before committing.
+
+The shared boundary also validates Dataset/DataSource provenance consistency when a dataset is attached: their `evidence_type` values must agree. This prevents, for example, a Dataset classified as simulated from being attached to an Observation whose DataSource classifies it as observed. Tests now prove repository-level exact replay idempotency, conflicting duplicate rejection and dataset/source evidence mismatch rejection. CI run `35962568513` passed, including MySQL integration.
