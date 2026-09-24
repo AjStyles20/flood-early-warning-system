@@ -133,6 +133,10 @@ class ScenarioRun(Base):
 
 class Station(Base):
     __tablename__ = "stations"
+    __table_args__ = (
+        CheckConstraint("latitude >= -90 AND latitude <= 90", name="ck_stations_latitude"),
+        CheckConstraint("longitude >= -180 AND longitude <= 180", name="ck_stations_longitude"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     station_code = Column(String(64), unique=True, index=True, nullable=False)
