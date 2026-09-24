@@ -557,3 +557,10 @@ The telemetry adapter applies least-authority semantics to threshold evidence. A
 ![FloodWatch alert delivery evidence boundary](diagrams/floodwatch_alert_delivery_boundary.svg)
 
 FloodWatch separates workflow capability from delivery evidence. Persistent alerts and web presentation are implemented; email and SMS are demonstration channels until an external gateway is configured and delivery is verified. The API therefore reports those channels as `simulated` rather than `available`.
+
+
+## 10.x Provider-backed alert delivery
+
+![FloodWatch real alert delivery architecture](diagrams/floodwatch_real_alert_delivery.svg)
+
+The alert subsystem now applies an adapter boundary around external providers. EmailJS handles email and Twilio handles SMS when configured; missing credentials produce `not_configured`, network/provider failure produces `failed`, and only a successful provider response produces `sent`. Telemetry persistence is not rolled back by a notification-provider outage. Secrets remain runtime configuration rather than repository content.
