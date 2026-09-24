@@ -36,6 +36,8 @@ import news_feeds
 import notifications
 import telemetry_repository
 import current_state_service
+import normalized_read_repository
+import normalized_current_state_service
 import alert_service
 from database import engine, get_db
 from risk_engine import classify
@@ -1292,35 +1294,32 @@ def read_risk_status(
     db: Session = Depends(get_db),
 ):
     """Return newest-per-station risk, optionally filtered by data source."""
+    # DB-4 operational promotion: current-state consumers now read the
+    # normalized observation/threshold model. Legacy telemetry remains dual-
+    # written as a rollback/reference store until physical + MySQL gates pass.
     if data_source == "hybrid":
         grouped_records = defaultdict(list)
-        records = latest_records_per_station_and_source(db)
+        records = normalized_read_repository.latest_evidence(db)
         for record in records:
             grouped_records[record.station_id].append(record)
 
         statuses = []
         for station_records in grouped_records.values():
-            newest_by_source = {}
-            for record in station_records:
-                newest_by_source.setdefault(record.data_source, record)
             candidates = [
-                status_from_record(
+                normalized_current_state_service.status_from_evidence(
                     record,
                     db,
                     dict(CORE_ALERT_CHANNELS),
                     language=language,
                 )
-                for record in newest_by_source.values()
+                for record in station_records
             ]
             statuses.append(max(candidates, key=lambda item: (RISK_RANK.get(item.risk_level, 0), item.timestamp)))
         return statuses
 
-    if data_source is not None:
-        records = latest_records_per_station(db, data_source=data_source)
-    else:
-        records = latest_records_per_station(db)
+    records = normalized_read_repository.latest_per_station(db, data_source=data_source)
     return [
-        status_from_record(
+        normalized_current_state_service.status_from_evidence(
             record,
             db,
             dict(CORE_ALERT_CHANNELS),
