@@ -1959,3 +1959,12 @@ Followed the dashboard projection repair into the backend contract. Verified tha
 Added a regression with readings 30 minutes apart and a 0.8 m level change. The expected public value remains 0.8 m since the previous reading; the test deliberately prevents future code/documentation from silently interpreting it as metres/hour. CI run `35968490410`: **PASS**, including MySQL integration.
 
 **Trend-unit consistency: PASS.** A true time-normalized rate may be introduced later under a separately named field if required; it must not silently change the meaning of the existing API contract during defense closure.
+
+
+## 2026-09-24 - Defense Closure: Physical Bridge Contract Repair
+
+Audited the actual Pico serial bridge against the current API/security contract before asking for a live physical regression. Found documentation/runtime drift: the bridge hard-coded COM4 and had no current ingestion-token support, while the hardware guide still contained port 8000 and obsolete token/header naming in several places.
+
+Updated the bridge to support `FLOOD_EWS_SERIAL_PORT`, `FLOOD_EWS_SERIAL_BAUD`, `FLOOD_EWS_API_URL` and `FLOOD_EWS_INGESTION_TOKEN`, attaching `X-Ingestion-Token` when configured. Synchronized the hardware guide to port 8010 and the current token/header contract. Extended DB-5 readiness automation to fail if bridge/guide drift back to the obsolete contract. CI run `35969481452`: **PASS**, including MySQL integration. Created `diagrams/floodwatch_physical_bridge_contract.svg`.
+
+**Physical bridge software contract: PASS. Physical post-migration regression: still PENDING user hardware.**
