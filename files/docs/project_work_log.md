@@ -1939,3 +1939,14 @@ Changed the UI to a transparent six-reading trend projection derived from `curre
 Initial CI run `35967261564` failed because the newly appended frontend assertions referenced fixture variable names that did not exist in the test file. The MySQL job itself passed. Corrected the test fixture scoping; final CI run `35967402520`: **PASS**. Created `diagrams/floodwatch_dashboard_trend_projection.svg`.
 
 **Dashboard projection semantics: PASS.** The trend curve is engineering decision-support visualization only, not observational predictive validation. Physical post-migration regression remains pending.
+
+
+## 2026-09-24 - Defense Closure: Research Threshold Authority Guard
+
+Audited the normalized threshold boundary. Generic telemetry already prevented a caller from creating `official_operational` authority, but still accepted `research_statistical`. That was inconsistent: a sensor/simulator payload cannot prove that a threshold was derived by the frozen research method either.
+
+Changed the compatibility adapter so both `official_operational` and `research_statistical` supplied through generic telemetry are downgraded to `prototype_demo` with explicit provenance. Added regression coverage for the research-statistical case. Initial run `35967859637` failed only because the older official-threshold test asserted the previous provenance wording; MySQL passed. Updated that assertion. Final CI run `35968079961`: **PASS**.
+
+Created `diagrams/floodwatch_threshold_evidence_authority.svg` and synchronized Chapter 3, software design, database design and this work log.
+
+**Threshold evidence authority boundary: PASS.** This does not create an official or research threshold workflow; it prevents generic telemetry from falsely claiming one.
