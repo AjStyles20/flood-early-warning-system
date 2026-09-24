@@ -3,7 +3,10 @@
 import os
 import tempfile
 import unittest
+import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
+from threading import Event
 from unittest.mock import patch
 
 
@@ -80,6 +83,39 @@ class TelemetryServiceTests(unittest.TestCase):
             alert = self.db.query(self.models.AlertEvent).one()
             self.assertEqual(alert.risk_level, "High")
             self.assertEqual(__import__("json").loads(alert.channels_json), outcomes)
+
+    def test_concurrent_ingest_claims_one_dispatch(self):
+        # Seed the station before racing two different observations; this test
+        # isolates dispatch coordination from station-creation coordination.
+        self.service.ingest(self.db, self.reading(minute=1, level=0.2),
+                            persist_alert_event=self.alert_service.persist_event)
+        entered = Event()
+        calls = []
+
+        def slow_notify(*args, **kwargs):
+            calls.append(args[0])
+            entered.set()
+            time.sleep(0.2)
+            return {"web": "available", "email": "sent", "sms": "not_configured"}
+
+        def ingest(minute):
+            db = self.database.SessionLocal()
+            try:
+                self.service.ingest(db, self.reading(minute=minute, level=1.6),
+                                    persist_alert_event=self.alert_service.persist_event)
+            finally:
+                db.close()
+
+        with patch.object(self.service.notifications, "notify", side_effect=slow_notify):
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                first = pool.submit(ingest, 2)
+                self.assertTrue(entered.wait(3), "first dispatch did not start")
+                second = pool.submit(ingest, 3)
+                first.result(timeout=8)
+                second.result(timeout=8)
+        self.assertEqual(len(calls), 1)
+        self.db.expire_all()
+        self.assertEqual(self.db.query(self.models.AlertEvent).count(), 1)
 
 
 if __name__ == "__main__":
