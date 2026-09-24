@@ -35,6 +35,7 @@ import models
 import news_feeds
 import notifications
 import telemetry_repository
+import telemetry_service
 import current_state_service
 import normalized_read_repository
 import normalized_current_state_service
@@ -1154,24 +1155,11 @@ def simple_pdf(title: str, lines: list[str]) -> bytes:
 @app.post("/api/telemetry", response_model=models.TelemetryResponse, dependencies=[Depends(authorize_ingestion)])
 def create_telemetry(reading: models.TelemetryCreate, db: Session = Depends(get_db)):
     """Receive one simulated or hardware telemetry reading and persist it."""
-    db_record = telemetry_repository.create_record(db, reading)
-
-    # Keep ingestion fast and robust for both simulator and hardware nodes.
-    # The richer ML probability is added by /api/risk-status, but a sensor POST
-    # should not be delayed just because the trained scikit-learn artefact is
-    # warming up or unavailable. The transparent threshold risk engine is enough
-    # to decide whether a simulated notification log is needed immediately.
-    assessment = classify(db_record.water_level_m, db_record.danger_level_m)
-    notifications.notify(db_record.station_id, db_record.station_name, assessment, data_source=db_record.data_source)
-    persist_alert_event(
+    return telemetry_service.ingest(
         db,
-        db_record.station_id,
-        db_record.station_name,
-        db_record.data_source,
-        assessment.risk_level,
-        assessment.message,
+        reading,
+        persist_alert_event=persist_alert_event,
     )
-    return db_record
 
 
 @app.get("/api/telemetry", response_model=list[models.TelemetryResponse])
@@ -1271,18 +1259,12 @@ async def upload_telemetry_csv(
 
         # CSV ingestion uses the same repository/dual-write boundary as REST
         # telemetry so normalized and compatibility persistence cannot drift.
-        db_record = telemetry_repository.create_record(db, reading)
-        accepted += 1
-        assessment = classify(db_record.water_level_m, db_record.danger_level_m)
-        notifications.notify(db_record.station_id, db_record.station_name, assessment, data_source=db_record.data_source)
-        persist_alert_event(
+        telemetry_service.ingest(
             db,
-            db_record.station_id,
-            db_record.station_name,
-            db_record.data_source,
-            assessment.risk_level,
-            assessment.message,
+            reading,
+            persist_alert_event=persist_alert_event,
         )
+        accepted += 1
 
     return {"accepted": accepted, "rejected": len(errors), "errors": errors[:25]}
 
@@ -1294,40 +1276,13 @@ def read_risk_status(
     db: Session = Depends(get_db),
 ):
     """Return newest-per-station risk, optionally filtered by data source."""
-    # DB-4 operational promotion: current-state consumers now read the
-    # normalized observation/threshold model. Legacy telemetry remains dual-
-    # written as a rollback/reference store until physical + MySQL gates pass.
-    if data_source == "hybrid":
-        grouped_records = defaultdict(list)
-        records = normalized_read_repository.latest_evidence(db)
-        for record in records:
-            grouped_records[record.station_id].append(record)
-
-        statuses = []
-        for station_records in grouped_records.values():
-            candidates = [
-                normalized_current_state_service.status_from_evidence(
-                    record,
-                    db,
-                    dict(CORE_ALERT_CHANNELS),
-                    language=language,
-                )
-                for record in station_records
-            ]
-            statuses.append(max(candidates, key=lambda item: (RISK_RANK.get(item.risk_level, 0), item.timestamp)))
-        return statuses
-
-    records = normalized_read_repository.latest_per_station(db, data_source=data_source)
-    return [
-        normalized_current_state_service.status_from_evidence(
-            record,
-            db,
-            dict(CORE_ALERT_CHANNELS),
-            language=language,
-        )
-        for record in records
-    ]
-
+    return telemetry_service.risk_statuses(
+        db,
+        data_source=data_source,
+        language=language,
+        alert_channels=dict(CORE_ALERT_CHANNELS),
+        risk_rank=RISK_RANK,
+    )
 
 @app.get("/api/alerts")
 def get_recent_alerts(
