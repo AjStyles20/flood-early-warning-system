@@ -1968,3 +1968,12 @@ Audited the actual Pico serial bridge against the current API/security contract 
 Updated the bridge to support `FLOOD_EWS_SERIAL_PORT`, `FLOOD_EWS_SERIAL_BAUD`, `FLOOD_EWS_API_URL` and `FLOOD_EWS_INGESTION_TOKEN`, attaching `X-Ingestion-Token` when configured. Synchronized the hardware guide to port 8010 and the current token/header contract. Extended DB-5 readiness automation to fail if bridge/guide drift back to the obsolete contract. CI run `35969481452`: **PASS**, including MySQL integration. Created `diagrams/floodwatch_physical_bridge_contract.svg`.
 
 **Physical bridge software contract: PASS. Physical post-migration regression: still PENDING user hardware.**
+
+
+## 2026-09-24 - Closure Audit Correction: Canonical Ingestion Token Contract
+
+A follow-up cross-check against the actual FastAPI `authorize_ingestion` implementation found that the previous physical-bridge repair used the wrong token/header names. The canonical backend contract is `FLOOD_EWS_INGEST_TOKEN` with HTTP `X-Ingest-Token`, not `FLOOD_EWS_INGESTION_TOKEN` / `X-Ingestion-Token`. This was caught before physical regression.
+
+Corrected the Pico bridge, hardware guide and executable DB-5 readiness guard to the backend's canonical contract. CI run `35970202614`: **PASS**, including MySQL integration.
+
+This correction is intentionally recorded rather than hidden: it demonstrates why closure requires end-to-end contract auditing rather than relying on documentation assumptions. The live physical gate remains pending.
