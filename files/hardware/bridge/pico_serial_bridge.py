@@ -9,7 +9,7 @@ SERIAL_PORT = os.getenv("FLOOD_EWS_SERIAL_PORT", "COM4")
 BAUD_RATE = int(os.getenv("FLOOD_EWS_SERIAL_BAUD", "115200"))
 
 API_URL = os.getenv("FLOOD_EWS_API_URL", "http://127.0.0.1:8010/api/telemetry")
-INGESTION_TOKEN = os.getenv("FLOOD_EWS_INGESTION_TOKEN", "").strip()
+INGESTION_TOKEN = os.getenv("FLOOD_EWS_INGEST_TOKEN", "").strip()
 
 
 def build_payload(station_id, water_level_m):
@@ -85,7 +85,7 @@ with serial.Serial(
             )
 
             headers = (
-                {"X-Ingestion-Token": INGESTION_TOKEN}
+                {"X-Ingest-Token": INGESTION_TOKEN}
                 if INGESTION_TOKEN
                 else {}
             )
