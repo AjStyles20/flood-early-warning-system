@@ -428,3 +428,10 @@ A service layer now separates HTTP transport from telemetry use-case orchestrati
 ![FloodWatch scenario normalized path](diagrams/floodwatch_scenario_normalized_path.svg)
 
 Consumer migration exposed a stale write path: operator scenarios bypassed the new telemetry service and wrote only to the legacy table. This illustrates why migration requires both read-parity tests and an audit of every producer. Scenario generation now enters through the same application-service/dual-write boundary as other telemetry. Its source remains explicitly `simulated`; persistence consistency does not change its evidence class.
+
+
+## 10.x Operational consumer independence
+
+![FloodWatch operational read independence](diagrams/floodwatch_operational_read_independence.svg)
+
+After write-path convergence, remaining consumers were searched for direct `TelemetryRecord` dependencies. Manual alert dispatch and scenario initiation were migrated to normalized current-state reads. The regression proof intentionally removes all compatibility telemetry rows before invoking those routes, which is stronger than a normal parity check: success demonstrates that their operational behaviour is not silently relying on the legacy table. Compatibility aliases and historical list endpoints remain deliberately separate migration concerns.
