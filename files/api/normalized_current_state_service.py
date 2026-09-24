@@ -36,6 +36,12 @@ def compute_rate_of_rise_m(
     record: normalized_read_repository.NormalizedTelemetryEvidence,
     db: Session,
 ) -> float:
+    """Return change in metres since the previous reading for this source.
+
+    This is deliberately a per-reading delta, not metres/hour.  Timestamp
+    spacing may vary, so callers must not reinterpret the value as a time-rate
+    without separately validating the sampling interval.
+    """
     previous = _previous_stage(db, record)
     return record.water_level_m - previous.value if previous else 0.0
 
