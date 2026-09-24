@@ -1906,3 +1906,14 @@ Follow-up audit found a policy-bypass risk: the telemetry normalization adapter 
 Expanded repository tests to prove exact replay returns the same Observation ID with one persisted row, a changed value at the same evidence identity is rejected, and a simulated Dataset cannot be attached to an observed DataSource. CI run `35962568513`: **PASS**, including MySQL integration. Created `diagrams/floodwatch_unified_observation_write_boundary.svg`.
 
 **Normalized write-policy convergence: PASS.** This is provenance/engineering integrity, not scientific validation of a source. Physical Pico regression remains pending; DB-5 remains blocked. No research experiment/model training was run.
+
+
+## 2026-09-24 - Observation Identity Database Constraint
+
+Strengthened the normalized duplicate policy with database-level enforcement. Added composite UNIQUE identity on Observation: station + variable + source + observed timestamp. Application policy remains responsible for distinguishing exact replay from conflicting content; the DB constraint protects direct SQL/ORM bypass and concurrency cases.
+
+Added a repository test that bypasses `observation_write_policy` with two direct ORM rows and requires the second commit to fail. Extended `test_mysql_integration.py` with the same direct duplicate attempt so MySQL itself is exercised.
+
+CI run `35963073064` failed in both jobs before meaningful execution because the new SQLAlchemy `UniqueConstraint` symbol was not imported in `models.py`. Added the missing import. Final run `35963183379`: **PASS**, including MySQL integration. Created `diagrams/floodwatch_observation_identity_constraint.svg`.
+
+**Database-enforced observation identity: PASS.** Physical Pico regression remains pending; DB-5 remains blocked. No research experiment/model training was run.
