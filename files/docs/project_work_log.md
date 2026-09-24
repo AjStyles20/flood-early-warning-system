@@ -1809,3 +1809,12 @@ With audited operational legacy reads removed and CI-guarded, formalized the rem
 Updated `hardware_integration_guide.md` to replace the outdated SQLite architecture label with normalized MySQL persistence and added the exact post-migration physical regression procedure: API health, actual Windows serial port, at least two changed physical readings, bridge HTTP 200 responses, normalized risk-status, Hardware/Hybrid dashboard display, verifier output and evidence capture. Created `diagrams/floodwatch_physical_regression_gate.svg`.
 
 **Physical hardware regression: PREPARED / PENDING USER-RUN EXECUTION.** No PASS is claimed. The verifier cannot prove COM serial origin by itself and is valid only alongside the observed live bridge run. DB-5 remains blocked. No research experiment/model training was run.
+
+
+## 2026-09-24 - Equal-Timestamp Read Determinism
+
+Reviewed the previously noted deterministic tie-semantics risk before DB-5. `normalized_read_repository.latest_per_station` sorted by station/timestamp only, while the legacy compatibility repository explicitly resolved equal timestamps using descending row id. Hardened the normalized selector to include Observation id as the secondary descending key.
+
+Added a parity regression case with hardware and simulated readings for the same station and exactly the same timestamp. The later persisted reading must be selected by both legacy and normalized implementations. CI run `35958025759`: **PASS**, including MySQL integration. Created `diagrams/floodwatch_equal_timestamp_tie_break.svg`.
+
+**Equal-timestamp deterministic parity: PASS.** This closes the previously identified read-selection edge case. Physical Pico regression remains pending; DB-5 remains blocked. No research experiment/model training was run.
