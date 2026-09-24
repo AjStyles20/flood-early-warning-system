@@ -491,3 +491,14 @@ The compatibility threshold mirror was hardened so a threshold change no longer 
 The first CI run (`35958918179`) exposed an offset-aware versus offset-naive datetime comparison difference in SQLite. The comparison logic was normalized for the compatibility check. A second run (`35959013431`) then exposed that the test itself expected timezone-aware SQLite round-tripping; the assertion was corrected to the database's compatibility representation without weakening the temporal-value checks. Final run `35959110710` passed, including MySQL integration.
 
 The compatibility change-point helper intentionally requires chronological ingestion. General out-of-order authoritative threshold revision is a separate data-governance problem and is not claimed as solved by this prototype path.
+
+
+### 3.6.x DB-5 Retirement Readiness Gate
+
+**Figure 3.x — DB-5 legacy telemetry retirement readiness**
+
+![FloodWatch DB-5 readiness gate](diagrams/floodwatch_db5_readiness_gate.svg)
+
+The migration boundary is now executable in CI rather than existing only as a documentation warning. `test_db5_readiness.py` verifies that operational production modules remain independent of direct `TelemetryRecord` reads, while the legacy model and atomic dual-write still exist as rollback/reference evidence until retirement is explicitly authorized. It also verifies that the physical-regression verifier and procedure remain present.
+
+This is intentionally a readiness guard rather than a retirement test: CI must not infer that a real Pico/serial/dashboard test occurred. Run `35960131647` passed, including MySQL integration. DB-5 remains blocked by the physical regression and explicit retirement authorization.
