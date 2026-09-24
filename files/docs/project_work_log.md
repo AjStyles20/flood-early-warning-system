@@ -1734,3 +1734,14 @@ Added `test_risk_status_promotion.py` to exercise the real API after dual-write,
 Created and embedded `diagrams/floodwatch_operational_read_promotion.svg`.
 
 **DB-4 operational current-state promotion: PASS under SQLite compatibility CI.** Legacy telemetry remains dual-written as rollback/reference evidence; raw `/api/telemetry` compatibility is unchanged. Physical Pico regression and MySQL-specific DB-1 execution remain required before DB-5 retirement. No research experiment/model training was run.
+
+
+## 2026-09-24 - MySQL DB-1 Execution Increment
+
+Reconciled deployment configuration with the declared DBMS architecture. `docker-compose.yml` previously ran the API on SQLite; it now provisions MySQL 8.4 and points the API at it through `mysql+pymysql`, while keeping credentials in environment-variable configuration.
+
+Added `test_mysql_integration.py`, a destructive test intended only for a disposable MySQL schema. It creates the schema, sends a hardware reading through atomic dual-write, verifies legacy + normalized persistence, resolves the typed threshold, executes normalized current-state assessment and confirms that hardware has no simulator ML probability.
+
+Added a separate GitHub Actions MySQL service job. Run `35955625737` completed successfully. Created and embedded `diagrams/floodwatch_mysql_db1_gate.svg`.
+
+**DB-1 MySQL application execution: PASS.** This does not prove the user's local Workbench installation or physical COM4/Pico path. The physical Pico regression remains the principal external gate before DB-5 legacy retirement. No research experiment/model training was run.
