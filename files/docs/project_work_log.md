@@ -1995,3 +1995,10 @@ After the requirement that visible alert channels must perform real work, replac
 Tests mock external providers so CI never sends messages or requires secrets. Two intermediate CI runs exposed stale test seams/assertions and were corrected. Final CI run `35972753987`: **PASS**, including MySQL integration. Created `diagrams/floodwatch_real_alert_delivery.svg` and synchronized Chapter 3, software design, defense script and work log.
 
 **Provider delivery implementation: PASS. Live EmailJS/Twilio credential test: PENDING user-local configuration.**
+
+
+## 2026-09-24 - Closure Upgrade: Real Alert Provider Delivery
+
+Following the requirement that visible functional capabilities must perform real work, replaced the simulated-only email/SMS notification boundary with provider adapters: EmailJS REST for email and Twilio REST for SMS. Configuration is environment-only; no provider secrets are committed. Delivery states are explicit (`sent`, `failed`, `not_configured`, `not_required`) and actual outcomes flow into persistent alert records. Added provider-state tests without making external CI calls. CI run `35973141504`: **PASS**, including MySQL integration.
+
+The code path is real, but external delivery is not claimed as proven until local EmailJS/Twilio credentials are configured and a live provider response is observed. This distinction is intentional and applies to the rest of the product audit: implemented behavior, test evidence and external/physical evidence are tracked separately.
