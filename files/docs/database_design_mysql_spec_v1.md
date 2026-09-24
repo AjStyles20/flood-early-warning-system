@@ -439,3 +439,10 @@ The previously listed latitude/longitude validation item is now implemented as d
 ![FloodWatch temporal metadata integrity](diagrams/floodwatch_temporal_metadata_integrity.svg)
 
 Dataset coverage and Threshold validity now have database CHECK constraints preventing an end time/date before the corresponding start when both bounds are known. Dataset `evidence_type` is constrained to observed/derived/simulated/reanalysis/modelled. Open-ended or unknown bounds remain valid. CI run `35962149212` passed including MySQL integration.
+
+
+## Unified observation write boundary
+
+![FloodWatch unified observation write boundary](diagrams/floodwatch_unified_observation_write_boundary.svg)
+
+The duplicate/correction policy is no longer limited to compatibility telemetry. `observation_repository.create_observation` delegates to the shared staged write policy, providing exact-replay idempotency and conflicting-duplicate rejection to general normalized writes. When Dataset is present, its evidence type must agree with DataSource evidence type. CI run `35962568513` passed including MySQL integration.
