@@ -66,6 +66,19 @@ class CurrentStateParityTests(unittest.TestCase):
         self.assertEqual(normalized_status.rate_of_rise_m, 0.8)
         self.assertIsNone(normalized_status.ml_probability)
 
+    def test_trend_is_per_reading_delta_even_when_time_spacing_changes(self):
+        self.add("hardware", 10, 0.8)
+        legacy = self.add("hardware", 40, 1.6)
+        legacy_status = self.legacy_state.status_from_record(legacy, self.db)
+        normalized_status = self.normalized_state.status_from_evidence(
+            self.normalized_for("hardware"), self.db
+        )
+        # Thirty minutes elapsed, but the public contract is intentionally
+        # metres since previous reading, not an hourly derivative.
+        self.assertEqual(normalized_status.rate_of_rise_m, 0.8)
+        self.assertEqual(normalized_status.rate_of_rise_m, legacy_status.rate_of_rise_m)
+
+
     def test_simulator_current_state_matches_legacy(self):
         self.add("simulated", 3, 0.9, rainfall=2.0, flow=4.0, battery=90)
         legacy = self.add("simulated", 4, 1.2, rainfall=3.0, flow=5.0, battery=88)
