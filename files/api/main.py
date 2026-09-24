@@ -1539,7 +1539,11 @@ def run_scenario(
         new_level = max(0.0, current_w * 0.8)
         rainfall = round(random.uniform(0.0, 5.0), 1)
 
-    new_record = models.TelemetryRecord(
+    # Scenario data is explicitly synthetic, but it must still traverse the
+    # same dual-write/application boundary as every other telemetry source.
+    # Direct legacy-only inserts would make the normalized /api/risk-status
+    # consumer blind to the scenario after DB-4 promotion.
+    scenario_reading = models.TelemetryCreate(
         station_id=station_id,
         station_name=station_name,
         data_source="simulated",
@@ -1548,25 +1552,18 @@ def run_scenario(
         timestamp=datetime.now(timezone.utc),
         water_level_m=round(new_level, 2),
         danger_level_m=danger,
+        threshold_type=latest.threshold_type,
         rainfall_mm_hr=rainfall,
         flow_rate_m3s=round(new_level * 10.5, 1),
         battery_pct=96.0,
         signal="online",
     )
-    db.add(new_record)
-    db.commit()
-    db.refresh(new_record)
-
-    assessment = assess_record(new_record, db)
-    notifications.notify(new_record.station_id, new_record.station_name, assessment, data_source="simulated")
-    persist_alert_event(
+    new_record = telemetry_service.ingest(
         db,
-        new_record.station_id,
-        new_record.station_name,
-        new_record.data_source,
-        assessment.risk_level,
-        assessment.message,
+        scenario_reading,
+        persist_alert_event=persist_alert_event,
     )
+    assessment = assess_record(new_record, db)
 
     run = models.ScenarioRun(
         station_id=station_id,
