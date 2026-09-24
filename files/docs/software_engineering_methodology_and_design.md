@@ -421,3 +421,10 @@ CI now includes a real MySQL 8.4 service job. The same repository/service archit
 ![FloodWatch telemetry service boundary](diagrams/floodwatch_telemetry_service_boundary.svg)
 
 A service layer now separates HTTP transport from telemetry use-case orchestration. `main.py` validates/routes; `telemetry_service.py` coordinates the use case; repositories own database access; current-state/risk services own interpretation. This follows separation of concerns and reduces the reasons `main.py` must change. It is not a claim that every endpoint must be split into a separate file immediately; modularisation is incremental and regression-gated.
+
+
+## 10.x Scenario path consistency after consumer migration
+
+![FloodWatch scenario normalized path](diagrams/floodwatch_scenario_normalized_path.svg)
+
+Consumer migration exposed a stale write path: operator scenarios bypassed the new telemetry service and wrote only to the legacy table. This illustrates why migration requires both read-parity tests and an audit of every producer. Scenario generation now enters through the same application-service/dual-write boundary as other telemetry. Its source remains explicitly `simulated`; persistence consistency does not change its evidence class.
