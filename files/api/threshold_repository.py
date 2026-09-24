@@ -3,7 +3,7 @@
 Thresholds are configuration/evidence metadata, never sensor observations.
 """
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
@@ -71,3 +71,53 @@ def applicable_threshold(
     if threshold_type is not None:
         query = query.filter(models.Threshold.threshold_type == threshold_type)
     return query.order_by(models.Threshold.valid_from.desc(), models.Threshold.id.desc()).first()
+
+
+def stage_compatibility_threshold(
+    db: Session,
+    *,
+    station: models.Station,
+    variable: models.Variable,
+    threshold_type: str,
+    value: float,
+    source_reference: str | None,
+    observed_at: datetime,
+) -> models.Threshold:
+    """Stage a compatibility threshold as a temporal change point.
+
+    Reuse the open interval when its type/value are unchanged. When the value
+    or type changes, close the prior open compatibility interval immediately
+    before observed_at and open the replacement at observed_at.
+    """
+    current = (
+        db.query(models.Threshold)
+        .filter(
+            models.Threshold.station_id == station.id,
+            models.Threshold.variable_id == variable.id,
+            models.Threshold.active.is_(True),
+            models.Threshold.valid_to.is_(None),
+            models.Threshold.source_reference.like("legacy_telemetry_compatibility:%"),
+        )
+        .order_by(models.Threshold.valid_from.desc(), models.Threshold.id.desc())
+        .first()
+    )
+    if current is not None and current.threshold_type == threshold_type and current.value == value:
+        return current
+
+    if current is not None:
+        if current.valid_from is not None and observed_at <= current.valid_from:
+            raise ValueError("Compatibility threshold change points must be ingested in chronological order.")
+        current.valid_to = observed_at - timedelta(microseconds=1)
+
+    row = models.Threshold(
+        station_id=station.id,
+        variable_id=variable.id,
+        threshold_type=threshold_type,
+        value=value,
+        source_reference=source_reference,
+        valid_from=observed_at,
+        valid_to=None,
+        active=True,
+    )
+    db.add(row)
+    return row
