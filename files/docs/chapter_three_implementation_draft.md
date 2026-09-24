@@ -598,7 +598,7 @@ A threshold type is an evidence claim, not merely a UI label. The generic teleme
 
 ![FloodWatch physical bridge contract](diagrams/floodwatch_physical_bridge_contract.svg)
 
-The defense-closure audit compared the actual Pico serial bridge with the current FastAPI ingestion contract and hardware guide. The bridge had the correct API port (8010), but was hard-coded to COM4 and did not support the current optional ingestion-token header; the guide also retained older port-8000 and obsolete token-name instructions. The bridge now reads serial port, baud, API URL and ingestion token from environment variables and sends `X-Ingestion-Token` when configured. The guide and executable DB-5 readiness test now assert the same port/header contract. CI run `35969481452` passed.
+The defense-closure audit compared the Pico serial bridge with the FastAPI ingestion contract and hardware guide. It replaced hard-coded COM4 and obsolete port/token instructions with configurable serial port, baud, API URL and `FLOOD_EWS_INGEST_TOKEN`. The bridge sends the canonical `X-Ingest-Token` header. The first repair used an incorrect header name; a subsequent end-to-end check corrected it. CI run `35970202614` passed. Physical regression on the user's laptop remains pending.
 
 
 ### 3.6.x Alert Delivery Evidence Boundary
@@ -616,13 +616,4 @@ The operational alert workflow persists alert events, supports operator acknowle
 
 ![FloodWatch real alert delivery architecture](diagrams/floodwatch_real_alert_delivery.svg)
 
-The closure requirement was strengthened from simulated channels to executable provider delivery. FloodWatch now contains server-side EmailJS and Twilio SMS adapters. Provider credentials and recipients are supplied only through environment variables. For each alert-worthy observation, the delivery layer reports `sent`, `failed`, or `not_configured`; the web channel remains `available`. The resulting outcomes are persisted with the alert workflow rather than assuming that configured means delivered. CI mocks provider responses and verifies the state machine without sending real messages. A live provider test is still required before claiming real-world delivery evidence.
-
-
-### 3.6.x Real Alert Provider Delivery
-
-**Figure 3.x — FloodWatch Real Alert Delivery Architecture**
-
-![FloodWatch real alert delivery](diagrams/floodwatch_real_alert_delivery.svg)
-
-The alert layer is provider-backed rather than a static interface. Email delivery is implemented through the EmailJS REST API and SMS through the Twilio REST API. Provider credentials and recipients are supplied only through environment variables. The channel state is evidence-based: missing configuration is `not_configured`, a successful provider response is `sent`, and a provider/network error is `failed`. These actual outcomes are passed into persistent alert records rather than assuming that delivery occurred. CI tests provider-state logic with mocks; a claim of live external delivery requires a successful run with the user's local credentials.
+The closure requirement was strengthened from simulated channels to executable provider delivery. FloodWatch now contains server-side EmailJS and Twilio SMS adapters. Provider credentials and recipients are supplied only through environment variables. Eligible alert-worthy hardware readings report `sent`, `failed`, or `not_configured`; simulator readings use `not_required` for external channels unless deliberately opted in. The web channel remains `available`. Outcomes are persisted with the alert workflow. CI mocks provider responses without sending real messages. A live provider test and independent recipient check are still required before claiming external delivery evidence.
