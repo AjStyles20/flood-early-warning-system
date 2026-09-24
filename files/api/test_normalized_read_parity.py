@@ -71,5 +71,33 @@ class NormalizedReadParityTests(unittest.TestCase):
         self.assertEqual(row.threshold_type, "prototype_demo")
 
 
+    def test_latest_per_station_equal_timestamp_uses_later_persisted_reading(self):
+        # Equal timestamps are realistic at coarse sampling resolution. The
+        # compatibility table resolves the tie by descending primary key.
+        # Normalized reads must make the same deterministic choice.
+        timestamp = datetime(2026, 9, 24, 0, 10, tzinfo=timezone.utc)
+        first = self.models.TelemetryCreate(
+            station_id="TIE-01", station_name="TIE-01 name", data_source="hardware",
+            lat=7.8, lon=6.7667, timestamp=timestamp,
+            water_level_m=0.7, danger_level_m=2.5, threshold_type="prototype_demo",
+            rainfall_mm_hr=None, flow_rate_m3s=None, battery_pct=None, signal="online",
+        )
+        second = self.models.TelemetryCreate(
+            station_id="TIE-01", station_name="TIE-01 name", data_source="simulated",
+            lat=7.8, lon=6.7667, timestamp=timestamp,
+            water_level_m=1.6, danger_level_m=2.5, threshold_type="prototype_demo",
+            rainfall_mm_hr=1.0, flow_rate_m3s=2.0, battery_pct=90, signal="online",
+        )
+        self.legacy.create_record(self.db, first)
+        expected = self.legacy.create_record(self.db, second)
+
+        legacy = self.legacy.latest_per_station(self.db)[0]
+        normalized = self.normalized.latest_per_station(self.db)[0]
+        self.assertEqual(legacy.id, expected.id)
+        self.assertEqual(normalized.data_source, legacy.data_source)
+        self.assertEqual(normalized.water_level_m, legacy.water_level_m)
+        self.assertEqual(normalized.timestamp, legacy.timestamp)
+
+
 if __name__ == "__main__":
     unittest.main()
