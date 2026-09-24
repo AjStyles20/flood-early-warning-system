@@ -501,3 +501,10 @@ A follow-up source audit found one remaining class-based Pydantic `Config` decla
 ![FloodWatch data-source evidence consistency](diagrams/floodwatch_source_evidence_consistency.svg)
 
 Redundant provenance metadata is dangerous unless its values are constrained to agree. `DataSource.evidence_type` and `is_observational` are now linked by a database invariant and the controlled catalogue supplies the boolean explicitly. This prevents contradictory source classifications from surviving persistence.
+
+
+## 10.x Idempotency versus evidence correction
+
+![FloodWatch normalized observation duplicate policy](diagrams/floodwatch_observation_duplicate_policy.svg)
+
+FloodWatch now distinguishes delivery retry semantics from data-correction semantics. Exact normalized observation replays are idempotent, which protects serial/API retries from creating duplicate evidence. A different value or metadata at the same station/variable/source/time is a semantic conflict and is rejected until an explicit correction workflow can record why evidence changed.
