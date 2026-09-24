@@ -3,6 +3,7 @@
 from sqlalchemy.orm import Session
 
 import models
+import observation_write_policy
 from observation_catalogue import SOURCE_CATALOGUE, VARIABLE_CATALOGUE
 
 
@@ -42,18 +43,18 @@ def create_observation(
     quality_flag: str | None = None,
     signal_status: str | None = None,
 ) -> models.Observation:
-    """Persist one atomic observation without inventing absent variables."""
-    row = models.Observation(
-        station_id=station.id,
-        variable_id=variable.id,
-        source_id=source.id,
-        dataset_id=dataset.id if dataset else None,
+    """Persist one atomic observation through the shared evidence-write policy."""
+    row = observation_write_policy.stage_observation(
+        db,
+        station=station,
+        variable=variable,
+        source=source,
         observed_at=observed_at,
         value=value,
+        dataset=dataset,
         quality_flag=quality_flag,
         signal_status=signal_status,
     )
-    db.add(row)
     db.commit()
     db.refresh(row)
     return row
