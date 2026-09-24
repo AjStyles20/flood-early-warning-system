@@ -6,8 +6,8 @@
 # 2. Pydantic Models: Defines how we validate data when it arrives from the internet, ensuring it is correct before saving it.
 
 from sqlalchemy import Boolean, CheckConstraint, Column, Integer, String, Float, DateTime, ForeignKey, Index, Text
-from pydantic import BaseModel, Field
-from datetime import datetime
+from pydantic import BaseModel, ConfigDict, Field
+from datetime import datetime, timezone
 from typing import Literal
 
 from database import Base
@@ -37,7 +37,7 @@ class User(Base):
     # must not claim real WhatsApp delivery until a provider is configured and
     # tested.
     whatsapp_updates = Column(Boolean, default=False, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
 
 class UserSession(Base):
@@ -46,7 +46,7 @@ class UserSession(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     token_hash = Column(String(64), unique=True, index=True, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     expires_at = Column(DateTime, nullable=False)
     revoked_at = Column(DateTime, nullable=True)
 
@@ -59,7 +59,7 @@ class CommunityReport(Base):
     title = Column(String(140), nullable=False)
     location = Column(String(160), nullable=False)
     message = Column(String(1200), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
 
 class AlertEvent(Base):
@@ -81,8 +81,8 @@ class AlertEvent(Base):
     channels_json = Column(Text, nullable=False, default="{}")
     status = Column(String(32), nullable=False, default="new", index=True)
     operator_notes = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
-    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     acknowledged_by = Column(Integer, ForeignKey("users.id"), nullable=True)
     acknowledged_at = Column(DateTime, nullable=True)
     escalated_by = Column(Integer, ForeignKey("users.id"), nullable=True)
@@ -104,7 +104,7 @@ class AlertAuditLog(Base):
     notes = Column(Text, nullable=True)
     operator_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     operator_email = Column(String(160), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
 
 
 class ScenarioRun(Base):
@@ -123,7 +123,7 @@ class ScenarioRun(Base):
     operator_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     operator_email = Column(String(160), nullable=False)
     metrics_snapshot_json = Column(Text, nullable=False, default="{}")
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
 
 # ==============================================================================
 # NORMALIZED OBSERVATION / PROVENANCE MODEL
@@ -141,7 +141,7 @@ class Station(Base):
     longitude = Column(Float, nullable=False)
     station_type = Column(String(64), nullable=False, default="monitoring")
     active = Column(Boolean, nullable=False, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
 
 class Variable(Base):
@@ -204,7 +204,7 @@ class Observation(Base):
     value = Column(Float, nullable=False)
     quality_flag = Column(String(64), nullable=True)
     signal_status = Column(String(32), nullable=True)
-    ingested_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+    ingested_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
 
 
 class Threshold(Base):
@@ -369,8 +369,7 @@ class UserPublic(BaseModel):
     sms_updates: bool = True
     whatsapp_updates: bool = False
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AuthResponse(BaseModel):
@@ -427,8 +426,7 @@ class AlertAuditPublic(BaseModel):
     operator_email: str
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ScenarioRunPublic(BaseModel):
