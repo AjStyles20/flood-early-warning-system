@@ -5,6 +5,7 @@ workflow shared by REST and CSV ingestion and normalized risk-status reads.
 """
 
 from collections import defaultdict
+import json
 from sqlalchemy.orm import Session
 
 import models
@@ -13,6 +14,9 @@ import telemetry_repository
 import normalized_read_repository
 import normalized_current_state_service
 from risk_engine import classify
+
+
+_RISK_ORDER = {"Low": 0, "Moderate": 1, "High": 2, "Severe": 3}
 
 
 def ingest(
@@ -24,12 +28,32 @@ def ingest(
     """Persist validated telemetry and run immediate threshold notification flow."""
     record = telemetry_repository.create_record(db, reading)
     assessment = classify(record.water_level_m, record.danger_level_m)
-    delivery_channels = notifications.notify(
-        record.station_id,
-        record.station_name,
-        assessment,
-        data_source=record.data_source,
-    )
+    active = (
+        db.query(models.AlertEvent)
+        .filter(
+            models.AlertEvent.station_id == record.station_id,
+            models.AlertEvent.data_source == record.data_source,
+            models.AlertEvent.status.in_(("new", "acknowledged", "escalated")),
+        )
+        .order_by(models.AlertEvent.updated_at.desc(), models.AlertEvent.id.desc())
+        .first()
+    ) if assessment.should_alert else None
+    # A new alert or a higher risk level warrants a provider attempt. Keep the
+    # original outcome on repeated readings so the dashboard stays auditable.
+    if active and _RISK_ORDER.get(assessment.risk_level, 0) <= _RISK_ORDER.get(active.risk_level, 0):
+        try:
+            delivery_channels = json.loads(active.channels_json or "{}")
+            if not isinstance(delivery_channels, dict):
+                delivery_channels = {}
+        except (TypeError, ValueError):
+            delivery_channels = {}
+    else:
+        delivery_channels = notifications.notify(
+            record.station_id,
+            record.station_name,
+            assessment,
+            data_source=record.data_source,
+        )
     persist_alert_event(
         db,
         record.station_id,
