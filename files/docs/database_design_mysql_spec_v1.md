@@ -369,3 +369,10 @@ DB-1 now has direct MySQL execution evidence. The CI integration job creates the
 ![FloodWatch normalized telemetry history projection](diagrams/floodwatch_normalized_history_projection.svg)
 
 `GET /api/telemetry` no longer requires `TelemetryRecord` for reads. Historical telemetry-shaped rows are projected from normalized stage observations, same-time optional variables, source provenance and temporally applicable thresholds. The anchoring Observation primary key is used as the compatibility response identifier. The legacy table remains dual-written pending final retirement gates.
+
+
+## Legacy read-dependency guard
+
+![FloodWatch legacy telemetry dependency guard](diagrams/floodwatch_legacy_read_guard.svg)
+
+The compatibility table remains a dual-write rollback/reference representation, but audited operational modules are prohibited by CI from querying it directly. This provides a pre-retirement control: normalized reads are now not only implemented but mechanically enforced. Legacy deletion remains separately gated.
