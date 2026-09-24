@@ -118,7 +118,7 @@ DELETE_FEEDBACK_REASONS = {
 ENABLE_COMMUNITY_REPORTS = os.getenv("FLOOD_EWS_ENABLE_COMMUNITY_REPORTS", "0") == "1"
 SECURE_SESSION_COOKIES = os.getenv("FLOOD_EWS_SECURE_COOKIES", "0") == "1"
 INGEST_TOKEN = os.getenv("FLOOD_EWS_INGEST_TOKEN", "").strip()
-CORE_ALERT_CHANNELS = {"web": "available", "email": "available", "sms": "available"}
+CORE_ALERT_CHANNELS = {"web": "available", "email": "simulated", "sms": "simulated"}
 CONTACT_EMAIL = os.getenv("FLOODWATCH_CONTACT_EMAIL", "").strip()
 RUNTIME_DIR = Path(os.getenv("FLOOD_EWS_RUNTIME_DIR", str(BASE_DIR)))
 RUNTIME_DIR.mkdir(parents=True, exist_ok=True)
