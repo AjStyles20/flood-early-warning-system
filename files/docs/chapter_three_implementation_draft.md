@@ -581,3 +581,12 @@ A direct ORM insert test deliberately bypasses the write policy and confirms tha
 During the defense-closure audit, the selected-station dashboard was found to contain a visually convincing six-hour curve whose endpoint was chosen from the station risk class rather than produced by an hourly forecasting method. That presentation could imply predictive evidence that the implementation did not possess. It was therefore corrected rather than defended.
 
 The curve is now an explicitly labelled six-reading trend projection. Its endpoint is calculated as `current level + 6 × latest per-reading rate of rise`, with the configured threshold shown as context. The x-axis says `+6 readings`, not `+6 hours`. It is not generated from risk colour and is not described as an ML or hydrological forecast. A frontend regression guard prevents the unsupported hourly label/risk-class endpoint from returning. CI run `35967402520` passed.
+
+
+### 3.6.x Threshold Evidence Authority Boundary
+
+**Figure 3.x — Threshold evidence authority boundary**
+
+![FloodWatch threshold evidence authority](diagrams/floodwatch_threshold_evidence_authority.svg)
+
+A threshold type is an evidence claim, not merely a UI label. The generic telemetry endpoint can transport a threshold value needed by the compatibility path, but it cannot establish that the value is an officially authorized operational threshold or a research-derived statistical threshold. Therefore, generic ingestion now downgrades caller-supplied `official_operational` **and** `research_statistical` labels to `prototype_demo`, while recording why the supplied authority was not accepted. Promotion to either stronger type requires a separate provenance-controlled workflow.
