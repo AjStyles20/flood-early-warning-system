@@ -432,7 +432,7 @@ alert_log_response = client.post("/api/alerts/dispatch", json={"station_id": hyb
 check(alert_log_response.status_code == 200, "Simulated alert-log endpoint must accept a station ID.")
 alert_event = alert_log_response.json()["event"]
 check(set(alert_event["channels"].keys()) == {"web", "email", "sms"}, "Alert logs must stay on web/email/SMS simulation channels only.")
-check(set(alert_event["channels"].values()) <= {"available", "simulated"}, "Alert logs must not claim channels were really sent or dispatched.")
+check(set(alert_event["channels"].values()) <= {"available", "not_configured", "sent", "failed"}, "Alert logs must expose only real provider capability/attempt outcomes.")
 check("follow official guidance." in alert_event["message"], "Alert logs must preserve official-guidance safety wording.")
 check("dispatched" not in alert_event["message"].lower() and "broadcast" not in alert_event["message"].lower(), "Alert logs must not use autonomous dispatch/broadcast language.")
 missing_alert_target = client.post("/api/alerts/dispatch", json={"station_id": "UNKNOWN-STATION"})
