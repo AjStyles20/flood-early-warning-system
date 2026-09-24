@@ -156,5 +156,30 @@ class ObservationRepositoryTests(unittest.TestCase):
         self.assertEqual(self.db.query(self.models.Observation).count(), 0)
 
 
+    def test_database_rejects_duplicate_observation_identity_if_policy_is_bypassed(self):
+        self.repo.seed_catalogues(self.db)
+        station = self.models.Station(
+            station_code="DB-UNIQ-01", name="DB uniqueness test", latitude=7.8, longitude=6.7
+        )
+        self.db.add(station); self.db.commit(); self.db.refresh(station)
+        variable = self.repo.get_variable(self.db, "river_stage")
+        source = self.repo.get_source(self.db, "LOCAL_SENSOR")
+        observed_at = datetime(2026, 9, 24, 4, 20)
+
+        self.db.add(self.models.Observation(
+            station_id=station.id, variable_id=variable.id, source_id=source.id,
+            observed_at=observed_at, value=1.5
+        ))
+        self.db.commit()
+        self.db.add(self.models.Observation(
+            station_id=station.id, variable_id=variable.id, source_id=source.id,
+            observed_at=observed_at, value=1.5
+        ))
+        with self.assertRaises(IntegrityError):
+            self.db.commit()
+        self.db.rollback()
+        self.assertEqual(self.db.query(self.models.Observation).count(), 1)
+
+
 if __name__ == "__main__":
     unittest.main()
