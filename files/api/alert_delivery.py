@@ -69,7 +69,7 @@ def send_email(subject: str, message: str) -> str:
         payload["accessToken"] = private_key
     try:
         status, _ = _post_json("https://api.emailjs.com/api/v1.0/email/send", payload)
-        return "sent" if 200 <= status < 300 else "failed"
+        return "accepted" if 200 <= status < 300 else "failed"
     except Exception:
         return "failed"
 
@@ -92,7 +92,7 @@ def send_sms(message: str) -> str:
     )
     try:
         with request.urlopen(req, timeout=10) as response:
-            return "sent" if 200 <= response.status < 300 else "failed"
+            return "accepted" if 200 <= response.status < 300 else "failed"
     except Exception:
         return "failed"
 
