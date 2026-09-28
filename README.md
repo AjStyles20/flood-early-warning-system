@@ -2,7 +2,7 @@
 
 Intelligent Flood Early Warning and Decision Support System.
 
-FloodWatch is an engineering prototype and research testbed for flood early-warning decision support, with Lokoja on the River Niger as the current scientific case study. The working platform combines controlled simulation, a physical Pico-to-API integration path, normalized MySQL-capable persistent storage, threshold-state decision support, an accessible GIS dashboard, and alert workflow infrastructure. Historical observational research is deliberately separated from the live application.
+FloodWatch is an engineering prototype and research testbed for flood early-warning decision support, with Lokoja on the River Niger as the current scientific case study. The working platform combines controlled simulation, a physical Pico-to-API integration path, normalized MySQL-capable persistent storage, threshold-state decision support, an accessible GIS dashboard, alert workflow infrastructure, and a separate observational research package.
 
 The system is decision support only. It does not replace official emergency agencies and must not issue autonomous commands. Risk messages are written to help users and responders interpret conditions and follow official guidance.
 
@@ -18,7 +18,9 @@ Current engineering pipeline:
 4. The dashboard displays source-aware status and the alert workflow.
 5. The saved synthetic ML model may be displayed only for simulated development records; it does not determine the current threshold state and is not applied to physical observations.
 
-Scientific research follows a separate path: source provenance -> raw-data audit -> accepted observations -> preprocessing -> target/split definition -> experiment -> evaluation. Experiment 001 remains blocked until its protocol is frozen and explicitly released for execution.
+Scientific research follows a separate path: source provenance -> raw-data audit -> accepted observations -> preprocessing -> target/split definition -> experiment -> evaluation.
+
+**Experiment 001 has now been executed using real GRDC Lokoja daily discharge.** The result does not establish a general material Random-Forest advantage over the interpretable B3 trend baseline. See [files/research/experiment_001_results.md](files/research/experiment_001_results.md). This observational result remains separate from the live operational current-state path.
 
 Parked until supervisor approval:
 
@@ -40,7 +42,8 @@ Project/
 |-- files/
 |   |-- api/        active FastAPI backend, Jinja2 pages, static assets, tests, model, and database
 |   |-- data/       simulator fallback telemetry log
-|   |-- docs/       engineering log, structure audit, and alignment specification\n|   |-- research/   historical research boundary and provenance manifests
+|   |-- docs/       engineering log, structure audit, and alignment specification
+|   |-- research/   observational experiment code, provenance and derived results
 |   |-- archive/    recoverable legacy prototype files
 |   `-- flood_sensor_simulator.py
 |-- implementation_plan.md
@@ -57,6 +60,7 @@ More detail is recorded in [files/docs/project_structure_audit.md](files/docs/pr
 - [files/docs/defense_demo_script.md](files/docs/defense_demo_script.md) gives a step-by-step viva/demo script with commands, talking points, expected outputs, and troubleshooting notes.
 - [files/docs/hardware_integration_guide.md](files/docs/hardware_integration_guide.md) explains how a physical sensor node can send the same tested JSON shape as the simulator.
 - [files/docs/api_reference.md](files/docs/api_reference.md) summarizes the active API endpoints for telemetry, risk status, dashboard/data pages, and validation behavior.
+- [files/research/experiment_001_results.md](files/research/experiment_001_results.md) records the real-data RQ1 experiment and limitations.
 - [walkthrough.md](walkthrough.md) gives a shorter system walkthrough for quick revision.
 
 ## Quick start
@@ -105,7 +109,7 @@ Important PowerShell note: paste only the command text, not the `PS C:\...>` pro
 
 ## Synthetic development ML evidence
 
-The saved model is retained as development evidence from simulator-generated telemetry only. It predicts whether a below-danger simulated reading will cross the simulator danger level within the next 6 simulator ticks. It is frozen: it is not the thesis model, is not applied to physical observations, and must not be presented as real Lokoja predictive performance.
+The saved model is retained as development evidence from simulator-generated telemetry only. It predicts whether a below-danger simulated reading will cross the simulator danger level within the next 6 simulator ticks. It is frozen: it is not the thesis research model, is not applied to physical observations, and must not be presented as real Lokoja predictive performance.
 
 The earlier perfect threshold-baseline result is superseded and must not be used as predictive evidence because it came from a circular current-threshold label.
 
@@ -117,6 +121,8 @@ Latest verified F1 scores from simulator-generated telemetry:
 - Logistic Regression: `0.7085714285714285`
 - Random Forest: `0.975609756097561`
 
+These simulator metrics are not substitutes for Experiment 001.
+
 ## Scientific implementation alignment
 
 The current refactor is governed by [files/docs/implementation_alignment_spec_v1.md](files/docs/implementation_alignment_spec_v1.md). Key rules include:
@@ -126,7 +132,7 @@ The current refactor is governed by [files/docs/implementation_alignment_spec_v1
 - simulated, observed, gridded, reanalysis, modelled, and derived evidence remain distinguishable;
 - current threshold state and forecast probability are separate concepts;
 - the Pico potentiometer is a controlled analogue input, not a Lokoja field water-level measurement;
-- no B3/B4 experiment or new model training is authorized by the engineering refactor.
+- Experiment 001 remains a research artefact and is not automatically promoted into the operational warning path.
 
 ## Accessibility and safety guardrails
 
