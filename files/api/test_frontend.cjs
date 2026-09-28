@@ -274,7 +274,8 @@ assert(!dashboardJsClosure.includes('station.risk_level === "Severe") {\n    yEn
 
 // Alert UI must display actual provider outcome state, never hard-code simulation labels.
 const siteJsDelivery = fs.readFileSync(path.join(__dirname, "static/js/site.js"), "utf8");
-assert(siteJsDelivery.includes('sent: "sent"'));
+assert(siteJsDelivery.includes('accepted: "provider accepted"'));
+assert(siteJsDelivery.includes('sent: "provider accepted (legacy)"'));
 assert(siteJsDelivery.includes('not_configured: "not configured"'));
 assert(!siteJsDelivery.includes('email: "Simulated email"'));
 assert(!siteJsDelivery.includes('sms: "Simulated SMS"'));
