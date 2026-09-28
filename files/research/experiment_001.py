@@ -88,8 +88,11 @@ def run(data):
             for w in TREND_WINDOWS:
                 pv=b3(data,T,H,w).loc[prepared["validation"][0].index]
                 m=metric(prepared["validation"][1],pv)
-                choices.append((m["CSI"],-m["FAR"],w))
-            _,_,bw=max(choices)
+                # Prefer the simpler/smaller trend window when validation CSI
+                # and FAR are exactly tied. This makes the selection policy
+                # explicit and keeps reruns deterministic.
+                choices.append((m["CSI"],-m["FAR"],-w,w))
+            *_,bw=max(choices)
             pbt=b3(data,T,H,bw).loc[prepared["test"][0].index]; mb=metric(prepared["test"][1],pbt)
             rf=RandomForestClassifier(n_estimators=500,max_depth=6,min_samples_leaf=5,class_weight="balanced_subsample",random_state=42,n_jobs=-1)
             rf.fit(*prepared["train"])
