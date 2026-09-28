@@ -114,9 +114,11 @@ Required environment variables:
 ```powershell
 $env:FLOOD_EWS_TWILIO_ACCOUNT_SID = Read-Host 'Twilio Account SID'
 $env:FLOOD_EWS_TWILIO_AUTH_TOKEN = Read-Host 'Twilio Auth Token'
-$env:FLOOD_EWS_TWILIO_FROM_NUMBER = Read-Host 'Twilio SMS sender'
+$env:FLOOD_EWS_TWILIO_SENDER = Read-Host 'Twilio SMS sender ID or permitted sender'
 $env:FLOOD_EWS_ALERT_SMS_TO = Read-Host 'Controlled test recipient'
 ```
+
+`FLOOD_EWS_TWILIO_SENDER` is the preferred configuration key. The legacy `FLOOD_EWS_TWILIO_FROM_NUMBER` key remains supported for backward compatibility when no neutral sender value is set.
 
 The server sends a form-encoded POST to Twilio's Messages API at
 `/2010-04-01/Accounts/{AccountSid}/Messages.json` using HTTP Basic authentication. Credentials stay server-side and must never be committed to Git, copied into screenshots, or embedded in browser JavaScript.
