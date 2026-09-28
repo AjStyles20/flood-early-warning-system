@@ -47,7 +47,7 @@ test('bell uses persistent timestamps and escapes submitted text', () => {
   assert.ok(list.innerHTML.includes('&lt;img'));
   assert.ok(!list.innerHTML.includes('<script>'));
   assert.ok(!list.innerHTML.includes('Time not recorded'));
-  assert.ok(list.innerHTML.includes('Simulated SMS'));
+  assert.ok(list.innerHTML.includes('SMS: simulated'));
 });
 
 test('shared user menu opens, updates ARIA, and closes with Escape', () => {
