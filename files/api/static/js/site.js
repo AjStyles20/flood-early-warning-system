@@ -40,7 +40,8 @@ function formatNotificationChannels(channels) {
   const names = { web: "Web dashboard", Dashboard: "Web dashboard", email: "Email", Email: "Email", sms: "SMS", SMS: "SMS" };
   const states = {
     available: "available",
-    sent: "sent",
+    accepted: "provider accepted",
+    sent: "provider accepted (legacy)",
     failed: "failed",
     not_configured: "not configured",
     not_required: "not required",
