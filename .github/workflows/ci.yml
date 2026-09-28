@@ -43,6 +43,7 @@ jobs:
           python -u test_current_state_service.py
           python -u test_alert_service.py
           python -u test_alert_delivery.py
+          python -u ../research/test_experiment_001.py
           python -u test_api.py
           python -u test_operational.py
           python -u test_http_smoke.py
