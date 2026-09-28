@@ -103,10 +103,66 @@ After configuration, a deliberate manual submission with a non-sensitive test me
 
 `FLOODWATCH_CONTACT_EMAIL` configures the fallback destination in the user's email application. Opening that application does not send an email automatically. The newsletter form remains a mailto request; this integration does not persist subscriptions or send newsletter messages through EmailJS. Flood alerts, account-deletion notices and OTP codes retain their existing simulated behavior and need separate provider integration and verification.
 
-## SMS, WhatsApp and account OTP preparation
+## Flood-alert SMS and email provider setup
 
-The active notification implementation logs simulated web/email/SMS events. Account-deletion codes are demo codes shown locally, not out-of-band authentication. Adding a Twilio key alone does not activate sending in the current code.
+FloodWatch now contains server-side provider adapters for **Twilio SMS** and **EmailJS alert email** in `files/api/alert_delivery.py`. The adapters remain inactive unless all required environment variables are configured. Automated provider-contract tests mock network calls; they verify request construction and failure behavior but do not prove real-world delivery.
 
-For future setup, follow the [Twilio SMS quickstart](https://www.twilio.com/docs/messaging/quickstart): prepare an account, an appropriate SMS sender, server-side credentials and a test recipient you control. Keep the account SID/API credentials and sender details in a server secret store when the adapter is implemented; do not paste them here. Sender eligibility, international destinations, trial restrictions and consent need checking for the chosen deployment. Real WhatsApp delivery additionally needs its own sender/template setup.
+### Twilio SMS
 
-Before live sending is implemented, supply only the provider choice and whether the account/sender is ready. Actual credentials should be entered locally. A separately authorized test should then verify provider acceptance, delivery status, recipient preferences and duplicate suppression. No messages were sent as part of the local tests documented here.
+Required environment variables:
+
+```powershell
+$env:FLOOD_EWS_TWILIO_ACCOUNT_SID = Read-Host 'Twilio Account SID'
+$env:FLOOD_EWS_TWILIO_AUTH_TOKEN = Read-Host 'Twilio Auth Token'
+$env:FLOOD_EWS_TWILIO_FROM_NUMBER = Read-Host 'Twilio SMS sender'
+$env:FLOOD_EWS_ALERT_SMS_TO = Read-Host 'Controlled test recipient'
+```
+
+The server sends a form-encoded POST to Twilio's Messages API at
+`/2010-04-01/Accounts/{AccountSid}/Messages.json` using HTTP Basic authentication. Credentials stay server-side and must never be committed to Git, copied into screenshots, or embedded in browser JavaScript.
+
+A configured adapter means only that FloodWatch has enough configuration to attempt delivery. The application records provider outcome as `sent`, `failed`, or `not_configured`; provider acceptance is not proof that the handset received or read the message.
+
+Before a live test:
+- use a recipient number you control or have explicit permission to contact;
+- verify Twilio trial/account restrictions and Nigeria/international destination eligibility;
+- verify that the sender is permitted for the destination;
+- avoid repeated emergency-style test messages;
+- record provider acceptance and handset receipt separately.
+
+### EmailJS alert email
+
+The alert-email adapter is separate from the browser contact-form integration. Required alert variables are:
+
+```powershell
+$env:FLOOD_EWS_EMAILJS_SERVICE_ID = Read-Host 'EmailJS Service ID'
+$env:FLOOD_EWS_EMAILJS_ALERT_TEMPLATE_ID = Read-Host 'EmailJS alert Template ID'
+$env:FLOOD_EWS_EMAILJS_PUBLIC_KEY = Read-Host 'EmailJS Public Key'
+$env:FLOOD_EWS_ALERT_EMAIL_TO = Read-Host 'Controlled alert inbox'
+```
+
+An optional server-side `FLOOD_EWS_EMAILJS_PRIVATE_KEY` is supported when the EmailJS account requires it. Keep that value secret.
+
+### Verification
+
+Run the isolated provider-contract test:
+
+```powershell
+Set-Location -LiteralPath 'C:\Users\User\Documents\Word_Document\Project\files\api'
+py -u .\test_alert_delivery.py
+```
+
+This test does **not** contact either provider. It verifies:
+- unconfigured providers remain explicit;
+- the Twilio endpoint, Basic Auth header, timeout and `From`/`To`/`Body` fields are built correctly;
+- provider/network exceptions fail closed;
+- EmailJS alert payloads use a configured recipient;
+- dispatch reports actual provider outcomes rather than hard-coded simulation labels.
+
+A deliberate live delivery test is a separate deployment validation step because it requires real credentials, sender eligibility and a consented recipient.
+
+## WhatsApp and account OTP boundary
+
+WhatsApp remains unimplemented as a FloodWatch delivery channel. The saved user preference is future-facing metadata and must not be presented as active delivery.
+
+Account-deletion verification codes remain local demo codes, not out-of-band OTP authentication. If OTP is later required, it should use a separately designed provider flow with expiry, retry/rate limits and delivery verification rather than reusing the flood-alert recipient configuration.
