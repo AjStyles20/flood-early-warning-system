@@ -101,7 +101,7 @@ Local tests must check validation, unconfigured fallback, successful provider ac
 
 After configuration, a deliberate manual submission with a non-sensitive test message to the fixed inbox can establish live provider acceptance and receipt. Record the result separately from local mocked tests. No automated test here should send a live email.
 
-`FLOODWATCH_CONTACT_EMAIL` configures the fallback destination in the user's email application. Opening that application does not send an email automatically. The newsletter form remains a mailto request; this integration does not persist subscriptions or send newsletter messages through EmailJS. Flood alerts, account-deletion notices and OTP codes retain their existing simulated behavior and need separate provider integration and verification.
+`FLOODWATCH_CONTACT_EMAIL` configures the fallback destination in the user's email application. Opening that application does not send an email automatically. The newsletter form remains a mailto request; this integration does not persist subscriptions or send newsletter messages through EmailJS. Flood alerts now have separate server-side Twilio/EmailJS adapters documented below; account-deletion notices and OTP codes remain local/demo behavior and require separate provider integration if promoted.
 
 ## Flood-alert SMS and email provider setup
 
@@ -123,7 +123,7 @@ $env:FLOOD_EWS_ALERT_SMS_TO = Read-Host 'Controlled test recipient'
 The server sends a form-encoded POST to Twilio's Messages API at
 `/2010-04-01/Accounts/{AccountSid}/Messages.json` using HTTP Basic authentication. Credentials stay server-side and must never be committed to Git, copied into screenshots, or embedded in browser JavaScript.
 
-A configured adapter means only that FloodWatch has enough configuration to attempt delivery. The application records provider outcome as `sent`, `failed`, or `not_configured`; provider acceptance is not proof that the handset received or read the message.
+A configured adapter means only that FloodWatch has enough configuration to attempt delivery. The application records provider outcome as `accepted`, `failed`, or `not_configured`. `accepted` means the provider acknowledged the API request; it is not proof that the handset or inbox received the message.
 
 Before a live test:
 - use a recipient number you control or have explicit permission to contact;
@@ -161,7 +161,7 @@ This test does **not** contact either provider. It verifies:
 - the Twilio endpoint, Basic Auth header, timeout and `From`/`To`/`Body` fields are built correctly;
 - provider/network exceptions fail closed;
 - EmailJS alert payloads use a configured recipient;
-- dispatch reports actual provider outcomes rather than hard-coded simulation labels.
+- dispatch reports actual provider acceptance/failure outcomes rather than hard-coded simulation labels.
 
 A deliberate live delivery test is a separate deployment validation step because it requires real credentials, sender eligibility and a consented recipient.
 
