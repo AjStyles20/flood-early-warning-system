@@ -2002,3 +2002,10 @@ Tests mock external providers so CI never sends messages or requires secrets. Tw
 Following the requirement that visible functional capabilities must perform real work, replaced the simulated-only email/SMS notification boundary with provider adapters: EmailJS REST for email and Twilio REST for SMS. Configuration is environment-only; no provider secrets are committed. Delivery states are explicit (`sent`, `failed`, `not_configured`, `not_required`) and actual outcomes flow into persistent alert records. Added provider-state tests without making external CI calls. CI run `35973141504`: **PASS**, including MySQL integration.
 
 The code path is real, but external delivery is not claimed as proven until local EmailJS/Twilio credentials are configured and a live provider response is observed. This distinction is intentional and applies to the rest of the product audit: implemented behavior, test evidence and external/physical evidence are tracked separately.
+
+
+## 2026-09-28 - Real Alert Provider Integration
+
+Following the requirement that visible functionality must perform real work, added executable EmailJS and Twilio provider adapters. The telemetry alert flow now dispatches configured providers and persists actual attempt outcomes: `sent`, `failed`, or `not_configured`; web remains available. Provider credentials are environment-only. Added mocked adapter tests so CI verifies provider state transitions without sending real messages. Also corrected the notification log so a local log-write failure cannot overwrite a real provider outcome. The file is now `notification_delivery_attempts.jsonl`.
+
+**Implementation exists and CI is green. Live EmailJS/Twilio receipt evidence is still PENDING local credential configuration and a controlled real send.**
