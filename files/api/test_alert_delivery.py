@@ -80,7 +80,7 @@ class AlertDeliveryContractTests(unittest.TestCase):
         with patch.object(alert_delivery.request, "urlopen", side_effect=fake_urlopen):
             result = alert_delivery.send_sms("FloodWatch test alert")
 
-        self.assertEqual(result, "sent")
+        self.assertEqual(result, "accepted")
         req = captured["request"]
         self.assertEqual(
             req.full_url,
@@ -107,7 +107,7 @@ class AlertDeliveryContractTests(unittest.TestCase):
             return FakeResponse(status=201)
 
         with patch.object(alert_delivery.request, "urlopen", side_effect=fake_urlopen):
-            self.assertEqual(alert_delivery.send_sms("legacy sender"), "sent")
+            self.assertEqual(alert_delivery.send_sms("legacy sender"), "accepted")
         form = parse_qs(captured["request"].data.decode("utf-8"))
         self.assertEqual(form["From"], ["+15005550006"])
 
@@ -129,7 +129,7 @@ class AlertDeliveryContractTests(unittest.TestCase):
         with patch.object(alert_delivery, "_post_json", side_effect=fake_post):
             result = alert_delivery.send_email("FloodWatch High alert", "Review conditions.")
 
-        self.assertEqual(result, "sent")
+        self.assertEqual(result, "accepted")
         self.assertEqual(captured["url"], "https://api.emailjs.com/api/v1.0/email/send")
         self.assertEqual(captured["payload"]["service_id"], "service_test")
         self.assertEqual(captured["payload"]["template_id"], "template_alert")
@@ -138,17 +138,17 @@ class AlertDeliveryContractTests(unittest.TestCase):
         self.assertEqual(captured["payload"]["template_params"]["subject"], "FloodWatch High alert")
         self.assertEqual(captured["payload"]["template_params"]["message"], "Review conditions.")
 
-    def test_provider_failure_is_not_reported_as_sent(self):
+    def test_provider_failure_is_not_reported_as_accepted(self):
         os.environ.update(EMAIL_ENV)
         with patch.object(alert_delivery, "_post_json", side_effect=OSError("offline")):
             self.assertEqual(alert_delivery.send_email("Subject", "Message"), "failed")
 
     def test_dispatch_reports_actual_provider_outcomes(self):
-        with patch.object(alert_delivery, "send_email", return_value="sent"), patch.object(
+        with patch.object(alert_delivery, "send_email", return_value="accepted"), patch.object(
             alert_delivery, "send_sms", return_value="failed"
         ):
             result = alert_delivery.dispatch("STN-01", "Lokoja", "High", "Review conditions.")
-        self.assertEqual(result, {"web": "available", "email": "sent", "sms": "failed"})
+        self.assertEqual(result, {"web": "available", "email": "accepted", "sms": "failed"})
 
 
 if __name__ == "__main__":
