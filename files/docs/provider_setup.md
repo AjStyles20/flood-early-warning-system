@@ -127,6 +127,8 @@ Before a live test:
 - use a recipient number you control or have explicit permission to contact;
 - verify Twilio trial/account restrictions and Nigeria/international destination eligibility;
 - verify that the sender is permitted for the destination;
+- for Nigeria, review Twilio's current country guidelines before the live test: major networks may reject numeric international sender IDs, and a pre-registered alphanumeric sender ID is the preferred route;
+- treat DND filtering as a possible delivery limitation even for non-promotional notifications;
 - avoid repeated emergency-style test messages;
 - record provider acceptance and handset receipt separately.
 
