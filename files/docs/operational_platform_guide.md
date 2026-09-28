@@ -71,7 +71,7 @@ Moderate/High/Severe readings create persistent alert events. Repeated readings 
 
 Allowed transitions are `new -> acknowledged/escalated/resolved`, `acknowledged -> escalated/resolved`, and `escalated -> resolved`. Resolved events cannot be reopened by those endpoints. A later elevated reading can create a new event. Resolution records an operator's review status; it does not change the sensor evidence or prove the area is safe.
 
-Escalation is an internal workflow status. Web/email/SMS labels continue to describe simulation; they do not claim an authority was contacted or a message delivered. All risk wording defers to official guidance. Legacy JSONL copies are not mixed back into a populated persistent queue, avoiding duplicate alerts.
+Escalation is an internal workflow status. Web alerts are local; EmailJS/Twilio can be configured as optional server-side external providers. A successful provider request is shown as provider accepted, not as final delivery. Repeated same/lower active states suppress external re-delivery, while a genuine risk escalation may attempt one new delivery. All risk wording defers to official guidance. Legacy JSONL copies are not mixed back into a populated persistent queue, avoiding duplicate workflow alerts.
 
 ## Evaluation evidence
 
