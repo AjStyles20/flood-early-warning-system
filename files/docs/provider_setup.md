@@ -1,6 +1,6 @@
 # External news and messaging setup
 
-Updated: 2026-09-10. Keep private keys out of chat, screenshots, templates and Git. Configure them locally in the service environment. News keys are sent server-side in `X-Api-Key` headers; API errors do not echo provider exceptions or credentials.
+Updated: 2026-09-28. Keep private keys out of chat, screenshots, templates and Git. Configure them locally in the service environment. For Docker Compose, copy `.env.example` to `.env`, set strong MySQL passwords, and fill only the optional providers you intend to use. Compose refuses to start without explicit MySQL application/root passwords. News keys are sent server-side in `X-Api-Key` headers; API errors do not echo provider exceptions or credentials.
 
 ## NewsAPI or GNews
 
