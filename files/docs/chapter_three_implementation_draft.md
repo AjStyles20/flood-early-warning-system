@@ -598,17 +598,12 @@ A threshold type is an evidence claim, not merely a UI label. The generic teleme
 
 ![FloodWatch physical bridge contract](diagrams/floodwatch_physical_bridge_contract.svg)
 
-The defense-closure audit compared the actual Pico serial bridge with the current FastAPI ingestion contract and hardware guide. The bridge had the correct API port (8010), but was hard-coded to COM4 and did not support the current optional ingestion-token header; the guide also retained older port-8000 and obsolete token-name instructions. The bridge now reads serial port, baud, API URL and ingestion token from environment variables and sends `X-Ingestion-Token` when configured. The guide and executable DB-5 readiness test now assert the same port/header contract. CI run `35969481452` passed.
+The defense-closure audit compared the actual Pico serial bridge with the current FastAPI ingestion contract and hardware guide. The bridge had the correct API port (8010), but was hard-coded to COM4 and did not support the current optional ingestion-token header; the guide also retained older port-8000 and obsolete token-name instructions. The bridge now reads serial port, baud, API URL and ingestion token from environment variables and sends `X-Ingest-Token` when configured. The guide and executable DB-5 readiness test now assert the same port/header contract. CI run `35969481452` passed.
 
 
-### 3.6.x Alert Delivery Evidence Boundary
+### 3.6.x Alert Delivery Evolution and Evidence Boundary
 
-**Figure 3.x — Alert delivery evidence boundary**
-
-![FloodWatch alert delivery evidence boundary](diagrams/floodwatch_alert_delivery_boundary.svg)
-
-The operational alert workflow persists alert events, supports operator acknowledgement/escalation/resolution, and records an audit trail. The current prototype does not have evidence of external SMS or email delivery. During closure, the public risk-status capability map was therefore corrected to expose `web: available`, `email: simulated`, and `sms: simulated`. This matches the notification service and prevents a dashboard/API client from interpreting an implemented workflow as proof of provider delivery.
-
+The closure audit initially identified that email/SMS were simulation-only and corrected the interface so it could not imply external delivery. The requirement was subsequently strengthened: visible alert channels must have executable provider behavior. That earlier simulation-only state is therefore historical, not the final architecture. The current implementation is described below.
 
 ### 3.6.x Real Alert Provider Integration
 
@@ -619,10 +614,3 @@ The operational alert workflow persists alert events, supports operator acknowle
 The closure requirement was strengthened from simulated channels to executable provider delivery. FloodWatch now contains server-side EmailJS and Twilio SMS adapters. Provider credentials and recipients are supplied only through environment variables. For each alert-worthy observation, the delivery layer reports `sent`, `failed`, or `not_configured`; the web channel remains `available`. The resulting outcomes are persisted with the alert workflow rather than assuming that configured means delivered. CI mocks provider responses and verifies the state machine without sending real messages. A live provider test is still required before claiming real-world delivery evidence.
 
 
-### 3.6.x Real Alert Provider Delivery
-
-**Figure 3.x — FloodWatch Real Alert Delivery Architecture**
-
-![FloodWatch real alert delivery](diagrams/floodwatch_real_alert_delivery.svg)
-
-The alert layer is provider-backed rather than a static interface. Email delivery is implemented through the EmailJS REST API and SMS through the Twilio REST API. Provider credentials and recipients are supplied only through environment variables. The channel state is evidence-based: missing configuration is `not_configured`, a successful provider response is `sent`, and a provider/network error is `failed`. These actual outcomes are passed into persistent alert records rather than assuming that delivery occurred. CI tests provider-state logic with mocks; a claim of live external delivery requires a successful run with the user's local credentials.
