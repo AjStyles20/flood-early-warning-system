@@ -27,6 +27,9 @@ jobs:
           python -u test_telemetry_repository.py
           python -u test_normalized_schema.py
           python -u test_observation_repository.py
+          python -u test_observation_contract.py
+          python -u test_telemetry_adapter.py
+          python -u test_risk_separation.py
           python -u test_telemetry_dual_write.py
           python -u test_normalized_read_parity.py
           python -u test_threshold_repository.py
@@ -60,6 +63,11 @@ jobs:
             sleep 2
           done
           exit 1
+      - name: Validate Compose configuration
+        env:
+          FLOODWATCH_MYSQL_PASSWORD: ci_compose_password
+          FLOODWATCH_MYSQL_ROOT_PASSWORD: ci_compose_root_password
+        run: docker compose config --quiet
       - name: Build container
         run: docker build -t floodwatch:test .
       - name: Verify container health

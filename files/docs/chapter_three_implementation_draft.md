@@ -15,7 +15,7 @@ The implementation focuses on the approved core pipeline:
 3. Transparent flood-risk classification.
 4. Future-horizon machine-learning prediction.
 5. Accessible GIS dashboard display.
-6. Simulated web, email, and SMS alert logging.
+6. Advisory web alerts plus optional server-side EmailJS/Twilio provider delivery with explicit outcome logging.
 
 The system does not issue autonomous emergency orders. It provides decision support and instructs users to follow official guidance.
 
@@ -217,13 +217,9 @@ The previous perfect baseline result is not used because it came from current-th
 
 The notification layer is implemented in `files/api/notifications.py`.
 
-For the prototype, notifications are simulated and written to a local JSONL log. The active demonstration channels are:
+The notification layer always supports the web/dashboard path and can optionally attempt server-side EmailJS alert email and Twilio SMS when their environment configuration is present. Every external attempt is written to a local JSONL audit log and its outcome is persisted with the alert workflow.
 
-- web dashboard;
-- simulated email;
-- simulated SMS.
-
-This supports the project requirement that warning access should not assume smartphone ownership. No real SMS or email is sent unless a real provider gateway is configured and tested.
+A provider 2xx response is recorded as `accepted`, not as proof of final delivery. `failed` and `not_configured` remain explicit. Duplicate same/lower active risk states suppress repeated external delivery, while a genuine escalation can attempt one new delivery. This supports non-smartphone warning channels without claiming that an unconfigured provider, an API acknowledgement, or a prototype test proves recipient delivery.
 
 ## 3.10 GIS Dashboard and Accessibility Design
 
@@ -611,6 +607,6 @@ The closure audit initially identified that email/SMS were simulation-only and c
 
 ![FloodWatch real alert delivery architecture](diagrams/floodwatch_real_alert_delivery.svg)
 
-The closure requirement was strengthened from simulated channels to executable provider delivery. FloodWatch now contains server-side EmailJS and Twilio SMS adapters. Provider credentials and recipients are supplied only through environment variables. For each alert-worthy observation, the delivery layer reports `sent`, `failed`, or `not_configured`; the web channel remains `available`. The resulting outcomes are persisted with the alert workflow rather than assuming that configured means delivered. CI mocks provider responses and verifies the state machine without sending real messages. A live provider test is still required before claiming real-world delivery evidence.
+The closure requirement was strengthened from simulated channels to executable provider delivery. FloodWatch now contains server-side EmailJS and Twilio SMS adapters. Provider credentials and recipients are supplied only through environment variables. For a new alert-worthy condition or genuine escalation, the delivery layer reports `accepted`, `failed`, or `not_configured`; the web channel remains `available`. Repeated same/lower active states suppress external re-delivery. The resulting provider outcomes are persisted with the alert workflow rather than assuming that configured or accepted means delivered. CI mocks provider responses and verifies the request/state contract without sending real messages. A controlled live provider test is still required before claiming recipient-level delivery evidence.
 
 

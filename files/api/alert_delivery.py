@@ -26,13 +26,21 @@ def email_configured() -> bool:
     ))
 
 
+def _twilio_sender() -> str:
+    """Return the configured SMS sender, preferring the neutral sender key."""
+    return (
+        os.getenv("FLOOD_EWS_TWILIO_SENDER", "").strip()
+        or os.getenv("FLOOD_EWS_TWILIO_FROM_NUMBER", "").strip()
+    )
+
+
 def sms_configured() -> bool:
-    return all(os.getenv(name, "").strip() for name in (
-        "FLOOD_EWS_TWILIO_ACCOUNT_SID",
-        "FLOOD_EWS_TWILIO_AUTH_TOKEN",
-        "FLOOD_EWS_TWILIO_FROM_NUMBER",
-        "FLOOD_EWS_ALERT_SMS_TO",
-    ))
+    return bool(
+        os.getenv("FLOOD_EWS_TWILIO_ACCOUNT_SID", "").strip()
+        and os.getenv("FLOOD_EWS_TWILIO_AUTH_TOKEN", "").strip()
+        and _twilio_sender()
+        and os.getenv("FLOOD_EWS_ALERT_SMS_TO", "").strip()
+    )
 
 
 def capabilities() -> dict[str, str]:
@@ -61,7 +69,7 @@ def send_email(subject: str, message: str) -> str:
         payload["accessToken"] = private_key
     try:
         status, _ = _post_json("https://api.emailjs.com/api/v1.0/email/send", payload)
-        return "sent" if 200 <= status < 300 else "failed"
+        return "accepted" if 200 <= status < 300 else "failed"
     except Exception:
         return "failed"
 
@@ -72,7 +80,7 @@ def send_sms(message: str) -> str:
     sid = os.environ["FLOOD_EWS_TWILIO_ACCOUNT_SID"].strip()
     token = os.environ["FLOOD_EWS_TWILIO_AUTH_TOKEN"].strip()
     form = parse.urlencode({
-        "From": os.environ["FLOOD_EWS_TWILIO_FROM_NUMBER"].strip(),
+        "From": _twilio_sender(),
         "To": os.environ["FLOOD_EWS_ALERT_SMS_TO"].strip(),
         "Body": message,
     }).encode("utf-8")
@@ -84,7 +92,7 @@ def send_sms(message: str) -> str:
     )
     try:
         with request.urlopen(req, timeout=10) as response:
-            return "sent" if 200 <= response.status < 300 else "failed"
+            return "accepted" if 200 <= response.status < 300 else "failed"
     except Exception:
         return "failed"
 

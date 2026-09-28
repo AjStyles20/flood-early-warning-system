@@ -138,7 +138,7 @@ The current refactor is governed by [files/docs/implementation_alignment_spec_v1
 
 - The dashboard provides both a visual map and a text station list.
 - Risk is communicated by text plus colour, never colour alone.
-- Alert messages are simulated/logged unless real providers are configured and tested.
+- Alert attempts are logged; configured EmailJS/Twilio providers can return provider-accepted/failed outcomes, but recipient delivery is not claimed without a controlled live verification.
 - The river-context layer is schematic only, not an official flood-boundary dataset.
 - MySQL is the target development/operational DBMS. SQLite remains the default compatibility/test fallback when `FLOOD_EWS_DATABASE_URL` is not set; do not confuse SQLite-only execution with the MySQL deployment gate.
 - Dashboard and Flood Data source modes are explicit: `simulated`, `hardware`, and `hybrid`.

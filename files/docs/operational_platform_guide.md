@@ -71,7 +71,7 @@ Moderate/High/Severe readings create persistent alert events. Repeated readings 
 
 Allowed transitions are `new -> acknowledged/escalated/resolved`, `acknowledged -> escalated/resolved`, and `escalated -> resolved`. Resolved events cannot be reopened by those endpoints. A later elevated reading can create a new event. Resolution records an operator's review status; it does not change the sensor evidence or prove the area is safe.
 
-Escalation is an internal workflow status. Web/email/SMS labels continue to describe simulation; they do not claim an authority was contacted or a message delivered. All risk wording defers to official guidance. Legacy JSONL copies are not mixed back into a populated persistent queue, avoiding duplicate alerts.
+Escalation is an internal workflow status. Web alerts are local; EmailJS/Twilio can be configured as optional server-side external providers. A successful provider request is shown as provider accepted, not as final delivery. Repeated same/lower active states suppress external re-delivery, while a genuine risk escalation may attempt one new delivery. All risk wording defers to official guidance. Legacy JSONL copies are not mixed back into a populated persistent queue, avoiding duplicate workflow alerts.
 
 ## Evaluation evidence
 
@@ -85,9 +85,17 @@ Each dashboard scenario stores before/after risk, water level, operator and a sn
 
 MySQL is the target development/operational DBMS. Docker Compose provisions MySQL 8.4 and supplies the API with a `mysql+pymysql` connection through `FLOOD_EWS_DATABASE_URL`. SQLite remains a compatibility/test fallback when that variable is absent. The saved simulator model is development evidence and should not be retrained merely to start or demonstrate the operational application.
 
-From the project root with Docker installed:
+From the project root with Docker installed, create the private local environment file first. Do not commit `.env`.
 
 ```powershell
+Copy-Item .\.env.example .\.env
+notepad .\.env
+```
+
+Set strong non-empty values for `FLOODWATCH_MYSQL_PASSWORD` and `FLOODWATCH_MYSQL_ROOT_PASSWORD`; fill optional news/messaging providers only if you intend to test them. Then validate and start the stack:
+
+```powershell
+docker compose config --quiet
 docker compose up --build -d
 docker compose ps
 docker compose logs --tail 40

@@ -1,6 +1,6 @@
 # External news and messaging setup
 
-Updated: 2026-09-10. Keep private keys out of chat, screenshots, templates and Git. Configure them locally in the service environment. News keys are sent server-side in `X-Api-Key` headers; API errors do not echo provider exceptions or credentials.
+Updated: 2026-09-28. Keep private keys out of chat, screenshots, templates and Git. Configure them locally in the service environment. For Docker Compose, copy `.env.example` to `.env`, set strong MySQL passwords, and fill only the optional providers you intend to use. Compose refuses to start without explicit MySQL application/root passwords. News keys are sent server-side in `X-Api-Key` headers; API errors do not echo provider exceptions or credentials.
 
 ## NewsAPI or GNews
 
@@ -101,7 +101,7 @@ Local tests must check validation, unconfigured fallback, successful provider ac
 
 After configuration, a deliberate manual submission with a non-sensitive test message to the fixed inbox can establish live provider acceptance and receipt. Record the result separately from local mocked tests. No automated test here should send a live email.
 
-`FLOODWATCH_CONTACT_EMAIL` configures the fallback destination in the user's email application. Opening that application does not send an email automatically. The newsletter form remains a mailto request; this integration does not persist subscriptions or send newsletter messages through EmailJS. Flood alerts, account-deletion notices and OTP codes retain their existing simulated behavior and need separate provider integration and verification.
+`FLOODWATCH_CONTACT_EMAIL` configures the fallback destination in the user's email application. Opening that application does not send an email automatically. The newsletter form remains a mailto request; this integration does not persist subscriptions or send newsletter messages through EmailJS. Flood alerts now have separate server-side Twilio/EmailJS adapters documented below; account-deletion notices and OTP codes remain local/demo behavior and require separate provider integration if promoted.
 
 ## Flood-alert SMS and email provider setup
 
@@ -114,19 +114,23 @@ Required environment variables:
 ```powershell
 $env:FLOOD_EWS_TWILIO_ACCOUNT_SID = Read-Host 'Twilio Account SID'
 $env:FLOOD_EWS_TWILIO_AUTH_TOKEN = Read-Host 'Twilio Auth Token'
-$env:FLOOD_EWS_TWILIO_FROM_NUMBER = Read-Host 'Twilio SMS sender'
+$env:FLOOD_EWS_TWILIO_SENDER = Read-Host 'Twilio SMS sender ID or permitted sender'
 $env:FLOOD_EWS_ALERT_SMS_TO = Read-Host 'Controlled test recipient'
 ```
+
+`FLOOD_EWS_TWILIO_SENDER` is the preferred configuration key. The legacy `FLOOD_EWS_TWILIO_FROM_NUMBER` key remains supported for backward compatibility when no neutral sender value is set.
 
 The server sends a form-encoded POST to Twilio's Messages API at
 `/2010-04-01/Accounts/{AccountSid}/Messages.json` using HTTP Basic authentication. Credentials stay server-side and must never be committed to Git, copied into screenshots, or embedded in browser JavaScript.
 
-A configured adapter means only that FloodWatch has enough configuration to attempt delivery. The application records provider outcome as `sent`, `failed`, or `not_configured`; provider acceptance is not proof that the handset received or read the message.
+A configured adapter means only that FloodWatch has enough configuration to attempt delivery. The application records provider outcome as `accepted`, `failed`, or `not_configured`. `accepted` means the provider acknowledged the API request; it is not proof that the handset or inbox received the message.
 
 Before a live test:
 - use a recipient number you control or have explicit permission to contact;
 - verify Twilio trial/account restrictions and Nigeria/international destination eligibility;
 - verify that the sender is permitted for the destination;
+- for Nigeria, review Twilio's current country guidelines before the live test: major networks may reject numeric international sender IDs, and a pre-registered alphanumeric sender ID is the preferred route;
+- treat DND filtering as a possible delivery limitation even for non-promotional notifications;
 - avoid repeated emergency-style test messages;
 - record provider acceptance and handset receipt separately.
 
@@ -157,7 +161,7 @@ This test does **not** contact either provider. It verifies:
 - the Twilio endpoint, Basic Auth header, timeout and `From`/`To`/`Body` fields are built correctly;
 - provider/network exceptions fail closed;
 - EmailJS alert payloads use a configured recipient;
-- dispatch reports actual provider outcomes rather than hard-coded simulation labels.
+- dispatch reports actual provider acceptance/failure outcomes rather than hard-coded simulation labels.
 
 A deliberate live delivery test is a separate deployment validation step because it requires real credentials, sender eligibility and a consented recipient.
 
