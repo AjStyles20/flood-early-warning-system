@@ -12,7 +12,7 @@ import alert_delivery
 
 RUNTIME_DIR = Path(os.getenv("FLOOD_EWS_RUNTIME_DIR", str(Path(__file__).resolve().parent)))
 RUNTIME_DIR.mkdir(parents=True, exist_ok=True)
-NOTIFICATION_LOG_PATH = RUNTIME_DIR / "simulated_notifications.jsonl"
+NOTIFICATION_LOG_PATH = RUNTIME_DIR / "notification_delivery_attempts.jsonl"
 
 
 def notify(station_id: str, station_name: str, assessment: RiskAssessment, data_source: str = "simulated") -> Dict[str, str]:
@@ -38,5 +38,5 @@ def notify(station_id: str, station_name: str, assessment: RiskAssessment, data_
     except OSError:
         # A temporary read-only demo environment must not prevent a sensor
         # reading being saved. Production should still monitor this log path.
-        event["channels"] = {channel: "simulation_log_unavailable" for channel in channels}
+        event["log_status"] = "unavailable"
     return event["channels"]
