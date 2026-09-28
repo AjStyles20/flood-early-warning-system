@@ -2,7 +2,7 @@ fastapi
 uvicorn
 sqlalchemy
 pydantic
-scikit-learn
+scikit-learn==1.8.0
 joblib
 paho-mqtt
 passlib

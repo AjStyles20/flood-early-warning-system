@@ -11,8 +11,8 @@ class TelemetryServiceTests(unittest.TestCase):
     def setUpClass(cls):
         cls.temp_dir = tempfile.TemporaryDirectory()
         os.environ["FLOOD_EWS_DATABASE_URL"] = f"sqlite:///{cls.temp_dir.name}/telemetry_service.db"
-        import database, models, telemetry_service
-        cls.database, cls.models, cls.service = database, models, telemetry_service
+        import alert_service, database, models, telemetry_service
+        cls.alert_service, cls.database, cls.models, cls.service = alert_service, database, models, telemetry_service
         models.Base.metadata.create_all(bind=database.engine)
 
     @classmethod
@@ -21,7 +21,8 @@ class TelemetryServiceTests(unittest.TestCase):
 
     def setUp(self):
         self.db = self.database.SessionLocal()
-        for model in (self.models.Observation, self.models.Threshold, self.models.Dataset,
+        for model in (self.models.AlertAuditLog, self.models.AlertEvent,
+                      self.models.Observation, self.models.Threshold, self.models.Dataset,
                       self.models.Station, self.models.Variable, self.models.DataSource,
                       self.models.TelemetryRecord):
             self.db.query(model).delete()
@@ -51,6 +52,49 @@ class TelemetryServiceTests(unittest.TestCase):
         self.assertEqual(self.db.query(self.models.Observation).count(), 1)
         self.assertEqual(len(self.alerts), 1)
         self.assertEqual(self.alerts[0][2], "High")
+
+    def test_repeated_active_risk_does_not_repeat_external_delivery(self):
+        from unittest.mock import patch
+        with patch.object(
+            self.service.notifications,
+            "notify",
+            return_value={"web": "available", "email": "sent", "sms": "sent"},
+        ) as notify:
+            self.service.ingest(
+                self.db, self.reading(minute=1, level=1.6),
+                persist_alert_event=self.alert_service.persist_event,
+            )
+            first = self.db.query(self.models.AlertEvent).one()
+            first_channels = first.channels_json
+            self.service.ingest(
+                self.db, self.reading(minute=2, level=1.7),
+                persist_alert_event=self.alert_service.persist_event,
+            )
+            active = self.db.query(self.models.AlertEvent).one()
+
+        self.assertEqual(notify.call_count, 1)
+        self.assertEqual(active.channels_json, first_channels)
+        self.assertEqual(active.risk_level, "High")
+
+    def test_risk_escalation_allows_one_new_external_delivery(self):
+        from unittest.mock import patch
+        with patch.object(
+            self.service.notifications,
+            "notify",
+            return_value={"web": "available", "email": "sent", "sms": "sent"},
+        ) as notify:
+            self.service.ingest(
+                self.db, self.reading(minute=1, level=1.6),
+                persist_alert_event=self.alert_service.persist_event,
+            )
+            self.service.ingest(
+                self.db, self.reading(minute=2, level=2.1),
+                persist_alert_event=self.alert_service.persist_event,
+            )
+            active = self.db.query(self.models.AlertEvent).one()
+
+        self.assertEqual(notify.call_count, 2)
+        self.assertEqual(active.risk_level, "Severe")
 
     def test_risk_statuses_reads_normalized_current_state(self):
         self.service.ingest(self.db, self.reading(minute=1, level=0.8), persist_alert_event=self.persist_alert)
