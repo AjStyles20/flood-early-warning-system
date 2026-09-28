@@ -283,7 +283,7 @@ Answer:
 
 Answer:
 
-> Not in this prototype. It logs simulated web, email, and SMS alerts. Real delivery should only be enabled after a provider gateway is configured and tested.
+> The final implementation contains executable EmailJS and Twilio provider adapters. A channel is reported as `not_configured` until its local provider configuration exists, `failed` when the provider attempt fails, and `sent` only when the provider accepts the request. I only claim live external delivery after a controlled local test and receipt evidence.
 
 ## 7. Screenshot checklist
 
@@ -296,13 +296,13 @@ Capture these screenshots for the final report/presentation:
 - accessible station list;
 - selected-station detail panel;
 - flood data page;
-- terminal showing model-training metrics;
+- evaluation page showing saved development-model metrics with its simulator evidence label;
 - terminal showing `[PASS]` test output;
 - backend terminal showing `POST /api/telemetry 200 OK`.
 
 ## 8. Closing statement
 
-> The completed prototype demonstrates the core idea: an accessible, portable flood early-warning and decision-support system that integrates telemetry, storage, ML prediction, GIS visualization, and simulated multi-channel alerts while staying within safe decision-support boundaries.
+> The completed prototype demonstrates the core engineering idea: an accessible flood-monitoring and decision-support system integrating source-aware telemetry, normalized persistence, transparent threshold assessment, dashboard/history, auditable alert workflow, and provider-backed notification adapters. Predictive ML remains a separately evaluated research component and is not presented as an operational forecast without observational evidence.
 
 
 ## Final three-day demo priority
@@ -325,28 +325,18 @@ If asked about the curve in the selected-station panel, say: “This is not the 
 
 ![FloodWatch physical bridge contract](diagrams/floodwatch_physical_bridge_contract.svg)
 
-For the live physical demo, configure `FLOOD_EWS_SERIAL_PORT`, `FLOOD_EWS_API_URL` and, when API ingestion protection is enabled, `FLOOD_EWS_INGESTION_TOKEN`. The bridge attaches the matching `X-Ingestion-Token` header. Do not assume COM4 if Windows assigns another port. The software contract is CI-guarded, but the physical regression is not considered passed until the live Pico/MySQL/dashboard procedure is performed.
+For the live physical demo, configure `FLOOD_EWS_SERIAL_PORT`, `FLOOD_EWS_API_URL` and, when API ingestion protection is enabled, `FLOOD_EWS_INGEST_TOKEN`. The bridge attaches the matching `X-Ingest-Token` header. Do not assume COM4 if Windows assigns another port. The software contract is CI-guarded, but the physical regression is not considered passed until the live Pico/MySQL/dashboard procedure is performed.
 
 
-## Alert-channel demonstration boundary
+## Alert-channel evidence boundary
 
-![FloodWatch alert delivery evidence boundary](diagrams/floodwatch_alert_delivery_boundary.svg)
-
-When demonstrating alerts, state that FloodWatch implements persistent alert generation, operator workflow and simulated multi-channel notification. The web channel is available in the application; email and SMS are currently simulated. Do not claim that an external SMS/email provider delivered a message unless that integration is separately configured and evidenced.
-
+The historical simulation-only alert state has been superseded by executable EmailJS/Twilio adapters. The evidence rule remains: implementation is not the same as successful external delivery. Demonstrate and describe the actual persisted state.
 
 ## Live email/SMS alert demonstration
 
 ![FloodWatch real alert delivery architecture](diagrams/floodwatch_real_alert_delivery.svg)
 
 The code path for EmailJS and Twilio SMS is implemented. Before demonstrating it, configure the provider environment variables locally and send one controlled test alert to an authorized test recipient. Show the resulting channel state in the persistent alert. Describe a channel as real delivery only when the live test returns `sent`; otherwise state the observed `failed` or `not_configured` status.
-
-
-## Real email/SMS alert demonstration
-
-![FloodWatch real alert delivery](diagrams/floodwatch_real_alert_delivery.svg)
-
-The application contains functioning EmailJS and Twilio REST adapters. Before claiming real delivery in the defense, configure the provider environment variables locally and demonstrate a successful message to a controlled recipient. The dashboard/API should report `not_configured` without credentials, `failed` after a failed attempt, and `sent` only after provider success. CI verifies the logic but is not evidence that EmailJS/Twilio delivered a live message.
 
 
 ## Real alert provider check
