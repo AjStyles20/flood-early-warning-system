@@ -16,7 +16,7 @@ import alert_delivery
 TWILIO_ENV = {
     "FLOOD_EWS_TWILIO_ACCOUNT_SID": "AC1234567890",
     "FLOOD_EWS_TWILIO_AUTH_TOKEN": "secret-token",
-    "FLOOD_EWS_TWILIO_FROM_NUMBER": "+15005550006",
+    "FLOOD_EWS_TWILIO_SENDER": "FloodWatch",
     "FLOOD_EWS_ALERT_SMS_TO": "+2348000000000",
 }
 
@@ -45,7 +45,10 @@ class FakeResponse:
 
 class AlertDeliveryContractTests(unittest.TestCase):
     def setUp(self):
-        self.names = set(TWILIO_ENV) | set(EMAIL_ENV) | {"FLOOD_EWS_EMAILJS_PRIVATE_KEY"}
+        self.names = set(TWILIO_ENV) | set(EMAIL_ENV) | {
+            "FLOOD_EWS_EMAILJS_PRIVATE_KEY",
+            "FLOOD_EWS_TWILIO_FROM_NUMBER",
+        }
         self.previous = {name: os.environ.get(name) for name in self.names}
         for name in self.names:
             os.environ.pop(name, None)
@@ -88,9 +91,25 @@ class AlertDeliveryContractTests(unittest.TestCase):
         self.assertEqual(req.get_header("Authorization"), f"Basic {expected_auth}")
         self.assertEqual(req.get_header("Content-type"), "application/x-www-form-urlencoded")
         form = parse_qs(req.data.decode("utf-8"))
-        self.assertEqual(form["From"], ["+15005550006"])
+        self.assertEqual(form["From"], ["FloodWatch"])
         self.assertEqual(form["To"], ["+2348000000000"])
         self.assertEqual(form["Body"], ["FloodWatch test alert"])
+
+    def test_legacy_twilio_from_number_remains_supported(self):
+        legacy = dict(TWILIO_ENV)
+        legacy.pop("FLOOD_EWS_TWILIO_SENDER")
+        legacy["FLOOD_EWS_TWILIO_FROM_NUMBER"] = "+15005550006"
+        os.environ.update(legacy)
+        captured = {}
+
+        def fake_urlopen(req, timeout=0):
+            captured["request"] = req
+            return FakeResponse(status=201)
+
+        with patch.object(alert_delivery.request, "urlopen", side_effect=fake_urlopen):
+            self.assertEqual(alert_delivery.send_sms("legacy sender"), "sent")
+        form = parse_qs(captured["request"].data.decode("utf-8"))
+        self.assertEqual(form["From"], ["+15005550006"])
 
     def test_twilio_network_or_provider_exception_fails_closed(self):
         os.environ.update(TWILIO_ENV)
