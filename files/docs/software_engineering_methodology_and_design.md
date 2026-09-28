@@ -571,3 +571,10 @@ The alert subsystem now applies an adapter boundary around external providers. E
 ![FloodWatch real alert delivery](diagrams/floodwatch_real_alert_delivery.svg)
 
 FloodWatch now uses explicit provider adapters for EmailJS email and Twilio SMS. Delivery is failure-isolated from telemetry persistence: provider failure is represented as `failed` and must not prevent the observation itself from being stored. Secrets remain outside source control. The architecture separates capability configuration from delivery evidence.
+
+
+## 10.x Real Alert Provider Integration
+
+![FloodWatch real alert delivery](diagrams/floodwatch_real_alert_delivery.svg)
+
+The alert subsystem uses adapters rather than embedding provider logic in the risk engine. EmailJS and Twilio failures cannot prevent telemetry persistence. Runtime secrets are environment configuration and are not committed. Capability, attempt, and delivery evidence remain distinct: configured providers are available; only successful provider responses are marked sent.
