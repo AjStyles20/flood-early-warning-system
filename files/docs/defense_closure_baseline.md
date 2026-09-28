@@ -43,7 +43,7 @@ The separate real-data Lokoja Experiment 001 has now been executed. Its result i
 
 - official operational threshold integration;
 - field calibration/deployment in Lokoja;
-- real SMS/WhatsApp emergency delivery;
+- recipient-confirmed production SMS delivery and WhatsApp delivery;
 - national production deployment;
 - authoritative inundation GIS;
 - advanced community-reporting workflows;
