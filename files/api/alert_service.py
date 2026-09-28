@@ -123,7 +123,11 @@ def persist_event(
         active_alert.station_name = station_name
         active_alert.risk_level = risk_level
         active_alert.message = safe_message
-        active_alert.channels_json = json.dumps(channels or alert_delivery.capabilities())
+        # A repeated active state may intentionally suppress external
+        # re-delivery. Preserve the most recent real provider outcome unless
+        # this update includes a new delivery attempt.
+        if channels is not None:
+            active_alert.channels_json = json.dumps(channels)
         active_alert.updated_at = now
         db.commit()
         db.refresh(active_alert)
