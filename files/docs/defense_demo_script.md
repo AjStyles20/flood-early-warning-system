@@ -347,3 +347,10 @@ The code path for EmailJS and Twilio SMS is implemented. Before demonstrating it
 ![FloodWatch real alert delivery](diagrams/floodwatch_real_alert_delivery.svg)
 
 The application contains functioning EmailJS and Twilio REST adapters. Before claiming real delivery in the defense, configure the provider environment variables locally and demonstrate a successful message to a controlled recipient. The dashboard/API should report `not_configured` without credentials, `failed` after a failed attempt, and `sent` only after provider success. CI verifies the logic but is not evidence that EmailJS/Twilio delivered a live message.
+
+
+## Real alert provider check
+
+![FloodWatch real alert delivery](diagrams/floodwatch_real_alert_delivery.svg)
+
+Before claiming live email/SMS during defense, configure the provider environment variables locally and trigger one controlled alert. Show the persisted channel result and the received message. If a provider is not configured or a message is not received, describe that channel by its recorded state rather than claiming delivery.
