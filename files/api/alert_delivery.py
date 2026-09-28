@@ -26,13 +26,21 @@ def email_configured() -> bool:
     ))
 
 
+def _twilio_sender() -> str:
+    """Return the configured SMS sender, preferring the neutral sender key."""
+    return (
+        os.getenv("FLOOD_EWS_TWILIO_SENDER", "").strip()
+        or os.getenv("FLOOD_EWS_TWILIO_FROM_NUMBER", "").strip()
+    )
+
+
 def sms_configured() -> bool:
-    return all(os.getenv(name, "").strip() for name in (
-        "FLOOD_EWS_TWILIO_ACCOUNT_SID",
-        "FLOOD_EWS_TWILIO_AUTH_TOKEN",
-        "FLOOD_EWS_TWILIO_FROM_NUMBER",
-        "FLOOD_EWS_ALERT_SMS_TO",
-    ))
+    return bool(
+        os.getenv("FLOOD_EWS_TWILIO_ACCOUNT_SID", "").strip()
+        and os.getenv("FLOOD_EWS_TWILIO_AUTH_TOKEN", "").strip()
+        and _twilio_sender()
+        and os.getenv("FLOOD_EWS_ALERT_SMS_TO", "").strip()
+    )
 
 
 def capabilities() -> dict[str, str]:
@@ -72,7 +80,7 @@ def send_sms(message: str) -> str:
     sid = os.environ["FLOOD_EWS_TWILIO_ACCOUNT_SID"].strip()
     token = os.environ["FLOOD_EWS_TWILIO_AUTH_TOKEN"].strip()
     form = parse.urlencode({
-        "From": os.environ["FLOOD_EWS_TWILIO_FROM_NUMBER"].strip(),
+        "From": _twilio_sender(),
         "To": os.environ["FLOOD_EWS_ALERT_SMS_TO"].strip(),
         "Body": message,
     }).encode("utf-8")
