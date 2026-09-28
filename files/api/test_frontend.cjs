@@ -270,3 +270,11 @@ assert(dashboardHtmlClosure.includes("+6 readings"), "Dashboard trend axis must 
 assert(!dashboardHtmlClosure.includes("+6 hours"), "Dashboard must not imply an unsupported six-hour forecast.");
 assert(dashboardJsClosure.includes("currentLevel + (6 * rateOfRise)"), "Trend projection must derive from current level and observed rate of rise.");
 assert(!dashboardJsClosure.includes('station.risk_level === "Severe") {\n    yEnd = 20'), "Curve endpoint must not be fabricated from risk class.");
+
+
+// Alert UI must display actual provider outcome state, never hard-code simulation labels.
+const siteJsDelivery = fs.readFileSync(path.join(__dirname, "static/js/site.js"), "utf8");
+assert(siteJsDelivery.includes('sent: "sent"'));
+assert(siteJsDelivery.includes('not_configured: "not configured"'));
+assert(!siteJsDelivery.includes('email: "Simulated email"'));
+assert(!siteJsDelivery.includes('sms: "Simulated SMS"'));
