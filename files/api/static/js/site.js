@@ -34,16 +34,23 @@ function formatNotificationTime(timestamp) {
 }
 
 function formatNotificationChannels(channels) {
-  const labels = {
-    web: "Web dashboard",
-    Dashboard: "Web dashboard",
-    email: "Simulated email",
-    Email: "Simulated email",
-    sms: "Simulated SMS",
-    SMS: "Simulated SMS",
+  const source = channels || {};
+  const entries = Object.entries(source);
+  if (!entries.length) return "Web dashboard";
+  const names = { web: "Web dashboard", Dashboard: "Web dashboard", email: "Email", Email: "Email", sms: "SMS", SMS: "SMS" };
+  const states = {
+    available: "available",
+    sent: "sent",
+    failed: "failed",
+    not_configured: "not configured",
+    not_required: "not required",
+    simulation_log_unavailable: "log unavailable",
   };
-  const names = Object.keys(channels || {});
-  return (names.length ? names : ["web"]).map((name) => labels[name] || name).join(" · ");
+  return entries.map(([name, state]) => {
+    const label = names[name] || name;
+    const stateLabel = states[state] || state;
+    return stateLabel ? `${label}: ${stateLabel}` : label;
+  }).join(" · ");
 }
 
 function renderNotificationList(notificationList, alerts) {
