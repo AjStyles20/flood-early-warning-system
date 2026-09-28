@@ -85,9 +85,17 @@ Each dashboard scenario stores before/after risk, water level, operator and a sn
 
 MySQL is the target development/operational DBMS. Docker Compose provisions MySQL 8.4 and supplies the API with a `mysql+pymysql` connection through `FLOOD_EWS_DATABASE_URL`. SQLite remains a compatibility/test fallback when that variable is absent. The saved simulator model is development evidence and should not be retrained merely to start or demonstrate the operational application.
 
-From the project root with Docker installed:
+From the project root with Docker installed, create the private local environment file first. Do not commit `.env`.
 
 ```powershell
+Copy-Item .\.env.example .\.env
+notepad .\.env
+```
+
+Set strong non-empty values for `FLOODWATCH_MYSQL_PASSWORD` and `FLOODWATCH_MYSQL_ROOT_PASSWORD`; fill optional news/messaging providers only if you intend to test them. Then validate and start the stack:
+
+```powershell
+docker compose config --quiet
 docker compose up --build -d
 docker compose ps
 docker compose logs --tail 40
